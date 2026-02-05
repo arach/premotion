@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "remotion studio",
     "build": "remotion render FullVideo out/video.mp4",
-    "render": "remotion render"
+    "render": "remotion render",
+    "quote": "node scripts/make-quote.mjs"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",
