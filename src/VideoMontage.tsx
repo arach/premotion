@@ -110,6 +110,7 @@ const VideoClip: React.FC<VideoClipProps> = ({ startSeconds, endSeconds, zoom })
         src={staticFile("source-video.mp4")}
         trimBefore={startSeconds * fps}
         trimAfter={endSeconds * fps}
+        volume={1}
         style={{
           width: "100%",
           height: "100%",
