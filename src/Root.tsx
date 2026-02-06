@@ -22,6 +22,8 @@ import { DemoVideo, calculateDemoFrames } from "./projects/demo-template";
 import { RetroComputerFrame } from "./components/RetroComputerFrame";
 import { MidjourneyComputerFrame } from "./components/MidjourneyComputerFrame";
 import { MidjourneyComputerContent } from "./components/MidjourneyComputerContent";
+import { TalkieDashboardShowcase } from "./components/TalkieDashboardShowcase";
+import { TalkiePromoVideo } from "./components/TalkiePromoVideo";
 
 // Video settings
 const FPS = 30;
@@ -138,6 +140,57 @@ export const RemotionRoot: React.FC = () => {
         fps={FPS}
         width={1080}
         height={1080}
+      />
+
+      {/* Talkie Promo Video - Full cinematic sequence */}
+      <Composition
+        id="TalkiePromo"
+        component={TalkiePromoVideo}
+        durationInFrames={Math.round(18.5 * FPS)} // 5s intro + 1.5s zoom + 10s content + 2s outro
+        fps={FPS}
+        width={1080}
+        height={1080}
+        defaultProps={{
+          contentFile: "talkie-home-2.png",
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.15,
+          voiceoverFile: undefined,
+          voiceoverStartAt: 0,
+          introDuration: 5,
+          zoomDuration: 1.5,
+          contentDuration: 10,
+          outroDuration: 2,
+          introScale: 0.45,
+          showBezel: true,
+          bezelMargin: 26,
+          screenshotScale: 1.2,
+          showViewportTarget: true,
+          targetOffsetX: 0,
+          targetOffsetY: 0,
+        }}
+      />
+
+      {/* Simple Dashboard Showcase (for testing zoom alignment) */}
+      <Composition
+        id="MJ-TalkieDashboard"
+        component={TalkieDashboardShowcase}
+        durationInFrames={13 * FPS}
+        fps={FPS}
+        width={1080}
+        height={1080}
+        defaultProps={{
+          screenshotFile: "talkie-home.png",
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.12,
+          zoomInDuration: 1.5,
+          contentHoldDuration: 10,
+          zoomOutDuration: 1.5,
+          vo1Volume: 0,
+          vo2Volume: 0,
+          vo3Volume: 0,
+          vo4Volume: 1,
+          vo5Volume: 0,
+        }}
       />
 
       {/* Midjourney Computer Frame - Multiple beat options */}
