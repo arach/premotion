@@ -1,0 +1,4 @@
+pyannote.audio
+openai-whisper
+torch
+torchaudio
