@@ -4,3 +4,8 @@ dist/
 .DS_Store
 *.log
 public/*.mp4
+
+# Client-specific projects (keep local)
+src/projects/hostai-montage/
+src/projects/audit-demo/
+public/hostai-*

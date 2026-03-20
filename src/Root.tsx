@@ -11,19 +11,21 @@ import { TalkieAsciiIntro } from "./intros/TalkieAsciiIntro";
 import { TalkieTacticalIntro } from "./intros/TalkieTacticalIntro";
 import { TalkieComingSoon } from "./intros/TalkieComingSoon";
 import { Thumbnail } from "./Thumbnail";
+import { TalkieThumbnail } from "./TalkieThumbnail";
 import { QuoteVideo } from "./QuoteVideo";
 import { QuickPreview } from "./QuickPreview";
 import { FORMAT_PRESETS } from "./lib/formats";
 
 // Project-based compositions
-import { AuditDemo, TOTAL_FRAMES as AUDIT_DEMO_FRAMES } from "./projects/audit-demo";
-import { HostAIMontage, TOTAL_FRAMES as HOSTAI_MONTAGE_FRAMES } from "./projects/hostai-montage";
 import { DemoVideo, calculateDemoFrames } from "./projects/demo-template";
 import { RetroComputerFrame } from "./components/RetroComputerFrame";
 import { MidjourneyComputerFrame } from "./components/MidjourneyComputerFrame";
 import { MidjourneyComputerContent } from "./components/MidjourneyComputerContent";
 import { TalkieDashboardShowcase } from "./components/TalkieDashboardShowcase";
 import { TalkiePromoVideo } from "./components/TalkiePromoVideo";
+import { HUDExperimentVideo, calculateHUDFrames } from "./HUDExperimentVideo";
+import { FramedVideo } from "./components/FramedVideo";
+import { HudsonHighlightReel, calculateHighlightFrames } from "./projects/hudson-highlight/HudsonHighlightReel";
 
 // Video settings
 const FPS = 30;
@@ -82,30 +84,6 @@ function introCompositions(baseId: string, component: React.FC, duration: number
 export const RemotionRoot: React.FC = () => {
   return (
     <>
-      {/* Audit Demo - project-based composition */}
-      <Folder name="AuditDemo">
-        <Composition
-          id="AuditDemo"
-          component={AuditDemo}
-          durationInFrames={AUDIT_DEMO_FRAMES}
-          fps={FPS}
-          width={1080}
-          height={720}
-        />
-      </Folder>
-
-      {/* HostAI Montage - two videos with transitions */}
-      <Folder name="HostAIMontage">
-        <Composition
-          id="HostAIMontage"
-          component={HostAIMontage}
-          durationInFrames={HOSTAI_MONTAGE_FRAMES}
-          fps={FPS}
-          width={1080}
-          height={1080}
-        />
-      </Folder>
-
       {/* Talkie Coming Soon - standalone scene */}
       <Composition
         id="TalkieComingSoon"
@@ -146,7 +124,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="TalkiePromo"
         component={TalkiePromoVideo}
-        durationInFrames={Math.round(18.5 * FPS)} // 5s intro + 1.5s zoom + 10s content + 2s outro
+        durationInFrames={Math.round(23.5 * FPS)} // 5s intro + 1.5s zoom + 15s content + 2s outro
         fps={FPS}
         width={1080}
         height={1080}
@@ -154,17 +132,20 @@ export const RemotionRoot: React.FC = () => {
           contentFile: "talkie-home-2.png",
           musicTrack: "tracks/futuristic-synthwave.mp3",
           musicVolume: 0.15,
-          voiceoverFile: undefined,
-          voiceoverStartAt: 0,
+          // Voiceover A/B toggles - set one to 1, others to 0
+          vo1Volume: 1,  // Intro 2 (6.6s) - default
+          vo2Volume: 0,  // Intro 4 (2s)
+          vo3Volume: 0,  // Script 7 (6.2s)
+          vo4Volume: 0,  // Ephemeral (9.5s)
           introDuration: 5,
           zoomDuration: 1.5,
-          contentDuration: 10,
+          contentDuration: 15,
           outroDuration: 2,
           introScale: 0.45,
           showBezel: true,
           bezelMargin: 26,
-          screenshotScale: 1.2,
-          showViewportTarget: true,
+          screenshotScale: 1.1,
+          showViewportTarget: false,
           targetOffsetX: 0,
           targetOffsetY: 0,
         }}
@@ -242,8 +223,260 @@ export const RemotionRoot: React.FC = () => {
         />
       </Folder>
 
+      {/* HUD Experiment - 309s with music fade to original audio */}
+      <Composition
+        id="HUDExperiment"
+        component={HUDExperimentVideo}
+        durationInFrames={calculateHUDFrames(309, FPS, 5, 5)} // 309s content + 5s intro + 5s outro
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          videoSrc: "demos/hud-long.mp4",
+          title: "HUD EXPERIMENT",
+          subtitle: "Prototype v0.1",
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.35,
+          musicFadeOutStart: 1,
+          showCaptions: false,
+          transcriptFile: "transcripts/hud-long.json",
+        }}
+      />
+      {/* HUD Experiment with Captions - taller to fit caption bar */}
+      <Composition
+        id="HUDExperimentCaptions"
+        component={HUDExperimentVideo}
+        durationInFrames={calculateHUDFrames(309, FPS, 5, 5)}
+        fps={FPS}
+        width={1920}
+        height={1200}
+        defaultProps={{
+          videoSrc: "demos/hud-long.mp4",
+          title: "HUD EXPERIMENT",
+          subtitle: "Prototype v0.1",
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.35,
+          musicFadeOutStart: 1,
+          showCaptions: true,
+          transcriptFile: "transcripts/hud-long.json",
+          captionBarHeight: 120,
+          showBezel: true,
+          bezelSize: 14,
+        }}
+      />
+
+      {/* Clean HUD videos - native 1592x1218 + bezel + caption bar */}
+      <Folder name="HUDClean">
+        {/* 3 minute video */}
+        <Composition
+          id="HUDClean-Long"
+          component={HUDExperimentVideo}
+          durationInFrames={calculateHUDFrames(180, FPS, 5, 5)}
+          fps={FPS}
+          width={1620}
+          height={1366}
+          defaultProps={{
+            videoSrc: "demos/CleanShot 2026-02-15 at 11.17.35.mp4",
+            title: "HUD EXPERIMENT",
+            subtitle: "Prototype v0.1",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.35,
+            musicFadeOutStart: 1,
+            showCaptions: true,
+            transcriptFile: "transcripts/hud-clean-long.json",
+            captionBarHeight: 100,
+            showBezel: true,
+            bezelSize: 14,
+          }}
+        />
+        {/* 2 minute video */}
+        <Composition
+          id="HUDClean-Medium"
+          component={HUDExperimentVideo}
+          durationInFrames={calculateHUDFrames(129, FPS, 5, 5)}
+          fps={FPS}
+          width={1620}
+          height={1366}
+          defaultProps={{
+            videoSrc: "demos/CleanShot 2026-02-15 at 11.21.21.mp4",
+            title: "HUD EXPERIMENT",
+            subtitle: "Prototype v0.1",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.35,
+            musicFadeOutStart: 1,
+            showCaptions: true,
+            transcriptFile: "transcripts/hud-clean-medium.json",
+            captionBarHeight: 100,
+            showBezel: true,
+            bezelSize: 14,
+          }}
+        />
+        {/* 41 second video */}
+        <Composition
+          id="HUDClean-Short"
+          component={HUDExperimentVideo}
+          durationInFrames={calculateHUDFrames(41, FPS, 5, 5)}
+          fps={FPS}
+          width={1620}
+          height={1366}
+          defaultProps={{
+            videoSrc: "demos/CleanShot 2026-02-15 at 10.28.11.mp4",
+            title: "HUD EXPERIMENT",
+            subtitle: "Prototype v0.1",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.35,
+            musicFadeOutStart: 1,
+            showCaptions: true,
+            transcriptFile: "transcripts/hud-clean-short.json",
+            captionBarHeight: 100,
+            showBezel: true,
+            bezelSize: 14,
+          }}
+        />
+      </Folder>
+
+      {/* Latest Clip — 4 font takes */}
+      <Folder name="LatestClip">
+        {/* Take 1: Inter — clean Swiss minimalism */}
+        <Composition
+          id="Take1-Inter"
+          component={FramedVideo}
+          durationInFrames={Math.round((10 + 40.5 + 8) * FPS)}
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            videoSrc: "demos/latest-clip.mp4",
+            title: "International Women's Day 2026",
+            introDuration: 10,
+            outroDuration: 8,
+            take: "inter",
+          }}
+        />
+        {/* Take 2: Lora + DM Sans — warm editorial serif meets clean sans */}
+        <Composition
+          id="Take2-Lora"
+          component={FramedVideo}
+          durationInFrames={Math.round((10 + 40.5 + 8) * FPS)}
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            videoSrc: "demos/latest-clip.mp4",
+            title: "International Women's Day 2026",
+            introDuration: 10,
+            outroDuration: 8,
+            take: "lora",
+          }}
+        />
+        {/* Take 3: EB Garamond — classical literary elegance */}
+        <Composition
+          id="Take3-Garamond"
+          component={FramedVideo}
+          durationInFrames={Math.round((10 + 40.5 + 8) * FPS)}
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            videoSrc: "demos/latest-clip.mp4",
+            title: "International Women's Day 2026",
+            introDuration: 10,
+            outroDuration: 8,
+            take: "garamond",
+          }}
+        />
+        {/* Take 4: Sora + Crimson Text — geometric sans titles, classic serif statement */}
+        <Composition
+          id="Take4-Sora"
+          component={FramedVideo}
+          durationInFrames={Math.round((10 + 40.5 + 8) * FPS)}
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            videoSrc: "demos/latest-clip.mp4",
+            title: "International Women's Day 2026",
+            introDuration: 10,
+            outroDuration: 8,
+            take: "sora",
+          }}
+        />
+      </Folder>
+
       {/* Demo Videos - 4 videos with intro/outro template */}
       <Folder name="TalkieDemos">
+        {/* Capture Overview - 55s demo */}
+        <Composition
+          id="CaptureOverview"
+          component={DemoVideo}
+          durationInFrames={calculateDemoFrames(55, FPS)} // 55s content + intro/outro
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            videoSrc: "demos/capture-overview.mp4",
+            title: "TALKIE",
+            subtitle: "Voice Engine v2.22",
+            tagline: "Capture Overview",
+            releaseDate: "Q1 2026",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.3,
+          }}
+        />
+        {/* Talkie Capture - 41s demo */}
+        <Composition
+          id="TalkieCapture"
+          component={DemoVideo}
+          durationInFrames={calculateDemoFrames(41, FPS)} // 41s content + intro/outro
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            videoSrc: "demos/Talkie Capture.mp4",
+            title: "TALKIE",
+            subtitle: "Voice Engine v2.22",
+            tagline: "Capture Demo",
+            releaseDate: "Q1 2026",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.3,
+          }}
+        />
+        {/* iOS Screen Recording - Portrait 9:16 */}
+        <Composition
+          id="TalkieiOS"
+          component={DemoVideo}
+          durationInFrames={calculateDemoFrames(89.5, FPS)}
+          fps={FPS}
+          width={1080}
+          height={1920}
+          defaultProps={{
+            videoSrc: "demos/talkie-ios-demo-trimmed2.mp4",
+            title: "TALKIE",
+            subtitle: "Voice Engine v2.22",
+            tagline: "iOS Demo",
+            releaseDate: "Q1 2026",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.3,
+          }}
+        />
+        {/* Latest: 60s Overview with Tactical Intro */}
+        <Composition
+          id="TalkieOverview"
+          component={DemoVideo}
+          durationInFrames={calculateDemoFrames(60, FPS)} // 60s content + intro/outro
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            videoSrc: "demos/60s Demo - Full Overview.mp4",
+            title: "TALKIE",
+            subtitle: "Voice Engine v2.22",
+            tagline: "Coming Soon",
+            releaseDate: "Q1 2026",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.3,
+          }}
+        />
         <Composition
           id="TalkieDemo1"
           component={DemoVideo}
@@ -254,7 +487,7 @@ export const RemotionRoot: React.FC = () => {
           defaultProps={{
             videoSrc: "demos/demo1.mp4",
             title: "TALKIE",
-            subtitle: "Voice Engine v4.0",
+            subtitle: "Voice Engine v2.22",
             tagline: "Coming Soon",
             releaseDate: "Q1 2026",
             musicTrack: "tracks/futuristic-synthwave.mp3",
@@ -309,6 +542,90 @@ export const RemotionRoot: React.FC = () => {
           }}
         />
       </Folder>
+
+      {/* Screen Demo - Mar 18, 2026 */}
+      <Composition
+        id="ScreenDemo-Mar18"
+        component={DemoVideo}
+        durationInFrames={calculateDemoFrames(251.06, FPS)}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          videoSrc: "demos/cleanshot-demo-2026-03-18.mp4",
+          title: "ARACH",
+          subtitle: "Screen Demo",
+          tagline: "March 2026",
+          releaseDate: "Q1 2026",
+          iconSrc: "arach-circle.png",
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.25,
+          frameStyle: "none",
+          videoStartFrom: 10.29,
+        }}
+      />
+
+      {/* Screen Demo 2 - Mar 19, 2026 16:55 (~281s, 3440x1440) */}
+      <Composition
+        id="ScreenDemo-Mar19-1655"
+        component={DemoVideo}
+        durationInFrames={calculateDemoFrames(281.27, FPS)}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          videoSrc: "demos/cleanshot-demo-2026-03-19-1655.mp4",
+          title: "ARACH",
+          subtitle: "Screen Demo",
+          tagline: "March 2026",
+          releaseDate: "Q1 2026",
+          iconSrc: "arach-circle.png",
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.25,
+          frameStyle: "none",
+        }}
+      />
+
+      {/* Screen Demo 3 - Mar 19, 2026 16:33 (~554s, 2550x1440) */}
+      <Composition
+        id="ScreenDemo-Mar19-1633"
+        component={DemoVideo}
+        durationInFrames={calculateDemoFrames(554.37, FPS)}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          videoSrc: "demos/cleanshot-demo-2026-03-19-1633.mp4",
+          title: "ARACH",
+          subtitle: "Screen Demo",
+          tagline: "March 2026",
+          releaseDate: "Q1 2026",
+          iconSrc: "arach-circle.png",
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.25,
+          frameStyle: "none",
+        }}
+      />
+
+      {/* Hudson Highlight Reel - 45s curated edit */}
+      <Composition
+        id="HudsonHighlightReel"
+        component={HudsonHighlightReel}
+        durationInFrames={calculateHighlightFrames(FPS)}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          videoSrc: "demos/cleanshot-demo-2026-03-19-1633.mp4",
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.3,
+          title: "HUDSON",
+          subtitle: "Design System",
+          tagline: "Generative Design Tools",
+          releaseDate: "2026",
+          iconSrc: "arach-circle.png",
+        }}
+      />
 
       {/* Quick Preview - DM style casual video */}
       <Composition
@@ -427,6 +744,28 @@ export const RemotionRoot: React.FC = () => {
 
       {/* Thumbnails */}
       <Folder name="Thumbnails">
+        <Still
+          id="TalkieThumbnail"
+          component={TalkieThumbnail}
+          width={1280}
+          height={720}
+          defaultProps={{
+            title: "TALKIE",
+            subtitle: "Voice Engine v2.22",
+            tagline: "Full Demo",
+          }}
+        />
+        <Still
+          id="TalkieThumbnailSquare"
+          component={TalkieThumbnail}
+          width={1080}
+          height={1080}
+          defaultProps={{
+            title: "TALKIE",
+            subtitle: "Voice Engine v2.22",
+            tagline: "Full Demo",
+          }}
+        />
         <Still
           id="ThumbnailTerminal"
           component={Thumbnail}
