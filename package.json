@@ -7,9 +7,12 @@
     "dev": "remotion studio",
     "build": "remotion render FullVideo out/video.mp4",
     "render": "remotion render",
-    "quote": "node scripts/make-quote.mjs"
+    "quote": "node scripts/make-quote.mjs",
+    "analyze": "bun run scripts/analyze-video.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "@remotion/captions": "^4.0.422",
     "@remotion/cli": "^4.0.0",
     "@remotion/google-fonts": "4.0.407",
     "@remotion/media": "^4.0.0",

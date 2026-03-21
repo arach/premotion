@@ -11,6 +11,7 @@ import { TacticalIntro } from "./TacticalIntro";
 import { TacticalOutro } from "./TacticalOutro";
 import { RetroComputerFrame } from "../../components/RetroComputerFrame";
 import { MidjourneyComputerFrame } from "../../components/MidjourneyComputerFrame";
+import { TalkieThumbnail } from "../../TalkieThumbnail";
 
 export interface DemoVideoProps {
 	// Content
@@ -23,6 +24,7 @@ export interface DemoVideoProps {
 	// Timing (in seconds)
 	introDuration?: number;
 	outroDuration?: number;
+	videoStartFrom?: number; // seconds to skip from start of source video
 	// Audio
 	musicTrack?: string;
 	musicVolume?: number;
@@ -30,28 +32,33 @@ export interface DemoVideoProps {
 	frameStyle?: "none" | "retro" | "midjourney";
 	retroMonitorColor?: string;
 	retroBaseColor?: string;
+	// Thumbnail as first frame (for platform previews)
+	showThumbnailFrame?: boolean;
 }
 
 // Reusable demo video template: Intro → Content → Outro
 export const DemoVideo: React.FC<DemoVideoProps> = ({
 	videoSrc = "demos/placeholder.mp4",
 	title = "TALKIE",
-	subtitle = "Voice Engine v4.0",
+	subtitle = "Voice Engine v2.22",
 	tagline = "Coming Soon",
 	releaseDate = "Q1 2026",
 	iconSrc = "talkie-icon-1024.png",
 	introDuration = 2,
 	outroDuration = 5,
+	videoStartFrom = 0,
 	musicTrack = "tracks/futuristic-synthwave.mp3",
 	musicVolume = 0.4,
 	frameStyle = "none",
 	retroMonitorColor = "#e8e0d4",
 	retroBaseColor = "#8b3a3a",
+	showThumbnailFrame = true,
 }) => {
 	const { fps, durationInFrames } = useVideoConfig();
 
 	const introFrames = Math.floor(introDuration * fps);
 	const outroFrames = Math.floor(outroDuration * fps);
+	const videoStartFromFrames = Math.floor(videoStartFrom * fps);
 	const contentFrames = durationInFrames - introFrames - outroFrames;
 	const contentStart = introFrames;
 	const outroStart = introFrames + contentFrames;
@@ -87,8 +94,20 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 				</Sequence>
 			</Sequence>
 
-			{/* Layer 3: Intro */}
-			<Sequence name="Intro" from={0} durationInFrames={introFrames}>
+			{/* Layer 3: Thumbnail (first frame for platform previews) */}
+			{showThumbnailFrame && (
+				<Sequence name="Thumbnail" from={0} durationInFrames={1}>
+					<TalkieThumbnail
+						title={title}
+						subtitle={subtitle}
+						tagline={tagline}
+						iconSrc={iconSrc}
+					/>
+				</Sequence>
+			)}
+
+			{/* Layer 4: Intro */}
+			<Sequence name="Intro" from={showThumbnailFrame ? 1 : 0} durationInFrames={introFrames}>
 				<TacticalIntro
 					title={title}
 					subtitle={subtitle}
@@ -105,21 +124,27 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 					>
 						<OffthreadVideo
 							src={staticFile(videoSrc)}
+							startFrom={videoStartFromFrames}
 							style={{ width: "100%", height: "100%", objectFit: "cover" }}
+							muted
 						/>
 					</RetroComputerFrame>
 				) : frameStyle === "midjourney" ? (
 					<MidjourneyComputerFrame>
 						<OffthreadVideo
 							src={staticFile(videoSrc)}
+							startFrom={videoStartFromFrames}
 							style={{ width: "100%", height: "100%", objectFit: "cover" }}
+							muted
 						/>
 					</MidjourneyComputerFrame>
 				) : (
 					<AbsoluteFill>
 						<OffthreadVideo
 							src={staticFile(videoSrc)}
+							startFrom={videoStartFromFrames}
 							style={{ width: "100%", height: "100%" }}
+							muted
 						/>
 					</AbsoluteFill>
 				)}

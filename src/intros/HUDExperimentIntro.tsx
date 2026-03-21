@@ -2,28 +2,23 @@ import {
 	useCurrentFrame,
 	useVideoConfig,
 	interpolate,
-	staticFile,
-	Img,
 	Easing,
 	AbsoluteFill,
 } from "remotion";
 
-interface TacticalIntroProps {
+interface HUDExperimentIntroProps {
 	title?: string;
 	subtitle?: string;
-	iconSrc?: string;
 }
 
-// Reusable tactical intro - snappy guide frame with icon + wordmark
-export const TacticalIntro: React.FC<TacticalIntroProps> = ({
-	title = "TALKIE",
-	subtitle = "Voice Engine v2.22",
-	iconSrc = "talkie-icon-1024.png",
+// HUD-style experiment intro - tactical feel without branding
+export const HUDExperimentIntro: React.FC<HUDExperimentIntroProps> = ({
+	title = "HUD EXPERIMENT",
+	subtitle = "Prototype v0.1",
 }) => {
 	const frame = useCurrentFrame();
 	const { fps, height, durationInFrames } = useVideoConfig();
 
-	const iconSize = 260;
 	const guideMargin = 70;
 
 	// === TIMING ===
@@ -31,12 +26,8 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 	const guidesSettled = 0.3 * fps;
 	const gridAppear = 0;
 	const gridSettled = 0.3 * fps;
-	const iconAppear = 0.4 * fps;
-	const iconSettled = 1.0 * fps;
-	const talkieAppear = iconAppear;
-	const talkieSettled = iconSettled;
-	const textAppear = iconAppear;
-	const textSettled = iconSettled;
+	const textAppear = 0.2 * fps;
+	const textSettled = 0.8 * fps;
 
 	// Fade out at the end
 	const fadeOut = interpolate(
@@ -50,7 +41,7 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 	const gridOpacity = interpolate(
 		frame,
 		[gridAppear, gridSettled],
-		[0, 0.03],
+		[0, 0.04],
 		{ extrapolateLeft: "clamp", extrapolateRight: "clamp" }
 	) * fadeOut;
 
@@ -58,7 +49,7 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 	const guideOpacity = interpolate(
 		frame,
 		[guidesAppear, guidesSettled],
-		[0, 0.5],
+		[0, 0.6],
 		{ extrapolateLeft: "clamp", extrapolateRight: "clamp" }
 	) * fadeOut;
 
@@ -71,42 +62,35 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 	) * fadeOut;
 	const scanlineY = (frame * 2.5) % height;
 
-	// Icon
-	const iconOpacity = interpolate(frame, [iconAppear, iconSettled], [0, 1], {
+	// Text animations
+	const titleOpacity = interpolate(frame, [textAppear, textSettled], [0, 1], {
 		extrapolateLeft: "clamp",
 		extrapolateRight: "clamp",
 		easing: Easing.out(Easing.cubic),
 	}) * fadeOut;
 
-	const iconScale = interpolate(frame, [iconAppear, iconSettled], [0.92, 1], {
+	const titleY = interpolate(frame, [textAppear, textSettled], [20, 0], {
 		extrapolateLeft: "clamp",
 		extrapolateRight: "clamp",
 		easing: Easing.out(Easing.cubic),
 	});
 
 	// Corner HUD text
-	const textOpacity = interpolate(
+	const hudTextOpacity = interpolate(
 		frame,
 		[textAppear, textSettled],
 		[0, 0.75],
 		{ extrapolateLeft: "clamp", extrapolateRight: "clamp" }
 	) * fadeOut;
 
-	// TALKIE text
-	const talkieOpacity = interpolate(frame, [talkieAppear, talkieSettled], [0, 1], {
-		extrapolateLeft: "clamp",
-		extrapolateRight: "clamp",
-		easing: Easing.out(Easing.cubic),
-	}) * fadeOut;
-
-	const recDotVisible = Math.floor(frame / (fps * 0.5)) % 2 === 0;
-	const guideColor = "rgba(160, 170, 190, 0.45)";
+	const guideColor = "rgba(200, 210, 220, 0.5)";
 	const textColor = "rgba(175, 185, 200, 0.8)";
+	const accentColor = "#6ae";
 
 	return (
 		<AbsoluteFill
 			style={{
-				backgroundColor: "#0a0a0e",
+				backgroundColor: "#08080c",
 				fontFamily: "SF Mono, Monaco, Consolas, monospace",
 			}}
 		>
@@ -132,7 +116,7 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 					left: 0,
 					right: 0,
 					height: 1,
-					backgroundColor: "rgba(160, 170, 190, 0.025)",
+					backgroundColor: "rgba(160, 170, 190, 0.03)",
 					opacity: scanlineOpacity,
 					pointerEvents: "none",
 				}}
@@ -144,20 +128,20 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 			<div style={{ position: "absolute", top: guideMargin, bottom: guideMargin, left: guideMargin, width: 1, opacity: guideOpacity, backgroundColor: guideColor }} />
 			<div style={{ position: "absolute", top: guideMargin, bottom: guideMargin, right: guideMargin, width: 1, opacity: guideOpacity, backgroundColor: guideColor }} />
 
-			{/* Top-left: System name */}
+			{/* Top-left: System */}
 			<div
 				style={{
 					position: "absolute",
 					top: guideMargin + 12,
 					left: guideMargin + 14,
-					opacity: textOpacity,
+					opacity: hudTextOpacity,
 					fontSize: 12,
 					letterSpacing: "0.05em",
 					lineHeight: 1.8,
 				}}
 			>
-				<div style={{ fontWeight: 600, color: "#d8d8e0" }}>{title}</div>
-				<div style={{ color: textColor }}>{subtitle}</div>
+				<div style={{ fontWeight: 600, color: "#d8d8e0" }}>SYSTEM</div>
+				<div style={{ color: textColor }}>Experimental Build</div>
 			</div>
 
 			{/* Top-right: Status */}
@@ -166,7 +150,7 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 					position: "absolute",
 					top: guideMargin + 12,
 					right: guideMargin + 14,
-					opacity: textOpacity,
+					opacity: hudTextOpacity,
 					color: textColor,
 					fontSize: 12,
 					letterSpacing: "0.05em",
@@ -174,32 +158,32 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 					textAlign: "right",
 				}}
 			>
-				<div>48kHz / 24-bit</div>
-				<div>Neural Engine</div>
+				<div>60fps / 1080p</div>
+				<div>SwiftUI + Metal</div>
 			</div>
 
-			{/* Bottom-left: Version */}
+			{/* Bottom-left: Build */}
 			<div
 				style={{
 					position: "absolute",
 					bottom: guideMargin + 12,
 					left: guideMargin + 14,
-					opacity: textOpacity,
+					opacity: hudTextOpacity,
 					color: textColor,
 					fontSize: 12,
 					letterSpacing: "0.05em",
 				}}
 			>
-				<div>v2.22.0-beta</div>
+				<div>build 2026.02.13</div>
 			</div>
 
-			{/* Bottom-right: Status indicator */}
+			{/* Bottom-right: Status */}
 			<div
 				style={{
 					position: "absolute",
 					bottom: guideMargin + 12,
 					right: guideMargin + 14,
-					opacity: textOpacity,
+					opacity: hudTextOpacity,
 					color: textColor,
 					fontSize: 12,
 					letterSpacing: "0.05em",
@@ -208,11 +192,11 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 					gap: 6,
 				}}
 			>
-				<span style={{ color: recDotVisible ? "#6a8" : "#555" }}>●</span>
-				<span>REC</span>
+				<span style={{ color: accentColor }}>●</span>
+				<span>LIVE</span>
 			</div>
 
-			{/* Center content: Icon + Title */}
+			{/* Center: Title */}
 			<AbsoluteFill
 				style={{
 					display: "flex",
@@ -221,29 +205,36 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 					justifyContent: "center",
 				}}
 			>
-				<div style={{ opacity: iconOpacity, transform: `scale(${iconScale})` }}>
-					<Img
-						src={staticFile(iconSrc)}
-						style={{
-							width: iconSize,
-							height: iconSize,
-							borderRadius: iconSize * 0.22,
-						}}
-					/>
-				</div>
-
-				<div style={{ marginTop: 28, opacity: talkieOpacity, textAlign: "center" }}>
+				<div
+					style={{
+						opacity: titleOpacity,
+						transform: `translateY(${titleY}px)`,
+						textAlign: "center",
+					}}
+				>
 					<div
 						style={{
 							fontFamily: "SF Pro Display, system-ui, -apple-system, sans-serif",
-							color: "#dddde8",
-							fontSize: 34,
-							fontWeight: 400,
-							letterSpacing: "0.25em",
-							paddingLeft: "0.25em",
+							color: "#e8e8f0",
+							fontSize: 48,
+							fontWeight: 500,
+							letterSpacing: "0.15em",
+							paddingLeft: "0.15em",
 						}}
 					>
 						{title}
+					</div>
+					<div
+						style={{
+							marginTop: 16,
+							color: "rgba(180, 190, 210, 0.7)",
+							fontSize: 16,
+							letterSpacing: "0.2em",
+							paddingLeft: "0.2em",
+							textTransform: "uppercase",
+						}}
+					>
+						{subtitle}
 					</div>
 				</div>
 			</AbsoluteFill>
@@ -253,7 +244,7 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 				style={{
 					position: "absolute",
 					inset: 0,
-					background: "radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0,0,0,0.45) 100%)",
+					background: "radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0,0,0,0.5) 100%)",
 					pointerEvents: "none",
 				}}
 			/>

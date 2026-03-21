@@ -1,9 +1,35 @@
+# Build output
 node_modules/
 out/
 dist/
+
+# OS
 .DS_Store
+
+# Logs
 *.log
+
+# Audio assets
+public/*.mp3
+public/*.aiff
+public/*.wav
+
+# Video assets
 public/*.mp4
+public/demos/
+
+# Transcripts
+public/transcripts/
+transcripts/
+
+# Storyboards
+public/storyboard.html
+
+# Debug utilities
+src/components/debug/
+
+# Lock files
+bun.lock
 
 # Client-specific projects (keep local)
 src/projects/hostai-montage/

@@ -26,6 +26,8 @@ import { TalkiePromoVideo } from "./components/TalkiePromoVideo";
 import { HUDExperimentVideo, calculateHUDFrames } from "./HUDExperimentVideo";
 import { FramedVideo } from "./components/FramedVideo";
 import { HudsonHighlightReel, calculateHighlightFrames } from "./projects/hudson-highlight/HudsonHighlightReel";
+import { LatticesUIHighlight, calculateUIHighlightFrames } from "./projects/lattices-highlight/LatticesUIHighlight";
+import { LatticesVoiceDemo, calculateVoiceDemoFrames } from "./projects/lattices-highlight/LatticesVoiceDemo";
 
 // Video settings
 const FPS = 30;
@@ -626,6 +628,46 @@ export const RemotionRoot: React.FC = () => {
           iconSrc: "arach-circle.png",
         }}
       />
+
+      {/* Lattices Highlight Reels */}
+      <Folder name="Lattices">
+        <Composition
+          id="LatticesUIHighlight"
+          component={LatticesUIHighlight}
+          durationInFrames={calculateUIHighlightFrames(FPS)}
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            videoSrc: "demos/cleanshot-demo-2026-03-20.mp4",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.3,
+            title: "LATTICES",
+            subtitle: "Window Manager",
+            tagline: "The Agentic Window Manager",
+            releaseDate: "2026",
+            iconSrc: "lattices-icon.png",
+          }}
+        />
+        <Composition
+          id="LatticesVoiceDemo"
+          component={LatticesVoiceDemo}
+          durationInFrames={calculateVoiceDemoFrames(FPS)}
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            videoSrc: "demos/cleanshot-demo-2026-03-20.mp4",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.3,
+            title: "LATTICES",
+            subtitle: "Voice Mode",
+            tagline: "Hands-Off Control",
+            releaseDate: "2026",
+            iconSrc: "lattices-icon.png",
+          }}
+        />
+      </Folder>
 
       {/* Quick Preview - DM style casual video */}
       <Composition

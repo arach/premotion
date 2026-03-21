@@ -11,8 +11,16 @@ import {
 } from "remotion";
 import { MidjourneyComputerFrame } from "./MidjourneyComputerFrame";
 import { TalkiePixelIntro } from "../intros/TalkiePixelIntro";
-import { CRTBezelOverlay } from "./CRTBezelOverlay";
 import { SCREEN_POSITION } from "../hooks/useScreenZoom";
+import { ReferenceGrid, ViewportTarget } from "./debug";
+
+// Voiceover options for A/B testing in Studio
+const VOICEOVER_OPTIONS = [
+	{ id: "vo1", file: "voiceover/talkie-intro-2.mp3", label: "Intro 2 (6.6s)" },
+	{ id: "vo2", file: "voiceover/talkie-intro-4.mp3", label: "Intro 4 (2s)" },
+	{ id: "vo3", file: "voiceover/talkie-script7-final.mp3", label: "Script 7 (6.2s)" },
+	{ id: "vo4", file: "voiceover/talkie-ephemeral-final.mp3", label: "Ephemeral (9.5s)" },
+];
 
 interface TalkiePromoVideoProps {
 	// Content
@@ -20,9 +28,12 @@ interface TalkiePromoVideoProps {
 	// Audio
 	musicTrack?: string;
 	musicVolume?: number;
-	voiceoverFile?: string;
-	voiceoverVolume?: number;
-	voiceoverStartAt?: number; // seconds
+	voiceoverStartAt?: number; // seconds - when voiceovers start (default: start of content phase)
+	// Voiceover volume toggles (0 = off, 1 = on) - toggle in Studio to A/B test
+	vo1Volume?: number;  // Intro 2 (6.6s)
+	vo2Volume?: number;  // Intro 4 (2s)
+	vo3Volume?: number;  // Script 7 (6.2s)
+	vo4Volume?: number;  // Ephemeral (9.5s)
 	// Timing (in seconds)
 	introDuration?: number;
 	zoomDuration?: number;
@@ -79,9 +90,12 @@ export const TalkiePromoVideo: React.FC<TalkiePromoVideoProps> = ({
 	contentFile = "talkie-home.png",
 	musicTrack = "tracks/futuristic-synthwave.mp3",
 	musicVolume = 0.15,
-	voiceoverFile,
-	voiceoverVolume = 1,
-	voiceoverStartAt = 2,
+	voiceoverStartAt,  // defaults to content phase start if not set
+	// Voiceover toggles - set one to 1 to enable, others to 0
+	vo1Volume = 1,  // Intro 2 enabled by default
+	vo2Volume = 0,
+	vo3Volume = 0,
+	vo4Volume = 0,
 	introDuration = 5,
 	zoomDuration = 1.5,
 	contentDuration = 10,
@@ -182,24 +196,33 @@ export const TalkiePromoVideo: React.FC<TalkiePromoVideoProps> = ({
 	const { scale: zoomScale, offsetX, offsetY, progress: zoomProgress } = getZoomTransform();
 
 	// === INTRO ENERGY BUILDUP ===
-	// Glitch intensity builds during intro, peaks at zoom start
+	// Glitch intensity builds during intro, peaks dramatically at zoom start
 	const introGlitchIntensity = interpolate(
 		frame,
-		[fps * 2, introEnd - fps * 0.5, introEnd, introEnd + fps * 0.3],
-		[0, 0.4, 0.8, 0],
+		[fps * 3, introEnd - fps * 1, introEnd - fps * 0.3, introEnd, introEnd + fps * 0.2],
+		[0, 0.3, 0.6, 1.0, 0],
 		{ extrapolateLeft: "clamp", extrapolateRight: "clamp" }
 	);
 
 	// === LAYER VISIBILITY ===
-	// Intro content (TalkiePixelIntro inside screen)
-	const introOpacity = interpolate(
-		frame,
-		[introEnd - fps * 0.3, introEnd + fps * 0.2],
-		[1, 0],
-		{ extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-	);
+	// Intro content (TalkiePixelIntro inside screen) - visible during intro, fades back in for outro
+	const introOpacity = (() => {
+		if (frame < introEnd - fps * 0.3) {
+			return 1;
+		} else if (frame < introEnd + fps * 0.2) {
+			// Fade out at end of intro
+			return interpolate(frame, [introEnd - fps * 0.3, introEnd + fps * 0.2], [1, 0]);
+		} else if (frame < contentEnd) {
+			return 0;
+		} else if (frame < contentEnd + fps * 0.5) {
+			// Fade back in for outro
+			return interpolate(frame, [contentEnd, contentEnd + fps * 0.5], [0, 1]);
+		} else {
+			return 1;
+		}
+	})();
 
-	// Main content (screenshot) - fades in during zoom, visible during content phase
+	// Main content (screenshot) - fades in during zoom, visible during content phase, fades out for outro
 	const contentOpacity = interpolate(
 		frame,
 		[introEnd, zoomEnd, contentEnd, contentEnd + fps * 0.3],
@@ -249,12 +272,29 @@ export const TalkiePromoVideo: React.FC<TalkiePromoVideoProps> = ({
 				}}
 			/>
 
-			{/* Voiceover */}
-			{voiceoverFile && (
-				<Sequence from={voiceoverStartAt * fps} name="Voiceover">
-					<Audio src={staticFile(voiceoverFile)} volume={voiceoverVolume} />
-				</Sequence>
-			)}
+			{/* Voiceover options - toggle volumes in Studio to A/B test */}
+			{/* Only renders enabled voiceovers to reduce timeline clutter */}
+			{(() => {
+				const voVolumes = [vo1Volume, vo2Volume, vo3Volume, vo4Volume];
+				const voStart = voiceoverStartAt !== undefined ? voiceoverStartAt * fps : zoomEnd;
+				return VOICEOVER_OPTIONS.map((track, i) =>
+					voVolumes[i] > 0 ? (
+						<Sequence key={track.id} from={voStart} name={`VO: ${track.label}`}>
+							<Audio src={staticFile(track.file)} volume={voVolumes[i]} />
+						</Sequence>
+					) : null
+				);
+			})()}
+
+			{/* SFX: Tap sound before zoom starts */}
+			<Sequence from={introEnd - Math.round(fps * 0.3)} name="SFX: Pre-zoom tap">
+				<Audio src={staticFile("sfx/tap.wav")} volume={0.6} />
+			</Sequence>
+
+			{/* SFX: Tap sound at content to outro transition */}
+			<Sequence from={contentEnd - Math.round(fps * 0.3)} name="SFX: Outro tap">
+				<Audio src={staticFile("sfx/tap.wav")} volume={0.6} />
+			</Sequence>
 
 			{/* Phase markers for timeline visibility */}
 			<Sequence from={0} durationInFrames={introEnd} name="1. Intro">
@@ -295,20 +335,31 @@ export const TalkiePromoVideo: React.FC<TalkiePromoVideoProps> = ({
 										transform: `scale(${introScale}) translateY(8%)`,
 									}}
 								>
-									<TalkiePixelIntro />
+									<TalkiePixelIntro animationDuration={introDuration} />
 								</div>
 							</AbsoluteFill>
 
 							{/* Content preview inside screen (fades in during zoom) */}
 							<AbsoluteFill style={{ opacity: contentOpacity }}>
-								<Img
-									src={staticFile(contentFile)}
+								<div
 									style={{
 										width: "100%",
 										height: "100%",
-										objectFit: "cover",
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "center",
+										overflow: "hidden",
 									}}
-								/>
+								>
+									<Img
+										src={staticFile(contentFile)}
+										style={{
+											width: `${screenshotScale * 100}%`,
+											height: `${screenshotScale * 100}%`,
+											objectFit: "cover",
+										}}
+									/>
+								</div>
 							</AbsoluteFill>
 
 							{/* Glitch overlay inside screen */}
@@ -335,112 +386,40 @@ export const TalkiePromoVideo: React.FC<TalkiePromoVideoProps> = ({
 					}}
 				>
 					<MidjourneyComputerFrame wordmarkText="TALKIE" powerOnEffect={false}>
-						{/* Screenshot inside the CRT screen */}
-						<Img
-							src={staticFile(contentFile)}
+						{/* Screenshot inside the CRT screen - scaled up to fill frame better */}
+						<div
 							style={{
 								width: "100%",
 								height: "100%",
-								objectFit: "cover",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								overflow: "hidden",
 							}}
-						/>
+						>
+							<Img
+								src={staticFile(contentFile)}
+								style={{
+									width: `${screenshotScale * 100}%`,
+									height: `${screenshotScale * 100}%`,
+									objectFit: "cover",
+								}}
+							/>
+						</div>
 					</MidjourneyComputerFrame>
 				</div>
 			</AbsoluteFill>
 
-			{/* Debug: Reference grid */}
-			{showViewportTarget && (
-				<AbsoluteFill style={{ pointerEvents: "none" }}>
-					{/* Vertical lines at 10% intervals */}
-					{[10, 20, 30, 40, 50, 60, 70, 80, 90].map(pct => (
-						<div key={`v${pct}`} style={{
-							position: "absolute",
-							left: `${pct}%`,
-							top: 0,
-							bottom: 0,
-							width: 1,
-							backgroundColor: pct === 50 ? "rgba(255,255,0,0.5)" : "rgba(255,255,255,0.15)",
-						}}>
-							<span style={{
-								position: "absolute",
-								top: 4,
-								left: 4,
-								fontSize: 10,
-								color: "rgba(255,255,255,0.5)",
-								fontFamily: "monospace",
-							}}>{pct}%</span>
-						</div>
-					))}
-					{/* Horizontal lines at 10% intervals */}
-					{[10, 20, 30, 40, 50, 60, 70, 80, 90].map(pct => (
-						<div key={`h${pct}`} style={{
-							position: "absolute",
-							top: `${pct}%`,
-							left: 0,
-							right: 0,
-							height: 1,
-							backgroundColor: pct === 50 ? "rgba(255,255,0,0.5)" : "rgba(255,255,255,0.15)",
-						}}>
-							<span style={{
-								position: "absolute",
-								left: 4,
-								top: 4,
-								fontSize: 10,
-								color: "rgba(255,255,255,0.5)",
-								fontFamily: "monospace",
-							}}>{pct}%</span>
-						</div>
-					))}
-				</AbsoluteFill>
-			)}
-
-			{/* Debug: Static target viewport marker - shows region that will become full canvas */}
+			{/* Debug overlays - toggle with showViewportTarget prop in Studio */}
+			{showViewportTarget && <ReferenceGrid />}
 			{showViewportTarget && frame < zoomEnd && (
-				<AbsoluteFill style={{ pointerEvents: "none" }}>
-					{(() => {
-						// The target should be positioned over the ACTUAL SCREEN area
-						// Screen position from SCREEN_POSITION constants
-						const screenLeftPct = SCREEN_POSITION.left;   // 17.8%
-						const screenTopPct = SCREEN_POSITION.top;     // 27%
-						const screenWidthPct = SCREEN_POSITION.width; // 36.4%
-						const screenHeightPct = SCREEN_POSITION.height; // 28.3%
-
-						// Target = the screen area (this is what will fill the canvas)
-						// Apply offset adjustments for fine-tuning
-						const targetLeftPct = screenLeftPct + targetOffsetX;
-						const targetTopPct = screenTopPct + targetOffsetY;
-
-						return (
-							<div
-								style={{
-									position: "absolute",
-									left: `${targetLeftPct}%`,
-									top: `${targetTopPct}%`,
-									width: `${screenWidthPct}%`,
-									height: `${screenHeightPct}%`,
-									border: "3px solid #00ff00",
-									borderRadius: 8,
-									boxShadow: "0 0 20px rgba(0, 255, 0, 0.3)",
-								}}
-							>
-								<div style={{
-									position: "absolute",
-									top: -24,
-									left: 0,
-									color: "#00ff00",
-									fontSize: 11,
-									fontFamily: "monospace",
-									backgroundColor: "rgba(0,0,0,0.8)",
-									padding: "3px 6px",
-									borderRadius: 4,
-									whiteSpace: "nowrap",
-								}}>
-									TARGET (screen area) → becomes full canvas
-								</div>
-							</div>
-						);
-					})()}
-				</AbsoluteFill>
+				<ViewportTarget
+					left={SCREEN_POSITION.left + targetOffsetX}
+					top={SCREEN_POSITION.top + targetOffsetY}
+					width={SCREEN_POSITION.width}
+					height={SCREEN_POSITION.height}
+					label="TARGET (screen area) → becomes full canvas"
+				/>
 			)}
 		</AbsoluteFill>
 	);

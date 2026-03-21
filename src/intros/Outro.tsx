@@ -134,7 +134,7 @@ export const Outro: React.FC<OutroProps> = ({ handle = "@arach" }) => {
         follow for more
       </div>
 
-      {/* Bottom status bar - matching intro style */}
+      {/* Bottom status bar */}
       <div
         style={{
           position: "absolute",
@@ -152,7 +152,6 @@ export const Outro: React.FC<OutroProps> = ({ handle = "@arach" }) => {
         }}
       >
         <span>SESSION COMPLETE</span>
-        <span style={{ fontFamily: "monospace" }}>████████████████ 100%</span>
         <span>{displayFinished}</span>
       </div>
     </div>

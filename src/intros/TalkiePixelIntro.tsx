@@ -9,12 +9,21 @@ import {
 import { useCallback, useEffect, useRef } from "react";
 import { ScanEffect } from "../components/ScanEffect";
 
+interface TalkiePixelIntroProps {
+	// Override animation duration (in seconds) - useful when embedded in longer compositions
+	animationDuration?: number;
+}
+
 // Pixelation intro — continuously animates resolution using canvas
 // Draws the icon at a small size then scales up with nearest-neighbor,
 // producing smooth pixelation that resolves to the clean image.
-export const TalkiePixelIntro: React.FC = () => {
+export const TalkiePixelIntro: React.FC<TalkiePixelIntroProps> = ({
+	animationDuration,
+}) => {
 	const frame = useCurrentFrame();
-	const { fps, durationInFrames } = useVideoConfig();
+	const { fps, durationInFrames: configDuration } = useVideoConfig();
+	// Use override if provided, otherwise fall back to video config
+	const durationInFrames = animationDuration ? animationDuration * fps : configDuration;
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const imgRef = useRef<HTMLImageElement | null>(null);
 	const imgLoadedRef = useRef(false);
