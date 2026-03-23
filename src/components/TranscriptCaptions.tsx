@@ -17,6 +17,7 @@ interface TranscriptSegment {
 interface TranscriptCaptionsProps {
 	transcriptFile: string; // path relative to public folder
 	enabled?: boolean;
+	timeOffset?: number; // seconds to add to local time to match transcript timestamps (e.g. videoStartFrom)
 	// Styling
 	fontSize?: number;
 	fontFamily?: string;
@@ -33,6 +34,7 @@ interface TranscriptCaptionsProps {
 export const TranscriptCaptions: React.FC<TranscriptCaptionsProps> = ({
 	transcriptFile,
 	enabled = true,
+	timeOffset = 0,
 	fontSize = 32,
 	fontFamily = "SF Pro Display, system-ui, -apple-system, sans-serif",
 	textColor = "#ffffff",
@@ -79,8 +81,8 @@ export const TranscriptCaptions: React.FC<TranscriptCaptionsProps> = ({
 		return null;
 	}
 
-	// Current time in seconds
-	const currentTime = frame / fps;
+	// Current time in seconds, offset to match source video timestamps
+	const currentTime = frame / fps + timeOffset;
 
 	// Find the current segment
 	const currentSegment = segments.find(

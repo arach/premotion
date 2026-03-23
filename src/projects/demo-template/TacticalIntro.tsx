@@ -12,6 +12,7 @@ interface TacticalIntroProps {
 	title?: string;
 	subtitle?: string;
 	iconSrc?: string;
+	guideMargin?: number;
 }
 
 // Reusable tactical intro - snappy guide frame with icon + wordmark
@@ -19,12 +20,13 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 	title = "TALKIE",
 	subtitle = "Voice Engine v2.22",
 	iconSrc = "talkie-icon-1024.png",
+	guideMargin: guideMarginProp,
 }) => {
 	const frame = useCurrentFrame();
 	const { fps, height, durationInFrames } = useVideoConfig();
 
 	const iconSize = 260;
-	const guideMargin = 70;
+	const guideMargin = guideMarginProp ?? 70;
 
 	// === TIMING ===
 	const guidesAppear = 0;

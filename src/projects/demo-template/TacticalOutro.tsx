@@ -13,6 +13,7 @@ interface TacticalOutroProps {
 	tagline?: string;
 	releaseDate?: string;
 	iconSrc?: string;
+	guideMargin?: number;
 }
 
 // Reusable tactical outro - Coming Soon with spinner → release date
@@ -21,12 +22,13 @@ export const TacticalOutro: React.FC<TacticalOutroProps> = ({
 	tagline = "Coming Soon",
 	releaseDate = "Q1 2026",
 	iconSrc = "talkie-icon-1024.png",
+	guideMargin: guideMarginProp,
 }) => {
 	const frame = useCurrentFrame();
 	const { fps, height, durationInFrames } = useVideoConfig();
 
 	const iconSize = 220;
-	const guideMargin = 70;
+	const guideMargin = guideMarginProp ?? 70;
 
 	// === TIMING ===
 	const fadeInEnd = 0.5 * fps;

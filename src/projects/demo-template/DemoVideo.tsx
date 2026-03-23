@@ -12,6 +12,8 @@ import { TacticalOutro } from "./TacticalOutro";
 import { RetroComputerFrame } from "../../components/RetroComputerFrame";
 import { MidjourneyComputerFrame } from "../../components/MidjourneyComputerFrame";
 import { TalkieThumbnail } from "../../TalkieThumbnail";
+import { TranscriptCaptions } from "../../components/TranscriptCaptions";
+import { TacticalCaptionBar } from "../../components/TacticalCaptionBar";
 
 export interface DemoVideoProps {
 	// Content
@@ -28,12 +30,18 @@ export interface DemoVideoProps {
 	// Audio
 	musicTrack?: string;
 	musicVolume?: number;
+	videoVolume?: number;
+	musicFadeOutStart?: number; // seconds into content when music fades out (enables original audio crossfade)
 	// Style
 	frameStyle?: "none" | "retro" | "midjourney";
 	retroMonitorColor?: string;
 	retroBaseColor?: string;
 	// Thumbnail as first frame (for platform previews)
 	showThumbnailFrame?: boolean;
+	// Captions
+	captionStyle?: "none" | "overlay" | "bar";
+	transcriptFile?: string;
+	captionBarHeight?: number;
 }
 
 // Reusable demo video template: Intro → Content → Outro
@@ -49,12 +57,20 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 	videoStartFrom = 0,
 	musicTrack = "tracks/futuristic-synthwave.mp3",
 	musicVolume = 0.4,
+	videoVolume = 0,
+	musicFadeOutStart,
 	frameStyle = "none",
 	retroMonitorColor = "#e8e0d4",
 	retroBaseColor = "#8b3a3a",
 	showThumbnailFrame = true,
+	captionStyle = "none",
+	transcriptFile,
+	captionBarHeight = 120,
 }) => {
-	const { fps, durationInFrames } = useVideoConfig();
+	const { fps, durationInFrames, height } = useVideoConfig();
+	const hasCaptions = captionStyle !== "none" && !!transcriptFile;
+	const hasBarCaptions = captionStyle === "bar" && !!transcriptFile;
+	const videoHeight = hasBarCaptions ? height - captionBarHeight : height;
 
 	const introFrames = Math.floor(introDuration * fps);
 	const outroFrames = Math.floor(outroDuration * fps);
@@ -68,14 +84,21 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 	return (
 		<AbsoluteFill style={{ backgroundColor: "#0a0a0e" }}>
 			{/* Layer 1: Background Music */}
-			<Sequence name="Music" from={0} durationInFrames={durationInFrames}>
+			<Sequence name="Music" from={0} durationInFrames={musicFadeOutStart != null ? contentStart + Math.floor((musicFadeOutStart + 1.5) * fps) : durationInFrames}>
 				<Audio
 					src={staticFile(musicTrack)}
 					volume={(f) => {
 						const fadeInEnd = 1.0 * fps;
-						const fadeOutStart = durationInFrames - 1.5 * fps;
 						if (f < fadeInEnd) return interpolate(f, [0, fadeInEnd], [0, musicVolume]);
-						if (f > fadeOutStart) return interpolate(f, [fadeOutStart, durationInFrames], [musicVolume, 0]);
+						// If musicFadeOutStart is set, fade out early to let original audio through
+						if (musicFadeOutStart != null) {
+							const fadeOutFrame = contentStart + Math.floor(musicFadeOutStart * fps);
+							const fadeEndFrame = fadeOutFrame + Math.floor(1.5 * fps);
+							if (f > fadeOutFrame) return interpolate(f, [fadeOutFrame, fadeEndFrame], [musicVolume, 0], { extrapolateRight: "clamp" });
+						} else {
+							const fadeOutStart = durationInFrames - 1.5 * fps;
+							if (f > fadeOutStart) return interpolate(f, [fadeOutStart, durationInFrames], [musicVolume, 0]);
+						}
 						return musicVolume;
 					}}
 				/>
@@ -117,37 +140,57 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 
 			{/* Layer 4: Main Content */}
 			<Sequence name="Content" from={contentStart} durationInFrames={contentFrames}>
-				{frameStyle === "retro" ? (
-					<RetroComputerFrame
-						monitorColor={retroMonitorColor}
-						baseColor={retroBaseColor}
-					>
-						<OffthreadVideo
-							src={staticFile(videoSrc)}
-							startFrom={videoStartFromFrames}
-							style={{ width: "100%", height: "100%", objectFit: "cover" }}
-							muted
+				<AbsoluteFill style={{ flexDirection: "column", display: "flex" }}>
+					<div style={{ height: videoHeight, position: "relative" }}>
+						{frameStyle === "retro" ? (
+							<RetroComputerFrame
+								monitorColor={retroMonitorColor}
+								baseColor={retroBaseColor}
+							>
+								<OffthreadVideo
+									src={staticFile(videoSrc)}
+									startFrom={videoStartFromFrames}
+									style={{ width: "100%", height: "100%", objectFit: "cover" }}
+									volume={videoVolume}
+								/>
+							</RetroComputerFrame>
+						) : frameStyle === "midjourney" ? (
+							<MidjourneyComputerFrame>
+								<OffthreadVideo
+									src={staticFile(videoSrc)}
+									startFrom={videoStartFromFrames}
+									style={{ width: "100%", height: "100%", objectFit: "cover" }}
+									volume={videoVolume}
+								/>
+							</MidjourneyComputerFrame>
+						) : (
+							<OffthreadVideo
+								src={staticFile(videoSrc)}
+								startFrom={videoStartFromFrames}
+								style={{ width: "100%", height: "100%", objectFit: "cover" }}
+								volume={musicFadeOutStart != null ? (f) => {
+									const fadeIn = Math.floor(musicFadeOutStart * fps);
+									const fadeEnd = fadeIn + Math.floor(1.5 * fps);
+									if (f < fadeIn) return 0;
+									if (f < fadeEnd) return interpolate(f, [fadeIn, fadeEnd], [0, videoVolume || 0.5]);
+									return videoVolume || 0.5;
+								} : videoVolume}
+							/>
+						)}
+						{/* Overlay captions (positioned over the video) */}
+						{captionStyle === "overlay" && transcriptFile && (
+							<TranscriptCaptions transcriptFile={transcriptFile} timeOffset={videoStartFrom} />
+						)}
+					</div>
+					{/* Bar captions (below the video) */}
+					{hasBarCaptions && (
+						<TacticalCaptionBar
+							transcriptFile={transcriptFile}
+							height={captionBarHeight}
+							timeOffset={videoStartFrom}
 						/>
-					</RetroComputerFrame>
-				) : frameStyle === "midjourney" ? (
-					<MidjourneyComputerFrame>
-						<OffthreadVideo
-							src={staticFile(videoSrc)}
-							startFrom={videoStartFromFrames}
-							style={{ width: "100%", height: "100%", objectFit: "cover" }}
-							muted
-						/>
-					</MidjourneyComputerFrame>
-				) : (
-					<AbsoluteFill>
-						<OffthreadVideo
-							src={staticFile(videoSrc)}
-							startFrom={videoStartFromFrames}
-							style={{ width: "100%", height: "100%" }}
-							muted
-						/>
-					</AbsoluteFill>
-				)}
+					)}
+				</AbsoluteFill>
 			</Sequence>
 
 			{/* Layer 5: Outro */}

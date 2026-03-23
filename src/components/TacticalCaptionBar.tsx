@@ -22,12 +22,14 @@ interface TacticalCaptionBarProps {
 	transcriptFile: string;
 	height?: number;
 	enabled?: boolean;
+	timeOffset?: number;
 }
 
 export const TacticalCaptionBar: React.FC<TacticalCaptionBarProps> = ({
 	transcriptFile,
 	height = 120,
 	enabled = true,
+	timeOffset = 0,
 }) => {
 	const frame = useCurrentFrame();
 	const { fps } = useVideoConfig();
@@ -50,7 +52,7 @@ export const TacticalCaptionBar: React.FC<TacticalCaptionBarProps> = ({
 		fetchTranscript();
 	}, [fetchTranscript]);
 
-	const currentTime = frame / fps;
+	const currentTime = frame / fps + timeOffset;
 
 	// Find current segment
 	const currentSegment = segments.find(

@@ -28,6 +28,9 @@ import { FramedVideo } from "./components/FramedVideo";
 import { HudsonHighlightReel, calculateHighlightFrames } from "./projects/hudson-highlight/HudsonHighlightReel";
 import { LatticesUIHighlight, calculateUIHighlightFrames } from "./projects/lattices-highlight/LatticesUIHighlight";
 import { LatticesVoiceDemo, calculateVoiceDemoFrames } from "./projects/lattices-highlight/LatticesVoiceDemo";
+import { LatticesMenuBarDemo, calculateMenuBarDemoFrames } from "./projects/lattices-highlight/LatticesMenuBarDemo";
+import { LatticesVoiceCommandsDemo, calculateVoiceCommandsDemoFrames } from "./projects/lattices-highlight/LatticesVoiceCommandsDemo";
+import { LatticesVoiceSessionB, calculateVoiceSessionBFrames } from "./projects/lattices-highlight/LatticesVoiceSessionB";
 
 // Video settings
 const FPS = 30;
@@ -667,7 +670,118 @@ export const RemotionRoot: React.FC = () => {
             iconSrc: "lattices-icon.png",
           }}
         />
+        <Composition
+          id="LatticesMenuBarDemo"
+          component={LatticesMenuBarDemo}
+          durationInFrames={calculateMenuBarDemoFrames(FPS)}
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            videoSrc: "demos/lattices-dev-session-2026-03-22.mp4",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.3,
+            title: "LATTICES",
+            subtitle: "Dev Session",
+            tagline: "Building the Agentic Window Manager",
+            releaseDate: "2026",
+            iconSrc: "lattices-icon.png",
+          }}
+        />
+        {/* Lattices Voice Commands — curated clips with tactical captions */}
+        <Composition
+          id="LatticesVoiceCommands"
+          component={LatticesVoiceCommandsDemo}
+          durationInFrames={calculateVoiceCommandsDemoFrames(FPS)}
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            videoSrc: "demos/lattices-voice-2026-03-22.mp4",
+            transcriptFile: "transcripts/lattices-voice-2026-03-22-captions.json",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.15,
+            videoVolume: 0.6,
+            title: "LATTICES",
+            subtitle: "Voice Commands",
+            tagline: "Hands-Off Window Management",
+            releaseDate: "2026",
+            iconSrc: "lattices-icon.png",
+          }}
+        />
+        {/* Lattices Voice Session B — agent coordination update */}
+        <Composition
+          id="LatticesVoiceSessionB"
+          component={LatticesVoiceSessionB}
+          durationInFrames={calculateVoiceSessionBFrames(FPS)}
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            videoSrc: "demos/lattices-voice-2026-03-22-b.mp4",
+            transcriptFile: "transcripts/lattices-voice-2026-03-22-b-captions.json",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.15,
+            videoVolume: 0.6,
+            title: "LATTICES",
+            subtitle: "Agent Coordination",
+            tagline: "Multi-Agent Voice Pipeline",
+            releaseDate: "2026",
+            iconSrc: "lattices-icon.png",
+          }}
+        />
       </Folder>
+
+      {/* Caption Test — DemoVideo with overlay captions */}
+      <Composition
+        id="CaptionTest"
+        component={DemoVideo}
+        durationInFrames={calculateDemoFrames(30, FPS, 2, 3)}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          videoSrc: "demos/CleanShot 2026-02-15 at 11.17.35.mp4",
+          title: "CAPTION TEST",
+          subtitle: "Overlay Mode",
+          tagline: "Testing Captions",
+          introDuration: 2,
+          outroDuration: 3,
+          videoStartFrom: 45,
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.25,
+          musicFadeOutStart: 1,
+          videoVolume: 0.5,
+          captionStyle: "overlay" as const,
+          transcriptFile: "transcripts/hud-clean-long.json",
+        }}
+      />
+
+      {/* Caption Test — bar style */}
+      <Composition
+        id="CaptionTestBar"
+        component={DemoVideo}
+        durationInFrames={calculateDemoFrames(30, FPS, 2, 3)}
+        fps={FPS}
+        width={1920}
+        height={1200}
+        defaultProps={{
+          videoSrc: "demos/CleanShot 2026-02-15 at 11.17.35.mp4",
+          title: "CAPTION TEST",
+          subtitle: "Bar Mode",
+          tagline: "Testing Captions",
+          introDuration: 2,
+          outroDuration: 3,
+          videoStartFrom: 45,
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.25,
+          musicFadeOutStart: 1,
+          videoVolume: 0.5,
+          captionStyle: "bar" as const,
+          transcriptFile: "transcripts/hud-clean-long.json",
+          captionBarHeight: 120,
+        }}
+      />
 
       {/* Quick Preview - DM style casual video */}
       <Composition
