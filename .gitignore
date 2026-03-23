@@ -6,6 +6,9 @@ dist/
 # OS
 .DS_Store
 
+# Claude Code local settings
+.claude/
+
 # Logs
 *.log
 
