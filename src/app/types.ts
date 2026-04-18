@@ -1,0 +1,136 @@
+export interface VisionTag {
+  frameFile: string;
+  time: number;
+  tags: string[];
+  description: string;
+  contentType: string;
+}
+
+export interface Scene {
+  index?: number;
+  start?: number;
+  end?: number;
+  time?: number;
+  description: string;
+  tags?: string[];
+  contentType?: string;
+  activity?: string;
+}
+
+export interface EdlStats {
+  totalSceneBreaks: number;
+  activeTime: number;
+  idleTime: number;
+  transitionTime: number;
+  framesAnalyzed: number;
+  estimatedTokens: number;
+}
+
+export interface Clip {
+  start: number;
+  end: number;
+  title: string;
+  reason: string;
+}
+
+export interface Highlight {
+  time: number;
+  reason: string;
+  frameFile?: string;
+}
+
+export interface DeadTime {
+  start: number;
+  end: number;
+  duration?: number;
+  reason: string;
+}
+
+export interface Edl {
+  source: string;
+  duration: number;
+  resolution: string;
+  fps: number;
+  analyzedAt: string;
+  scenes: Scene[];
+  highlights: Highlight[];
+  suggestedClips: Clip[];
+  deadTime: DeadTime[];
+  stats: EdlStats;
+  storyboardDir: string;
+}
+
+export interface TranscriptSegment {
+  id: number;
+  start: number;
+  end: number;
+  text: string;
+}
+
+export interface Transcript {
+  text: string;
+  segments: TranscriptSegment[];
+  language: string;
+}
+
+export interface Video {
+  id: string;
+  filename: string;
+  sourcePath: string | null;
+  demosPath: string | null;
+  capturedAt: string | null;
+  resolution: string;
+  fps: number;
+  duration: number;
+  codec: string;
+  sizeMB: number;
+  app: string;
+  tags: string[];
+  description: string;
+  scenes: Scene[];
+  storyboardDir: string | null;
+  analysisStatus: string;
+  composition: string | null;
+  reelCandidate: boolean;
+  note?: string;
+  edl?: Edl;
+  visionTags?: VisionTag[];
+  frameCount?: number;
+  frames?: string[];
+  transcript?: Transcript;
+  srt?: string;
+}
+
+export interface OrphanStoryboard {
+  storyboardDir: string;
+  frameCount: number;
+  frames: string[];
+  edl: Edl | null;
+  visionTags: VisionTag[] | null;
+}
+
+export type SnippetCategory = "capture" | "read" | "listen" | "explore";
+
+export interface CuratedSnippet {
+  id: string;
+  source: string;
+  timestamp: number;
+  startFrom: number;
+  category: SnippetCategory;
+  rating: number;
+  description: string;
+  tags: string[];
+  frameFile: string;
+}
+
+export interface CuratedSnippetsData {
+  generatedAt: string;
+  snippets: CuratedSnippet[];
+}
+
+export interface CatalogData {
+  meta: { generatedAt: string; videoCount: number };
+  videos: Video[];
+  orphanStoryboards?: OrphanStoryboard[];
+  curatedSnippets?: CuratedSnippetsData;
+}
