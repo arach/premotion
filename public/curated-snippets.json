@@ -1,0 +1,60 @@
+{
+  "generatedAt": "2026-04-18T10:05:00Z",
+  "snippets": [
+    {
+      "id": "cs-001",
+      "source": "talkie-capture-demo-01",
+      "timestamp": 9.2,
+      "startFrom": 8.5,
+      "category": "capture",
+      "rating": 5,
+      "description": "First tap on record — the empty state flips to active waveform in under 400ms.",
+      "tags": ["record", "feedback", "hero"],
+      "frameFile": "frame-009.jpg"
+    },
+    {
+      "id": "cs-002",
+      "source": "talkie-read-long-01",
+      "timestamp": 42.0,
+      "startFrom": 40.0,
+      "category": "read",
+      "rating": 4,
+      "description": "Scrubbing through long-form transcript — highlight tracks the reader's position.",
+      "tags": ["scrub", "transcript"],
+      "frameFile": "frame-024.jpg"
+    },
+    {
+      "id": "cs-003",
+      "source": "lattices-listen-01",
+      "timestamp": 12.5,
+      "startFrom": 11.0,
+      "category": "listen",
+      "rating": 5,
+      "description": "Generated voiceover syncs with node selection — rare moment of audio-visual clarity.",
+      "tags": ["audio", "sync", "hero"],
+      "frameFile": "frame-015.jpg"
+    },
+    {
+      "id": "cs-004",
+      "source": "lattices-explore-03",
+      "timestamp": 18.3,
+      "startFrom": 16.0,
+      "category": "explore",
+      "rating": 4,
+      "description": "Smooth zoom from overview to leaf node, pointer stays locked to the target.",
+      "tags": ["zoom", "canvas"],
+      "frameFile": "frame-011.jpg"
+    },
+    {
+      "id": "cs-005",
+      "source": "talkie-capture-demo-01",
+      "timestamp": 30.8,
+      "startFrom": 28.0,
+      "category": "capture",
+      "rating": 5,
+      "description": "Transcript appears and action row animates in — the full payoff moment.",
+      "tags": ["payoff", "actions"],
+      "frameFile": "frame-018.jpg"
+    }
+  ]
+}

@@ -134,3 +134,23 @@ export interface CatalogData {
   orphanStoryboards?: OrphanStoryboard[];
   curatedSnippets?: CuratedSnippetsData;
 }
+
+export interface Filter {
+  id: string;
+  label: string;
+}
+
+export function formatTime(s: number | null | undefined): string {
+  if (s == null) return "--";
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${String(sec).padStart(2, "0")}`;
+}
+
+export function formatDuration(s: number | null | undefined): string {
+  if (s == null) return "--";
+  if (s < 60) return `${Math.round(s)}s`;
+  const m = Math.floor(s / 60);
+  const sec = Math.round(s % 60);
+  return `${m}m ${sec}s`;
+}
