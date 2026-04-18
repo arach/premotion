@@ -2,10 +2,11 @@
 
 import { useCatalog } from '../Provider';
 import { CatalogGrid } from './CatalogGrid';
+import { FrameViewer } from './FrameViewer';
 import { VideoDetail } from './VideoDetail';
 
 export function CatalogContent() {
-  const { loading, selectedVideo } = useCatalog();
+  const { loading, selectedVideo, frameIndex } = useCatalog();
 
   if (loading) {
     return (
@@ -15,9 +16,10 @@ export function CatalogContent() {
     );
   }
 
-  if (selectedVideo) {
-    return <VideoDetail video={selectedVideo} />;
-  }
-
-  return <CatalogGrid />;
+  return (
+    <>
+      {selectedVideo && frameIndex != null && <FrameViewer />}
+      {selectedVideo ? <VideoDetail video={selectedVideo} /> : <CatalogGrid />}
+    </>
+  );
 }

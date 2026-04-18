@@ -27,8 +27,78 @@
       "analysisStatus": "complete",
       "composition": null,
       "reelCandidate": true,
-      "frameCount": 24,
-      "frames": []
+      "frameCount": 12,
+      "frames": [
+        "frame-001.jpg",
+        "frame-002.jpg",
+        "frame-003.jpg",
+        "frame-004.jpg",
+        "frame-005.jpg",
+        "frame-006.jpg",
+        "frame-007.jpg",
+        "frame-008.jpg",
+        "frame-009.jpg",
+        "frame-010.jpg",
+        "frame-011.jpg",
+        "frame-012.jpg"
+      ],
+      "visionTags": [
+        { "frameFile": "frame-001.jpg", "time": 0, "tags": ["ui", "empty-state"], "description": "Talkie launches with an empty capture view and prominent record button.", "contentType": "app-ui" },
+        { "frameFile": "frame-002.jpg", "time": 4, "tags": ["ui", "hover"], "description": "Cursor hovers over the record button; tooltip fades in.", "contentType": "app-ui" },
+        { "frameFile": "frame-003.jpg", "time": 8, "tags": ["ui", "record", "transition"], "description": "Record button pressed — UI transitions into recording mode.", "contentType": "app-ui" },
+        { "frameFile": "frame-004.jpg", "time": 12, "tags": ["waveform", "record"], "description": "Live waveform begins to animate as audio is captured.", "contentType": "waveform" },
+        { "frameFile": "frame-005.jpg", "time": 16, "tags": ["waveform", "record"], "description": "Waveform shows steady speech pattern; elapsed counter ticks.", "contentType": "waveform" },
+        { "frameFile": "frame-006.jpg", "time": 20, "tags": ["waveform", "record"], "description": "Mid-recording — waveform peaks indicate emphasis in speech.", "contentType": "waveform" },
+        { "frameFile": "frame-007.jpg", "time": 24, "tags": ["waveform", "record"], "description": "Continued recording, user gestures toward the stop control.", "contentType": "waveform" },
+        { "frameFile": "frame-008.jpg", "time": 28, "tags": ["ui", "stop", "transition"], "description": "Stop pressed; spinner appears while transcription begins.", "contentType": "app-ui" },
+        { "frameFile": "frame-009.jpg", "time": 32, "tags": ["transcript", "streaming"], "description": "First transcript tokens stream into the results panel.", "contentType": "transcript" },
+        { "frameFile": "frame-010.jpg", "time": 36, "tags": ["transcript"], "description": "Full transcript rendered with timestamp markers.", "contentType": "transcript" },
+        { "frameFile": "frame-011.jpg", "time": 40, "tags": ["ui", "actions"], "description": "Action buttons (copy, share, export) slide into view.", "contentType": "app-ui" },
+        { "frameFile": "frame-012.jpg", "time": 42, "tags": ["ui", "final"], "description": "Final state — capture complete with all affordances visible.", "contentType": "app-ui" }
+      ],
+      "edl": {
+        "source": "talkie-capture-demo-01.mp4",
+        "duration": 42.5,
+        "resolution": "1920x1080",
+        "fps": 60,
+        "analyzedAt": "2026-04-10T15:00:00Z",
+        "scenes": [
+          { "index": 0, "start": 0, "end": 8.5, "description": "Empty state + record button highlight", "activity": "idle" },
+          { "index": 1, "start": 8.5, "end": 28, "description": "Recording with live waveform", "activity": "active" },
+          { "index": 2, "start": 28, "end": 42.5, "description": "Transcript rendered, actions appear", "activity": "active" }
+        ],
+        "highlights": [
+          { "time": 8, "reason": "Record button pressed — key interaction moment", "frameFile": "frame-003.jpg" },
+          { "time": 28, "reason": "Transition from recording to transcription", "frameFile": "frame-008.jpg" },
+          { "time": 40, "reason": "Final actions revealed — completion beat", "frameFile": "frame-011.jpg" }
+        ],
+        "suggestedClips": [
+          { "start": 6, "end": 12, "title": "Start recording", "reason": "Cleanest record-button interaction" },
+          { "start": 26, "end": 34, "title": "Stop to transcript", "reason": "Core payoff shot" }
+        ],
+        "deadTime": [],
+        "stats": {
+          "totalSceneBreaks": 2,
+          "activeTime": 34,
+          "idleTime": 8.5,
+          "transitionTime": 0,
+          "framesAnalyzed": 12,
+          "estimatedTokens": 3200
+        },
+        "storyboardDir": "talkie-capture-demo-01"
+      },
+      "transcript": {
+        "text": "Okay, let me try a quick capture. Tapping record now. Just going to talk for a few seconds to see what the waveform does. Alright, stopping. There it is — full transcript with timestamps.",
+        "segments": [
+          { "id": 1, "start": 2.0, "end": 6.5, "text": "Okay, let me try a quick capture." },
+          { "id": 2, "start": 7.0, "end": 10.5, "text": "Tapping record now." },
+          { "id": 3, "start": 12.0, "end": 20.0, "text": "Just going to talk for a few seconds to see what the waveform does." },
+          { "id": 4, "start": 26.5, "end": 29.0, "text": "Alright, stopping." },
+          { "id": 5, "start": 32.0, "end": 38.0, "text": "There it is — full transcript with timestamps." },
+          { "id": 6, "start": 39.5, "end": 42.0, "text": "And the action buttons come in right after." }
+        ],
+        "language": "en"
+      }
     },
     {
       "id": "talkie-read-long-01",

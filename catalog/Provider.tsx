@@ -44,6 +44,9 @@ export interface CatalogContextValue {
   videoId: string | null;
   openVideo: (id: string) => void;
   closeVideo: () => void;
+  frameIndex: number | null;
+  openFrame: (idx: number) => void;
+  closeFrame: () => void;
   snippetCategory: string;
   setSnippetCategory: (c: string) => void;
 
@@ -88,6 +91,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const filter = searchParams.get('filter') ?? 'all';
   const search = searchParams.get('q') ?? '';
   const videoId = searchParams.get('video');
+  const frameParam = searchParams.get('frame');
+  const frameIndex = frameParam != null && frameParam !== '' && !Number.isNaN(Number(frameParam))
+    ? Number(frameParam)
+    : null;
   const snippetCategory = searchParams.get('category') ?? 'all';
 
   const writeParams = useCallback(
@@ -129,7 +136,21 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   );
 
   const closeVideo = useCallback(() => {
-    writeParams(p => p.delete('video'));
+    writeParams(p => {
+      p.delete('video');
+      p.delete('frame');
+    });
+  }, [writeParams]);
+
+  const openFrame = useCallback(
+    (idx: number) => {
+      writeParams(p => p.set('frame', String(idx)));
+    },
+    [writeParams],
+  );
+
+  const closeFrame = useCallback(() => {
+    writeParams(p => p.delete('frame'));
   }, [writeParams]);
 
   const setSnippetCategory = useCallback(
@@ -279,6 +300,9 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       videoId,
       openVideo,
       closeVideo,
+      frameIndex,
+      openFrame,
+      closeFrame,
       snippetCategory,
       setSnippetCategory,
       selectedVideo,
@@ -302,6 +326,9 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       videoId,
       openVideo,
       closeVideo,
+      frameIndex,
+      openFrame,
+      closeFrame,
       snippetCategory,
       setSnippetCategory,
       selectedVideo,

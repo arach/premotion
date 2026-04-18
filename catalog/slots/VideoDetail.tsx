@@ -1,22 +1,38 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Film } from 'lucide-react';
 import { useCatalog } from '../Provider';
 import { formatDuration, formatTime } from '@/lib/types';
 import type { Video } from '@/lib/types';
 
 export function VideoDetail({ video }: { video: Video }) {
-  const { closeVideo } = useCatalog();
+  const { closeVideo, openFrame } = useCatalog();
+  const hasFrames =
+    !!video.frameCount &&
+    video.frameCount > 0 &&
+    !!video.frames &&
+    video.frames.length > 0;
 
   return (
     <div className="px-6 py-5 max-w-4xl">
-      <button
-        onClick={closeVideo}
-        className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-white/40 hover:text-white/70 transition-colors mb-5"
-      >
-        <ArrowLeft size={12} />
-        Back to catalog
-      </button>
+      <div className="flex items-center gap-3 mb-5">
+        <button
+          onClick={closeVideo}
+          className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-white/40 hover:text-white/70 transition-colors"
+        >
+          <ArrowLeft size={12} />
+          Back to catalog
+        </button>
+        {hasFrames && (
+          <button
+            onClick={() => openFrame(0)}
+            className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-cyan-300/70 hover:text-cyan-200 bg-cyan-400/[0.06] hover:bg-cyan-400/10 border border-cyan-400/15 px-2 py-1 rounded-sm transition-colors"
+          >
+            <Film size={12} />
+            View frames
+          </button>
+        )}
+      </div>
 
       <div className="flex items-baseline justify-between gap-4 mb-1">
         <h1 className="text-[20px] font-medium text-white/90 truncate">
