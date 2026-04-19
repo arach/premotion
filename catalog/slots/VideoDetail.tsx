@@ -1,17 +1,18 @@
 'use client';
 
-import { ArrowLeft, Film } from 'lucide-react';
+import { ArrowLeft, Film, MessageSquarePlus } from 'lucide-react';
 import { useCatalog } from '../Provider';
 import { formatDuration, formatTime } from '@/lib/types';
 import type { Video } from '@/lib/types';
 
 export function VideoDetail({ video }: { video: Video }) {
-  const { closeVideo, openFrame } = useCatalog();
+  const { closeVideo, openFrame, openReview } = useCatalog();
   const hasFrames =
     !!video.frameCount &&
     video.frameCount > 0 &&
     !!video.frames &&
     video.frames.length > 0;
+  const reviewable = !!video.videoUrl || video.stage === 'wip';
 
   return (
     <div className="px-6 py-5 max-w-4xl">
@@ -30,6 +31,15 @@ export function VideoDetail({ video }: { video: Video }) {
           >
             <Film size={12} />
             View frames
+          </button>
+        )}
+        {reviewable && (
+          <button
+            onClick={openReview}
+            className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-emerald-300/80 hover:text-emerald-200 bg-emerald-400/[0.06] hover:bg-emerald-400/10 border border-emerald-400/20 px-2 py-1 rounded-sm transition-colors"
+          >
+            <MessageSquarePlus size={12} />
+            Review
           </button>
         )}
       </div>

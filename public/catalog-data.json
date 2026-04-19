@@ -27,6 +27,7 @@
       "analysisStatus": "complete",
       "composition": null,
       "reelCandidate": true,
+      "stage": "wip",
       "frameCount": 12,
       "frames": [
         "frame-001.jpg",

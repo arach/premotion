@@ -73,6 +73,8 @@ export interface Transcript {
   language: string;
 }
 
+export type VideoStage = "source" | "wip" | "final";
+
 export interface Video {
   id: string;
   filename: string;
@@ -99,6 +101,27 @@ export interface Video {
   frames?: string[];
   transcript?: Transcript;
   srt?: string;
+  stage?: VideoStage;
+  videoUrl?: string;
+}
+
+export type ReviewNoteKind = "feedback" | "zoom";
+
+export interface ReviewRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface ReviewNote {
+  id: string;
+  time: number;
+  endTime?: number;
+  kind: ReviewNoteKind;
+  rect?: ReviewRect;
+  comment: string;
+  createdAt: string;
 }
 
 export interface OrphanStoryboard {

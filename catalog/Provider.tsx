@@ -47,6 +47,9 @@ export interface CatalogContextValue {
   frameIndex: number | null;
   openFrame: (idx: number) => void;
   closeFrame: () => void;
+  reviewOpen: boolean;
+  openReview: () => void;
+  closeReview: () => void;
   snippetCategory: string;
   setSnippetCategory: (c: string) => void;
 
@@ -95,6 +98,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const frameIndex = frameParam != null && frameParam !== '' && !Number.isNaN(Number(frameParam))
     ? Number(frameParam)
     : null;
+  const reviewOpen = searchParams.get('review') === '1';
   const snippetCategory = searchParams.get('category') ?? 'all';
 
   const writeParams = useCallback(
@@ -139,6 +143,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     writeParams(p => {
       p.delete('video');
       p.delete('frame');
+      p.delete('review');
     });
   }, [writeParams]);
 
@@ -151,6 +156,17 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   const closeFrame = useCallback(() => {
     writeParams(p => p.delete('frame'));
+  }, [writeParams]);
+
+  const openReview = useCallback(() => {
+    writeParams(p => {
+      p.set('review', '1');
+      p.delete('frame');
+    });
+  }, [writeParams]);
+
+  const closeReview = useCallback(() => {
+    writeParams(p => p.delete('review'));
   }, [writeParams]);
 
   const setSnippetCategory = useCallback(
@@ -303,6 +319,9 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       frameIndex,
       openFrame,
       closeFrame,
+      reviewOpen,
+      openReview,
+      closeReview,
       snippetCategory,
       setSnippetCategory,
       selectedVideo,
@@ -329,6 +348,9 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       frameIndex,
       openFrame,
       closeFrame,
+      reviewOpen,
+      openReview,
+      closeReview,
       snippetCategory,
       setSnippetCategory,
       selectedVideo,

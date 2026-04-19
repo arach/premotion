@@ -3,10 +3,11 @@
 import { useCatalog } from '../Provider';
 import { CatalogGrid } from './CatalogGrid';
 import { FrameViewer } from './FrameViewer';
+import { ReviewPlayer } from './ReviewPlayer';
 import { VideoDetail } from './VideoDetail';
 
 export function CatalogContent() {
-  const { loading, selectedVideo, frameIndex } = useCatalog();
+  const { loading, selectedVideo, frameIndex, reviewOpen } = useCatalog();
 
   if (loading) {
     return (
@@ -19,6 +20,7 @@ export function CatalogContent() {
   return (
     <>
       {selectedVideo && frameIndex != null && <FrameViewer />}
+      {selectedVideo && reviewOpen && <ReviewPlayer />}
       {selectedVideo ? <VideoDetail video={selectedVideo} /> : <CatalogGrid />}
     </>
   );
