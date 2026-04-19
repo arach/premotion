@@ -8,6 +8,9 @@ export default defineConfig({
   publicDir: "public",
   server: {
     port: 3100,
+    fs: {
+      allow: ["."],
+    },
   },
   build: {
     outDir: "dist",

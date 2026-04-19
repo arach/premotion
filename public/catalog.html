@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premotion Catalog</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0e;
+    --bg-card: #111118;
+    --bg-hover: #16161f;
+    --border: rgba(160, 170, 190, 0.1);
+    --border-hover: rgba(160, 170, 190, 0.25);
+    --text: #c8c8d0;
+    --text-dim: rgba(175, 185, 200, 0.5);
+    --text-bright: #dddde8;
+    --accent: #6e8efb;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+    --mono: "SF Mono", Monaco, Consolas, monospace;
+    --sans: "SF Pro Display", system-ui, -apple-system, sans-serif;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100vh;
+  }
+
+  /* Layout */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 220px;
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .main {
+    flex: 1;
+    padding: 32px;
+    overflow-y: auto;
+  }
+
+  /* Sidebar */
+  .sidebar h1 {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 18px;
+    letter-spacing: 0.25em;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+  .sidebar .subtitle {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+  }
+  .filter-group {
+    margin-bottom: 20px;
+  }
+  .filter-group h3 {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 10px;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: 4px;
+    text-align: left;
+  }
+  .filter-btn:hover { background: var(--bg-hover); }
+  .filter-btn.active { background: rgba(110, 142, 251, 0.12); color: var(--accent); }
+  .filter-btn .count {
+    margin-left: auto;
+    color: var(--text-dim);
+    font-size: 10px;
+  }
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    min-width: 100px;
+  }
+  .stat .value {
+    font-size: 22px;
+    font-family: var(--sans);
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+  .stat .label {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  /* Video cards */
+  .video-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .video-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .video-card:hover { border-color: var(--border-hover); }
+  .card-header {
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .card-header:hover { background: var(--bg-hover); }
+  .card-id {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-bright);
+    flex: 1;
+  }
+  .card-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  .badge {
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .badge-app {
+    background: rgba(110, 142, 251, 0.15);
+    color: var(--accent);
+  }
+  .badge-status-complete {
+    background: rgba(74, 222, 128, 0.15);
+    color: var(--green);
+  }
+  .badge-status-frames-only {
+    background: rgba(251, 191, 36, 0.15);
+    color: var(--yellow);
+  }
+  .badge-status-none {
+    background: rgba(248, 113, 113, 0.15);
+    color: var(--red);
+  }
+  .badge-reel {
+    background: rgba(251, 146, 60, 0.15);
+    color: var(--orange);
+  }
+  .chevron {
+    color: var(--text-dim);
+    transition: transform 0.2s;
+    font-size: 12px;
+  }
+  .video-card.expanded .chevron { transform: rotate(90deg); }
+
+  /* Card body */
+  .card-body {
+    display: none;
+    border-top: 1px solid var(--border);
+  }
+  .video-card.expanded .card-body { display: block; }
+
+  .card-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-section:last-child { border-bottom: none; }
+  .section-title {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* Description */
+  .description {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text);
+    max-width: 720px;
+  }
+
+  /* Metadata grid */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+  }
+  .meta-item {
+    font-size: 11px;
+  }
+  .meta-item .key {
+    color: var(--text-dim);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .meta-item .val {
+    color: var(--text-bright);
+    margin-top: 2px;
+  }
+
+  /* Tags */
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .tag {
+    padding: 2px 8px;
+    background: rgba(160, 170, 190, 0.08);
+    border-radius: 3px;
+    font-size: 10px;
+    color: var(--text);
+  }
+
+  /* Frames grid */
+  .frames-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 8px;
+  }
+  .frame-card {
+    position: relative;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .frame-card:hover { border-color: var(--border-hover); }
+  .frame-card img {
+    width: 100%;
+    display: block;
+  }
+  .frame-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px;
+    background: linear-gradient(transparent, rgba(10, 10, 14, 0.9));
+  }
+  .frame-time {
+    font-size: 10px;
+    color: rgba(200, 200, 210, 0.8);
+    letter-spacing: 0.08em;
+  }
+  .frame-desc {
+    font-size: 10px;
+    color: var(--text);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .frame-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 4px;
+  }
+  .frame-tag {
+    padding: 1px 5px;
+    background: rgba(110, 142, 251, 0.2);
+    border-radius: 2px;
+    font-size: 9px;
+    color: var(--accent);
+  }
+
+  /* Scenes timeline */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .timeline-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+  .timeline-row:hover { background: var(--bg-hover); }
+  .timeline-time {
+    color: var(--accent);
+    font-size: 10px;
+    min-width: 90px;
+    letter-spacing: 0.05em;
+  }
+  .timeline-activity {
+    min-width: 60px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .timeline-activity.active { color: var(--green); }
+  .timeline-activity.idle { color: var(--text-dim); }
+  .timeline-activity.transition { color: var(--yellow); }
+  .timeline-desc {
+    color: var(--text);
+    flex: 1;
+  }
+
+  /* Highlights & clips */
+  .clip-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .clip-item {
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .clip-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+  .clip-time {
+    font-size: 10px;
+    color: var(--accent);
+    margin-top: 2px;
+  }
+  .clip-reason {
+    font-size: 11px;
+    color: var(--text);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* Transcript */
+  .transcript-segments {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .transcript-seg {
+    display: flex;
+    gap: 12px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .transcript-seg:hover { background: var(--bg-hover); }
+  .transcript-time {
+    color: var(--accent);
+    font-size: 10px;
+    min-width: 50px;
+    flex-shrink: 0;
+  }
+  .transcript-text {
+    color: var(--text);
+  }
+  .srt-block {
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text);
+    max-height: 300px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 6px;
+  }
+
+  /* Lightbox */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 5, 8, 0.95);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    cursor: zoom-out;
+  }
+  .lightbox.active { display: flex; }
+  .lightbox img {
+    max-width: 92vw;
+    max-height: 80vh;
+    border-radius: 8px;
+    box-shadow: 0 0 60px rgba(0,0,0,0.5);
+  }
+  .lightbox-info {
+    margin-top: 16px;
+    text-align: center;
+    max-width: 600px;
+  }
+  .lightbox-time {
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+  .lightbox-desc {
+    font-size: 12px;
+    color: var(--text);
+    margin-top: 4px;
+  }
+  .lightbox-tags {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  /* Empty state */
+  .empty {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 12px;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+  }
+
+  /* Search */
+  .search-box {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    margin-bottom: 16px;
+    outline: none;
+  }
+  .search-box:focus { border-color: var(--accent); }
+  .search-box::placeholder { color: var(--text-dim); }
+</style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <h1>PREMOTION</h1>
+      <p class="subtitle">Video Catalog</p>
+      <input type="text" class="search-box" id="search" placeholder="Search...">
+      <div id="filters"></div>
+    </aside>
+    <main class="main">
+      <div class="stats-row" id="stats"></div>
+      <div class="video-grid" id="grid"></div>
+    </main>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" alt="">
+    <div class="lightbox-info">
+      <div class="lightbox-time" id="lightbox-time"></div>
+      <div class="lightbox-desc" id="lightbox-desc"></div>
+      <div class="lightbox-tags" id="lightbox-tags"></div>
+    </div>
+  </div>
+
+<script>
+let DATA = null;
+let activeFilter = "all";
+let searchQuery = "";
+
+function formatTime(s) {
+  if (s == null) return "--";
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${String(sec).padStart(2, "0")}`;
+}
+
+function formatDuration(s) {
+  if (s == null) return "--";
+  if (s < 60) return `${Math.round(s)}s`;
+  const m = Math.floor(s / 60);
+  const sec = Math.round(s % 60);
+  return `${m}m ${sec}s`;
+}
+
+function openLightbox(src, time, desc, tags) {
+  document.getElementById("lightbox-img").src = src;
+  document.getElementById("lightbox-time").textContent = time;
+  document.getElementById("lightbox-desc").textContent = desc || "";
+  document.getElementById("lightbox-tags").innerHTML = (tags || [])
+    .map(t => `<span class="frame-tag">${t}</span>`).join("");
+  document.getElementById("lightbox").classList.add("active");
+}
+
+function closeLightbox() {
+  document.getElementById("lightbox").classList.remove("active");
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeLightbox();
+});
+
+function toggleCard(id) {
+  const card = document.getElementById(`card-${id}`);
+  card.classList.toggle("expanded");
+}
+
+function setFilter(filter) {
+  activeFilter = filter;
+  document.querySelectorAll(".filter-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.filter === filter);
+  });
+  render();
+}
+
+function getStatusClass(status) {
+  if (status === "complete" || status === "analyzed" || status === "transcribed") return "badge-status-complete";
+  if (status === "frames-only") return "badge-status-frames-only";
+  return "badge-status-none";
+}
+
+function renderFrames(video) {
+  if (!video.frames || video.frames.length === 0) {
+    return `<div class="empty">No storyboard frames extracted</div>`;
+  }
+
+  const tagMap = {};
+  if (video.visionTags) {
+    video.visionTags.forEach(t => { tagMap[t.frameFile] = t; });
+  }
+
+  return `<div class="frames-grid">${video.frames.map(f => {
+    const src = `demos/${video.storyboardDir}/${f}`;
+    const tag = tagMap[f] || {};
+    const desc = tag.description || "";
+    const tags = tag.tags || [];
+    const time = tag.time != null ? formatTime(tag.time) : "";
+    return `
+      <div class="frame-card" onclick="openLightbox('${src}', '${time}', \`${desc.replace(/`/g, "'")}\`, ${JSON.stringify(tags)})">
+        <img src="${src}" alt="${f}" loading="lazy">
+        <div class="frame-overlay">
+          <div class="frame-time">${time} &mdash; ${f}</div>
+          ${desc ? `<div class="frame-desc">${desc}</div>` : ""}
+          ${tags.length ? `<div class="frame-tags">${tags.map(t => `<span class="frame-tag">${t}</span>`).join("")}</div>` : ""}
+        </div>
+      </div>
+    `;
+  }).join("")}</div>`;
+}
+
+function renderScenes(video) {
+  const scenes = video.edl?.scenes || video.scenes || [];
+  if (!scenes.length) return `<div class="empty">No scene annotations</div>`;
+
+  return `<div class="timeline">${scenes.map(s => {
+    const start = s.start ?? s.time ?? 0;
+    const end = s.end ?? "";
+    const activity = s.activity || "";
+    return `
+      <div class="timeline-row">
+        <span class="timeline-time">${formatTime(start)}${end ? ` &rarr; ${formatTime(end)}` : ""}</span>
+        ${activity ? `<span class="timeline-activity ${activity}">${activity}</span>` : ""}
+        <span class="timeline-desc">${s.description || "(no description)"}</span>
+      </div>
+    `;
+  }).join("")}</div>`;
+}
+
+function renderClips(video) {
+  const edl = video.edl;
+  if (!edl) return "";
+
+  const sections = [];
+
+  if (edl.highlights?.length) {
+    sections.push(`
+      <div class="card-section">
+        <div class="section-title">Highlights</div>
+        <div class="clip-list">${edl.highlights.map(h => `
+          <div class="clip-item">
+            <div class="clip-time">${formatTime(h.time)}</div>
+            <div class="clip-reason">${h.reason}</div>
+          </div>
+        `).join("")}</div>
+      </div>
+    `);
+  }
+
+  if (edl.suggestedClips?.length) {
+    sections.push(`
+      <div class="card-section">
+        <div class="section-title">Suggested Clips</div>
+        <div class="clip-list">${edl.suggestedClips.map(c => `
+          <div class="clip-item">
+            <div class="clip-title">${c.title}</div>
+            <div class="clip-time">${formatTime(c.start)} &rarr; ${formatTime(c.end)}</div>
+            <div class="clip-reason">${c.reason}</div>
+          </div>
+        `).join("")}</div>
+      </div>
+    `);
+  }
+
+  if (edl.deadTime?.length) {
+    sections.push(`
+      <div class="card-section">
+        <div class="section-title">Dead Time</div>
+        <div class="clip-list">${edl.deadTime.map(d => `
+          <div class="clip-item">
+            <div class="clip-time">${formatTime(d.start)} &rarr; ${formatTime(d.end)} (${d.duration || Math.round(d.end - d.start)}s)</div>
+            <div class="clip-reason">${d.reason}</div>
+          </div>
+        `).join("")}</div>
+      </div>
+    `);
+  }
+
+  return sections.join("");
+}
+
+function renderTranscript(video) {
+  if (video.transcript?.segments) {
+    return `
+      <div class="card-section">
+        <div class="section-title">Transcript</div>
+        <div class="transcript-segments">
+          ${video.transcript.segments.map(seg => `
+            <div class="transcript-seg">
+              <span class="transcript-time">${formatTime(seg.start)}</span>
+              <span class="transcript-text">${seg.text}</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+  if (video.srt) {
+    return `
+      <div class="card-section">
+        <div class="section-title">Transcript (SRT)</div>
+        <div class="srt-block">${video.srt}</div>
+      </div>
+    `;
+  }
+  return "";
+}
+
+function renderCard(video) {
+  const app = video.app || video.project || "other";
+  const status = video.analysisStatus || "none";
+
+  return `
+    <div class="video-card" id="card-${video.id}">
+      <div class="card-header" onclick="toggleCard('${video.id}')">
+        <span class="badge badge-app">${app}</span>
+        <span class="card-id">${video.id}</span>
+        <div class="card-meta">
+          <span>${video.resolution || ""}</span>
+          <span>${formatDuration(video.duration)}</span>
+          <span>${video.sizeMB ? video.sizeMB + " MB" : ""}</span>
+          <span>${video.frameCount ? video.frameCount + " frames" : ""}</span>
+        </div>
+        <span class="badge ${getStatusClass(status)}">${status}</span>
+        ${video.reelCandidate ? '<span class="badge badge-reel">reel</span>' : ""}
+        <span class="chevron">&#9654;</span>
+      </div>
+      <div class="card-body">
+        <div class="card-section">
+          <div class="section-title">Description</div>
+          <p class="description">${video.description || "(no description)"}</p>
+          ${video.tags?.length ? `<div class="tag-list" style="margin-top:8px">${video.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>` : ""}
+        </div>
+
+        <div class="card-section">
+          <div class="section-title">Metadata</div>
+          <div class="meta-grid">
+            <div class="meta-item"><div class="key">File</div><div class="val">${video.filename}</div></div>
+            <div class="meta-item"><div class="key">Resolution</div><div class="val">${video.resolution || "--"}</div></div>
+            <div class="meta-item"><div class="key">FPS</div><div class="val">${video.fps || "--"}</div></div>
+            <div class="meta-item"><div class="key">Codec</div><div class="val">${video.codec || "--"}</div></div>
+            <div class="meta-item"><div class="key">Duration</div><div class="val">${formatDuration(video.duration)}</div></div>
+            <div class="meta-item"><div class="key">Size</div><div class="val">${video.sizeMB ? video.sizeMB + " MB" : "--"}</div></div>
+            <div class="meta-item"><div class="key">Captured</div><div class="val">${video.capturedAt || "--"}</div></div>
+            <div class="meta-item"><div class="key">Composition</div><div class="val">${video.composition || "--"}</div></div>
+            <div class="meta-item"><div class="key">Storyboard</div><div class="val">${video.storyboardDir || "--"}</div></div>
+          </div>
+        </div>
+
+        <div class="card-section">
+          <div class="section-title">Storyboard Frames</div>
+          ${renderFrames(video)}
+        </div>
+
+        <div class="card-section">
+          <div class="section-title">Scenes</div>
+          ${renderScenes(video)}
+        </div>
+
+        ${renderClips(video)}
+        ${renderTranscript(video)}
+
+        ${video.edl?.stats ? `
+          <div class="card-section">
+            <div class="section-title">Analysis Stats</div>
+            <div class="meta-grid">
+              <div class="meta-item"><div class="key">Scene Breaks</div><div class="val">${video.edl.stats.totalSceneBreaks}</div></div>
+              <div class="meta-item"><div class="key">Active Time</div><div class="val">${formatDuration(video.edl.stats.activeTime)}</div></div>
+              <div class="meta-item"><div class="key">Idle Time</div><div class="val">${formatDuration(video.edl.stats.idleTime)}</div></div>
+              <div class="meta-item"><div class="key">Frames Analyzed</div><div class="val">${video.edl.stats.framesAnalyzed}</div></div>
+              <div class="meta-item"><div class="key">Est. Tokens</div><div class="val">${video.edl.stats.estimatedTokens?.toLocaleString()}</div></div>
+            </div>
+          </div>
+        ` : ""}
+      </div>
+    </div>
+  `;
+}
+
+function render() {
+  if (!DATA) return;
+
+  let videos = DATA.videos;
+
+  // Apply filter
+  if (activeFilter !== "all") {
+    if (activeFilter === "has-analysis") {
+      videos = videos.filter(v => v.analysisStatus === "complete" || v.analysisStatus === "analyzed");
+    } else if (activeFilter === "needs-analysis") {
+      videos = videos.filter(v => v.analysisStatus === "none" || v.analysisStatus === "frames-only");
+    } else if (activeFilter === "has-transcript") {
+      videos = videos.filter(v => v.transcript || v.srt);
+    } else if (activeFilter === "reel-candidates") {
+      videos = videos.filter(v => v.reelCandidate);
+    } else {
+      videos = videos.filter(v => (v.app || v.project) === activeFilter);
+    }
+  }
+
+  // Apply search
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    videos = videos.filter(v => {
+      const searchable = [v.id, v.filename, v.description, v.app, ...(v.tags || [])].join(" ").toLowerCase();
+      return searchable.includes(q);
+    });
+  }
+
+  document.getElementById("grid").innerHTML = videos.length
+    ? videos.map(renderCard).join("")
+    : '<div class="empty">No videos match the current filter</div>';
+}
+
+function renderSidebar() {
+  const apps = {};
+  DATA.videos.forEach(v => {
+    const app = v.app || v.project || "other";
+    apps[app] = (apps[app] || 0) + 1;
+  });
+
+  const analyzed = DATA.videos.filter(v => v.analysisStatus === "complete" || v.analysisStatus === "analyzed").length;
+  const needsWork = DATA.videos.filter(v => v.analysisStatus === "none" || v.analysisStatus === "frames-only").length;
+  const withTranscript = DATA.videos.filter(v => v.transcript || v.srt).length;
+  const reelCandidates = DATA.videos.filter(v => v.reelCandidate).length;
+
+  document.getElementById("filters").innerHTML = `
+    <div class="filter-group">
+      <h3>Filter</h3>
+      <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">
+        All <span class="count">${DATA.videos.length}</span>
+      </button>
+      <button class="filter-btn" data-filter="has-analysis" onclick="setFilter('has-analysis')">
+        Analyzed <span class="count">${analyzed}</span>
+      </button>
+      <button class="filter-btn" data-filter="needs-analysis" onclick="setFilter('needs-analysis')">
+        Needs Work <span class="count">${needsWork}</span>
+      </button>
+      <button class="filter-btn" data-filter="has-transcript" onclick="setFilter('has-transcript')">
+        Transcribed <span class="count">${withTranscript}</span>
+      </button>
+      <button class="filter-btn" data-filter="reel-candidates" onclick="setFilter('reel-candidates')">
+        Reel Candidates <span class="count">${reelCandidates}</span>
+      </button>
+    </div>
+    <div class="filter-group">
+      <h3>By App</h3>
+      ${Object.entries(apps).sort((a, b) => b[1] - a[1]).map(([app, count]) => `
+        <button class="filter-btn" data-filter="${app}" onclick="setFilter('${app}')">
+          ${app} <span class="count">${count}</span>
+        </button>
+      `).join("")}
+    </div>
+  `;
+
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><div class="value">${DATA.videos.length}</div><div class="label">VIDEOS</div></div>
+    <div class="stat"><div class="value">${analyzed}</div><div class="label">ANALYZED</div></div>
+    <div class="stat"><div class="value">${withTranscript}</div><div class="label">TRANSCRIBED</div></div>
+    <div class="stat"><div class="value">${reelCandidates}</div><div class="label">REEL READY</div></div>
+    <div class="stat"><div class="value">${DATA.orphanStoryboards?.length || 0}</div><div class="label">ORPHANS</div></div>
+  `;
+}
+
+document.getElementById("search").addEventListener("input", e => {
+  searchQuery = e.target.value;
+  render();
+});
+
+async function init() {
+  const res = await fetch("catalog-data.json");
+  DATA = await res.json();
+  renderSidebar();
+  render();
+}
+
+init();
+</script>
+</body>
+</html>

@@ -38,3 +38,5 @@ bun.lock
 src/projects/hostai-montage/
 src/projects/audit-demo/
 public/hostai-*
+# OpenScout local state
+.openscout/project.json

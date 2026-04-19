@@ -1,16 +1,26 @@
-import React, { useEffect, useState } from "react";
-import type { CatalogData, CuratedSnippet, CuratedSnippetsData, Video } from "./types";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import type { CatalogData, CuratedSnippet, CuratedSnippetsData, Video, Render } from "./types";
 import { Sidebar } from "./components/Sidebar";
 import { VideoCard } from "./components/VideoCard";
 import { SnippetCard } from "./components/SnippetCard";
 import { Lightbox } from "./components/Lightbox";
 import { FrameViewer } from "./components/FrameViewer";
 import { VideoDetail } from "./components/VideoDetail";
+import { RenderCard } from "./components/RenderCard";
 import "./app.css";
 
 export function App() {
   const [data, setData] = useState<CatalogData | null>(null);
   const [snippetsData, setSnippetsData] = useState<CuratedSnippetsData | null>(null);
+  const initSection = (): "sources" | "renders" => {
+    const hash = window.location.hash.replace("#/", "");
+    return hash === "renders" ? "renders" : "sources";
+  };
+  const [section, setSectionRaw] = useState<"sources" | "renders">(initSection);
+  const setSection = useCallback((s: "sources" | "renders") => {
+    setSectionRaw(s);
+    window.location.hash = s === "renders" ? "#/renders" : "#/sources";
+  }, []);
   const [filter, setFilter] = useState("all");
   const [snippetCategoryFilter, setSnippetCategoryFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -25,6 +35,8 @@ export function App() {
     startIndex: number;
   } | null>(null);
   const [detailVideo, setDetailVideo] = useState<Video | null>(null);
+  const [renders, setRenders] = useState<Render[]>([]);
+  const [renderProjectFilter, setRenderProjectFilter] = useState("all");
 
   useEffect(() => {
     fetch("/catalog-data.json")
@@ -36,6 +48,28 @@ export function App() {
       .then((r) => r.json())
       .then(setSnippetsData)
       .catch(console.error);
+
+    fetch("/api/renders")
+      .then((r) => r.json())
+      .then((d) => setRenders(d.renders || []))
+      .catch(console.error);
+
+    const onHash = () => {
+      const hash = window.location.hash.replace("#/", "");
+      setSectionRaw(hash === "renders" ? "renders" : "sources");
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  const handleFeedbackSaved = useCallback((name: string, rating: string, notes: string) => {
+    setRenders((prev) =>
+      prev.map((r) =>
+        r.name === name
+          ? { ...r, feedback: { rating, notes, updatedAt: new Date().toISOString() } }
+          : r
+      )
+    );
   }, []);
 
   if (!data) {
@@ -58,6 +92,8 @@ export function App() {
     return (
       <div className="app">
         <Sidebar
+          section={section}
+          onSection={(s) => { setSection(s); setDetailVideo(null); }}
           filter={filter}
           onFilter={(f) => {
             setDetailVideo(null);
@@ -78,6 +114,7 @@ export function App() {
             reel: data.videos.filter((v) => v.reelCandidate).length,
             orphans: data.orphanStoryboards?.length || 0,
             curated: snippetsData?.snippets?.length || 0,
+            renders: renders.length,
           }}
         />
         <main className="main">
@@ -162,6 +199,7 @@ export function App() {
     reel: data.videos.filter((v) => v.reelCandidate).length,
     orphans: data.orphanStoryboards?.length || 0,
     curated: allSnippets.length,
+    renders: renders.length,
   };
 
   const isCurated = filter === "curated";
@@ -174,6 +212,8 @@ export function App() {
   return (
     <div className="app">
       <Sidebar
+        section={section}
+        onSection={setSection}
         filter={filter}
         onFilter={(f) => {
           setFilter(f);
@@ -193,7 +233,15 @@ export function App() {
           <Stat value={counts.curated} label="CURATED" />
         </div>
 
-        {isCurated ? (
+        {section === "renders" ? (
+          <RendersSection
+            renders={renders}
+            search={search}
+            projectFilter={renderProjectFilter}
+            onProjectFilter={setRenderProjectFilter}
+            onFeedbackSaved={handleFeedbackSaved}
+          />
+        ) : isCurated ? (
           <CuratedSection
             snippets={filteredSnippets}
             allSnippets={allSnippets}
@@ -316,6 +364,125 @@ function CuratedSection({
         </div>
       ) : (
         <div className="empty">No snippets match the current filter</div>
+      )}
+    </>
+  );
+}
+
+type SortKey = "recent" | "name" | "duration" | "size";
+
+function RendersSection({
+  renders,
+  search,
+  projectFilter,
+  onProjectFilter,
+  onFeedbackSaved,
+}: {
+  renders: Render[];
+  search: string;
+  projectFilter: string;
+  onProjectFilter: (p: string) => void;
+  onFeedbackSaved: (name: string, rating: string, notes: string) => void;
+}) {
+  const [sort, setSort] = useState<SortKey>("recent");
+
+  const projectCounts: Record<string, number> = {};
+  renders.forEach((r) => {
+    projectCounts[r.project] = (projectCounts[r.project] || 0) + 1;
+  });
+
+  const ratingCounts = useMemo(() => {
+    const counts: Record<string, number> = { rated: 0, unrated: 0, ship: 0, strong: 0, kill: 0 };
+    renders.forEach((r) => {
+      if (r.feedback?.rating) {
+        counts.rated++;
+        counts[r.feedback.rating] = (counts[r.feedback.rating] || 0) + 1;
+      } else {
+        counts.unrated++;
+      }
+    });
+    return counts;
+  }, [renders]);
+
+  let filtered = renders;
+  if (search) {
+    const q = search.toLowerCase();
+    filtered = filtered.filter((r) =>
+      [r.name, r.project].join(" ").toLowerCase().includes(q)
+    );
+  }
+  if (projectFilter !== "all") {
+    filtered = filtered.filter((r) => r.project === projectFilter);
+  }
+
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    switch (sort) {
+      case "recent": return arr.sort((a, b) => new Date(b.modifiedAt).getTime() - new Date(a.modifiedAt).getTime());
+      case "name": return arr.sort((a, b) => a.name.localeCompare(b.name));
+      case "duration": return arr.sort((a, b) => b.duration - a.duration);
+      case "size": return arr.sort((a, b) => b.sizeMB - a.sizeMB);
+    }
+  }, [filtered, sort]);
+
+  const projects = Object.entries(projectCounts).sort((a, b) => b[1] - a[1]);
+
+  const sortOptions: { key: SortKey; label: string }[] = [
+    { key: "recent", label: "Recent" },
+    { key: "name", label: "Name" },
+    { key: "duration", label: "Duration" },
+    { key: "size", label: "Size" },
+  ];
+
+  return (
+    <>
+      <div className="renders-header">
+        <div className="renders-title">FINISHED VIDEOS</div>
+        <div className="renders-subtitle">
+          {renders.length} rendered
+          <span className="renders-meta">
+            {ratingCounts.ship || 0} ship / {ratingCounts.strong || 0} strong / {ratingCounts.unrated} unrated
+          </span>
+        </div>
+      </div>
+      <div className="renders-toolbar">
+        <div className="renders-filters">
+          <button
+            className={`curated-filter-btn ${projectFilter === "all" ? "active" : ""}`}
+            onClick={() => onProjectFilter("all")}
+          >
+            ALL <span className="curated-filter-count">{renders.length}</span>
+          </button>
+          {projects.map(([p, count]) => (
+            <button
+              key={p}
+              className={`curated-filter-btn ${projectFilter === p ? "active" : ""}`}
+              onClick={() => onProjectFilter(p)}
+            >
+              {p.toUpperCase()} <span className="curated-filter-count">{count}</span>
+            </button>
+          ))}
+        </div>
+        <div className="renders-sort">
+          {sortOptions.map((o) => (
+            <button
+              key={o.key}
+              className={`sort-btn ${sort === o.key ? "active" : ""}`}
+              onClick={() => setSort(o.key)}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {sorted.length > 0 ? (
+        <div className="renders-grid">
+          {sorted.map((r) => (
+            <RenderCard key={r.name} render={r} onFeedbackSaved={onFeedbackSaved} />
+          ))}
+        </div>
+      ) : (
+        <div className="empty">No renders match the current filter/search</div>
       )}
     </>
   );

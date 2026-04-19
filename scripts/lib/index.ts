@@ -79,6 +79,8 @@ export async function analyzeVideo(inputPath: string, options?: {
 	let editorial = cacheGet<import("./types.ts").EditorialResult>(outDir, "layer3-editorial");
 	if (editorial) {
 		log("  → Editorial analysis... (cached, skipping)");
+	} else if (options?.skipVision) {
+		editorial = { highlights: [], suggestedClips: [], deadTime: [] };
 	} else {
 		editorial = await editorialPass(meta, breaks, segments, tags);
 		cacheSet(outDir, "layer3-editorial", editorial);

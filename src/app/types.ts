@@ -128,6 +128,22 @@ export interface CuratedSnippetsData {
   snippets: CuratedSnippet[];
 }
 
+export interface RenderFeedback {
+  rating: string;
+  notes: string;
+  updatedAt: string;
+}
+
+export interface Render {
+  name: string;
+  filename: string;
+  sizeMB: number;
+  duration: number;
+  project: string;
+  modifiedAt: string;
+  feedback: RenderFeedback | null;
+}
+
 export interface CatalogData {
   meta: { generatedAt: string; videoCount: number };
   videos: Video[];

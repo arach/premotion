@@ -1,0 +1,1096 @@
+{
+  "_meta": {
+    "version": "0.1.0",
+    "description": "Premotion video catalog \u2014 master index of all source recordings with metadata, annotations, and analysis status",
+    "updatedAt": "2026-03-30T13:00:00Z",
+    "note": "Initial draft schema \u2014 annotations from manual frame review + pipeline storyboards. Will formalize schema after review."
+  },
+  "videos": [
+    {
+      "id": "talkie-dashboard-mar26",
+      "filename": "talkie-dashboard-2026-03-26.mp4",
+      "sourcePath": "~/TMP/CleanShot 2026-03-26 at 15.53.17.mp4",
+      "demosPath": "demos/talkie-dashboard-2026-03-26.mp4",
+      "capturedAt": "2026-03-26T15:53:17",
+      "resolution": "1160x698",
+      "fps": 50,
+      "duration": 58,
+      "codec": "h264",
+      "sizeMB": 19.1,
+      "app": "talkie",
+      "tags": [
+        "talkie",
+        "dashboard",
+        "home",
+        "stats",
+        "memos",
+        "dictations",
+        "readouts",
+        "library",
+        "elevenlabs",
+        "voice"
+      ],
+      "description": "Talkie full app walkthrough: HOME dashboard (109-day streak, 391 memos, 18.6k dictations, 6.6k words, top apps, activity heatmap, recent memos/dictations) \u2192 LIBRARY Readouts view (selection list with readout summaries) \u2192 Readout detail showing source, mode (Explanation), voice (ElevenLabs), latency (1895ms), LLM service calls.",
+      "scenes": [
+        {
+          "time": 0,
+          "end": 15,
+          "description": "Claude Code session showing Compose demo code (transition from previous session)"
+        },
+        {
+          "time": 15,
+          "end": 27,
+          "description": "Talkie HOME \u2014 109-day streak, 113 today, 391 memos, 18.6k dictations, 6.6k words. Top apps: iTerm2, Codex, Chrome, Ghostty, ChatGPT. Shortcuts: Compose, Record, Dictations, Notes, Screenshots. Activity heatmap. Recent memos and dictations lists."
+        },
+        {
+          "time": 27,
+          "end": 37,
+          "description": "Transition to LIBRARY \u2192 Readouts tab \u2014 list of readout summaries ('A video demo was copied...', 'Here\\'s a concise spoken summary...', etc.)"
+        },
+        {
+          "time": 37,
+          "end": 43,
+          "description": "Readout detail pane \u2014 SELECTED TEXT showing Compose demo pipeline summary. Context: Source=iTerm2, Mode=Explanation, Voice=ElevenLabs, Latency=1895ms"
+        },
+        {
+          "time": 43,
+          "end": 58,
+          "description": "Readout detail scrolled \u2014 SERVICE CALLS section showing LLM (llama-3.3-70b-versatile), system prompt for spoken-friendly explanation, numbered steps of the pipeline"
+        }
+      ],
+      "storyboardDir": "storyboard-talkie-dashboard-mar26",
+      "analysisStatus": "complete",
+      "composition": null,
+      "reelCandidate": true
+    },
+    {
+      "id": "compose-demo-mar26",
+      "filename": "cleanshot-demo-2026-03-26.mp4",
+      "sourcePath": "~/TMP/CleanShot 2026-03-26 at 15.35.38.mp4",
+      "demosPath": "demos/cleanshot-demo-2026-03-26.mp4",
+      "capturedAt": "2026-03-26T15:35:38",
+      "resolution": "1126x816",
+      "fps": 50,
+      "duration": 144.6,
+      "codec": "h264",
+      "sizeMB": 16.5,
+      "app": "compose",
+      "tags": [
+        "compose",
+        "talkie",
+        "ai-writing",
+        "gpt-5.2",
+        "diff-view",
+        "rewrite",
+        "professional"
+      ],
+      "description": "COMPOSE feature demo \u2014 opens empty draft, writes about Talkie voice-to-action framework, triggers 'Make it more professional' (GPT-5.2), shows red/green diff view with 104 changes, accepts rewrite. Full draft\u2192refine\u2192accept workflow.",
+      "scenes": [
+        {
+          "time": 0,
+          "end": 5,
+          "description": "COMPOSE UI opens \u2014 empty draft, gpt-5.2-chat-latest model selected, Quick Actions visible"
+        },
+        {
+          "time": 5,
+          "end": 60,
+          "description": "User types about Talkie as voice-to-action framework, text grows"
+        },
+        {
+          "time": 60,
+          "end": 119,
+          "description": "Continued writing about Talkie as baseline tool, cursor visible at 34.2"
+        },
+        {
+          "time": 119,
+          "end": 136,
+          "description": "Triggers 'Professional' quick action \u2014 ORIGINAL (red strikethrough) vs PROPOSED (green) side-by-side diff, 104 changes"
+        },
+        {
+          "time": 136,
+          "end": 145,
+          "description": "Final polished 76-word text accepted and displayed cleanly"
+        }
+      ],
+      "storyboardDir": "storyboard-compose-demo-mar26",
+      "analysisStatus": "complete",
+      "composition": "ComposeDemo",
+      "reelCandidate": true
+    },
+    {
+      "id": "talkie-overview-60s",
+      "filename": "60s Demo - Full Overview.mp4",
+      "sourcePath": null,
+      "demosPath": "demos/60s Demo - Full Overview.mp4",
+      "capturedAt": null,
+      "resolution": "1920x1080",
+      "fps": 50,
+      "duration": 60,
+      "codec": "h264",
+      "sizeMB": 7.6,
+      "app": "talkie",
+      "tags": [
+        "talkie",
+        "overview",
+        "full-demo",
+        "dashboard",
+        "recordings-library"
+      ],
+      "description": "Talkie desktop app \u2014 HOME dashboard with older stats (25 today, 333 sessions, 9.7k dictations, 6.2k), sidebar with Home/Recordings/Compose/Actions, Recordings Library.",
+      "scenes": [
+        {
+          "time": 5,
+          "description": "Talkie HOME \u2014 older stats, Recordings Library visible"
+        }
+      ],
+      "storyboardDir": null,
+      "analysisStatus": "frames-only",
+      "composition": "TalkieOverview",
+      "reelCandidate": true
+    },
+    {
+      "id": "talkie-capture",
+      "filename": "Talkie Capture.mp4",
+      "sourcePath": null,
+      "demosPath": "demos/Talkie Capture.mp4",
+      "capturedAt": null,
+      "resolution": "1920x1080",
+      "fps": 50,
+      "duration": 41.3,
+      "codec": "h264",
+      "sizeMB": 8.8,
+      "app": "talkie",
+      "tags": [
+        "talkie",
+        "capture",
+        "agent",
+        "voice-capture",
+        "desktop"
+      ],
+      "description": "Talkie Agent title screen over cinematic hardware background + dark editor window labeled 'Untitled'. Voice capture demo.",
+      "scenes": [
+        {
+          "time": 5,
+          "description": "Talkie Agent title over motherboard background, editor window"
+        }
+      ],
+      "storyboardDir": null,
+      "analysisStatus": "frames-only",
+      "composition": "TalkieCapture",
+      "reelCandidate": true
+    },
+    {
+      "id": "capture-overview",
+      "filename": "capture-overview.mp4",
+      "sourcePath": null,
+      "demosPath": "demos/capture-overview.mp4",
+      "capturedAt": null,
+      "resolution": "1920x1080",
+      "fps": 30,
+      "duration": 54.8,
+      "codec": "h264",
+      "sizeMB": 7.2,
+      "app": "talkie",
+      "tags": [
+        "talkie",
+        "compose",
+        "capture",
+        "editor",
+        "desktop"
+      ],
+      "description": "Talkie Compose/capture window \u2014 dark floating editor bar showing 'Untitled', 'Start writing...', '0 characters' over cinematic hardware background.",
+      "scenes": [
+        {
+          "time": 5,
+          "description": "Compose floating editor, empty state"
+        }
+      ],
+      "storyboardDir": null,
+      "analysisStatus": "frames-only",
+      "composition": "CaptureOverview",
+      "reelCandidate": true
+    },
+    {
+      "id": "talkie-ios-full",
+      "filename": "talkie-ios-demo.mp4",
+      "sourcePath": null,
+      "demosPath": "demos/talkie-ios-demo.mp4",
+      "capturedAt": null,
+      "resolution": "1126x2436",
+      "fps": 30,
+      "duration": 101,
+      "codec": "h264",
+      "sizeMB": 3.1,
+      "app": "talkie",
+      "tags": [
+        "talkie",
+        "ios",
+        "mobile",
+        "portrait",
+        "keyboard"
+      ],
+      "description": "Talkie iOS demo \u2014 keyboard switcher showing Talkie among English keyboards (Wispr Flow, Willow, Spokenly, Monologue).",
+      "scenes": [
+        {
+          "time": 5,
+          "description": "iOS keyboard picker with Talkie keyboard listed"
+        }
+      ],
+      "storyboardDir": null,
+      "analysisStatus": "frames-only",
+      "composition": null,
+      "reelCandidate": false,
+      "note": "Portrait \u2014 needs special handling for 16:9 reel"
+    },
+    {
+      "id": "talkie-ios-trimmed",
+      "filename": "talkie-ios-demo-trimmed2.mp4",
+      "sourcePath": null,
+      "demosPath": "demos/talkie-ios-demo-trimmed2.mp4",
+      "capturedAt": null,
+      "resolution": "1126x2436",
+      "fps": 30,
+      "duration": 89.5,
+      "codec": "h264",
+      "sizeMB": 2.8,
+      "app": "talkie",
+      "tags": [
+        "talkie",
+        "ios",
+        "mobile",
+        "portrait",
+        "splash",
+        "voice-ai"
+      ],
+      "description": "Talkie iOS splash \u2014 dark background with bowtie icon and 'VOICE + AI' tagline in green, grid/bracket overlay.",
+      "scenes": [
+        {
+          "time": 5,
+          "description": "Talkie splash screen \u2014 VOICE + AI tagline"
+        }
+      ],
+      "storyboardDir": null,
+      "analysisStatus": "frames-only",
+      "composition": "TalkieiOS",
+      "reelCandidate": false,
+      "note": "Portrait 9:16 \u2014 already has composition"
+    },
+    {
+      "id": "claude-code-explore-mar26",
+      "filename": "CleanShot 2026-03-26 at 15.42.52.mp4",
+      "sourcePath": "~/TMP/CleanShot 2026-03-26 at 15.42.52.mp4",
+      "demosPath": null,
+      "capturedAt": "2026-03-26T15:42:52",
+      "resolution": "1160x698",
+      "fps": 50,
+      "duration": 155,
+      "codec": "h264",
+      "sizeMB": 33.6,
+      "app": "claude-code",
+      "tags": [
+        "claude-code",
+        "meta",
+        "lattices",
+        "premotion",
+        "code-exploration"
+      ],
+      "description": "Claude Code session exploring Premotion codebase \u2014 reading Lattices composition source files. Meta-level session.",
+      "scenes": [
+        {
+          "time": 5,
+          "description": "Claude Code (Opus 4.6) listing recent outputs in ~/dev/premotion"
+        },
+        {
+          "time": 77,
+          "description": "Reading LatticesVoiceSessionB.tsx, DemoVideo.tsx source files"
+        }
+      ],
+      "storyboardDir": null,
+      "analysisStatus": "frames-only",
+      "composition": null,
+      "reelCandidate": false
+    },
+    {
+      "id": "pipeline-demo-mar26",
+      "filename": "CleanShot 2026-03-26 at 15.51.14.mp4",
+      "sourcePath": "~/TMP/CleanShot 2026-03-26 at 15.51.14.mp4",
+      "demosPath": null,
+      "capturedAt": "2026-03-26T15:51:14",
+      "resolution": "1160x698",
+      "fps": 50,
+      "duration": 108,
+      "codec": "h264",
+      "sizeMB": 21.5,
+      "app": "claude-code",
+      "tags": [
+        "claude-code",
+        "premotion",
+        "pipeline",
+        "video-analyzer"
+      ],
+      "description": "Claude Code running Premotion video analysis pipeline \u2014 scene detection, pixel diff, Claude vision on Compose demo.",
+      "scenes": [
+        {
+          "time": 5,
+          "description": "Claude explains pipeline (analyze \u2192 diarize \u2192 compose)"
+        },
+        {
+          "time": 54,
+          "description": "Analysis results: 13 scenes, 139s idle"
+        }
+      ],
+      "storyboardDir": null,
+      "analysisStatus": "frames-only",
+      "composition": null,
+      "reelCandidate": false
+    },
+    {
+      "id": "compose-blog-mar20",
+      "filename": "CleanShot 2026-03-20 at 10.12.37.mp4",
+      "sourcePath": "~/TMP/CleanShot 2026-03-20 at 10.12.37.mp4",
+      "demosPath": null,
+      "capturedAt": "2026-03-20T10:12:37",
+      "resolution": "1126x754",
+      "fps": 50,
+      "duration": 104,
+      "codec": "h264",
+      "sizeMB": 8.6,
+      "app": "compose",
+      "tags": [
+        "compose",
+        "talkie",
+        "ai-writing",
+        "gpt-5.2",
+        "diff-view",
+        "blog-post"
+      ],
+      "description": "COMPOSE app drafting blog post about video pipeline (ffmpeg\u2192frames\u2192scenes\u2192clips\u2192render). Shows Professional rewrite diff.",
+      "scenes": [
+        {
+          "time": 10,
+          "description": "COMPOSE with 45-word draft about video pipeline"
+        },
+        {
+          "time": 52,
+          "description": "AI diff view: original vs proposed rewrite"
+        }
+      ],
+      "storyboardDir": null,
+      "analysisStatus": "frames-only",
+      "composition": null,
+      "reelCandidate": true
+    },
+    {
+      "id": "relay-agents-mar20",
+      "filename": "CleanShot 2026-03-20 at 10.21.03.mp4",
+      "sourcePath": "~/TMP/CleanShot 2026-03-20 at 10.21.03.mp4",
+      "demosPath": null,
+      "capturedAt": "2026-03-20T10:21:03",
+      "resolution": "1720x934",
+      "fps": 50,
+      "duration": 164,
+      "codec": "h264",
+      "sizeMB": 66.5,
+      "app": "relay",
+      "tags": [
+        "relay",
+        "multi-agent",
+        "chat",
+        "coordination"
+      ],
+      "description": "RELAY multi-agent chat \u2014 agents dev, Hudson, logan, premotion coordinating. Hudson highlight reel discussion.",
+      "scenes": [
+        {
+          "time": 10,
+          "description": "Terminal building relay packages"
+        },
+        {
+          "time": 82,
+          "description": "RELAY chat UI with agents coordinating"
+        }
+      ],
+      "storyboardDir": null,
+      "analysisStatus": "frames-only",
+      "composition": null,
+      "reelCandidate": true
+    },
+    {
+      "id": "hudson-remotion-mar20",
+      "filename": "CleanShot 2026-03-20 at 11.45.23.mp4",
+      "sourcePath": "~/TMP/CleanShot 2026-03-20 at 11.45.23.mp4",
+      "demosPath": null,
+      "capturedAt": "2026-03-20T11:45:23",
+      "resolution": "3440x1440",
+      "fps": 50,
+      "duration": 313,
+      "codec": "h264",
+      "sizeMB": 256.4,
+      "app": "hudson",
+      "tags": [
+        "hudson",
+        "remotion",
+        "claude-code",
+        "video-composition"
+      ],
+      "description": "Claude Code + Hudson \u2014 building video compositions in Remotion. Hudson preview panel with geometric layouts.",
+      "scenes": [
+        {
+          "time": 10,
+          "description": "Claude Code terminal with video editing conversation"
+        },
+        {
+          "time": 156,
+          "description": "Hudson preview + Claude Code building compositions"
+        }
+      ],
+      "storyboardDir": null,
+      "analysisStatus": "frames-only",
+      "composition": null,
+      "reelCandidate": true
+    },
+    {
+      "id": "lattices-dev-session-mar20",
+      "filename": "cleanshot-demo-2026-03-20.mp4",
+      "sourcePath": "~/TMP/CleanShot 2026-03-20 at 13.58.12.mp4",
+      "demosPath": "demos/cleanshot-demo-2026-03-20.mp4",
+      "capturedAt": "2026-03-20T13:58:12",
+      "resolution": "3440x1440",
+      "fps": 50,
+      "duration": 204.9,
+      "codec": "h264",
+      "sizeMB": 169.4,
+      "app": "lattices",
+      "tags": [
+        "lattices",
+        "github-pr",
+        "window-manager",
+        "terminal"
+      ],
+      "description": "Lattices dev session \u2014 terminal + GitHub PR, Lattices window manager overlay, multi-window coding.",
+      "scenes": [
+        {
+          "time": 0,
+          "end": 15,
+          "description": "Terminal + GitHub PR opening"
+        },
+        {
+          "time": 59,
+          "end": 75,
+          "description": "Lattices window manager overlay active"
+        },
+        {
+          "time": 97,
+          "end": 128,
+          "description": "Multi-window coding session"
+        }
+      ],
+      "storyboardDir": "storyboard-lattices-dev-mar20",
+      "analysisStatus": "complete",
+      "composition": "LatticesUIHighlight",
+      "reelCandidate": true
+    },
+    {
+      "id": "lattices-demo-mar22",
+      "filename": "lattices-demo-2026-03-22.mp4",
+      "sourcePath": "~/TMP/CleanShot 2026-03-22 at 16.22.02.mp4",
+      "demosPath": "demos/lattices-demo-2026-03-22.mp4",
+      "capturedAt": "2026-03-22T16:22:02",
+      "resolution": "3440x1440",
+      "fps": 50,
+      "duration": 154,
+      "codec": "h264",
+      "sizeMB": 114.4,
+      "app": "lattices",
+      "tags": [
+        "lattices",
+        "demo",
+        "window-manager"
+      ],
+      "description": "Lattices window manager demo session.",
+      "scenes": [],
+      "storyboardDir": null,
+      "analysisStatus": "none",
+      "composition": null,
+      "reelCandidate": true
+    },
+    {
+      "id": "lattices-voice-mar22",
+      "filename": "lattices-voice-2026-03-22.mp4",
+      "sourcePath": "~/TMP/CleanShot 2026-03-22 at 17.42.06.mp4",
+      "demosPath": "demos/lattices-voice-2026-03-22.mp4",
+      "capturedAt": "2026-03-22T17:42:06",
+      "resolution": "3440x1440",
+      "fps": 50,
+      "duration": 307,
+      "codec": "h264",
+      "sizeMB": 242.0,
+      "app": "lattices",
+      "tags": [
+        "lattices",
+        "voice-commands",
+        "hands-off"
+      ],
+      "description": "Lattices voice commands session \u2014 hands-off window management.",
+      "scenes": [],
+      "storyboardDir": null,
+      "analysisStatus": "none",
+      "composition": "LatticesVoiceCommands",
+      "reelCandidate": true
+    },
+    {
+      "id": "lattices-voice-b-mar22",
+      "filename": "lattices-voice-2026-03-22-b.mp4",
+      "sourcePath": "~/TMP/CleanShot 2026-03-22 at 19.01.26.mp4",
+      "demosPath": "demos/lattices-voice-2026-03-22-b.mp4",
+      "capturedAt": "2026-03-22T19:01:26",
+      "resolution": "3440x1440",
+      "fps": 50,
+      "duration": 126,
+      "codec": "h264",
+      "sizeMB": 158.2,
+      "app": "lattices",
+      "tags": [
+        "lattices",
+        "voice",
+        "agent-coordination",
+        "multi-agent"
+      ],
+      "description": "Lattices agent coordination \u2014 multi-agent voice pipeline with Talkie + Vox.",
+      "scenes": [],
+      "storyboardDir": null,
+      "analysisStatus": "none",
+      "composition": "LatticesVoiceSessionB",
+      "reelCandidate": true
+    },
+    {
+      "id": "full-dev-session-mar19-1655",
+      "filename": "cleanshot-demo-2026-03-19-1655.mp4",
+      "sourcePath": "~/TMP/CleanShot 2026-03-19 at 16.55.01.mp4",
+      "demosPath": "demos/cleanshot-demo-2026-03-19-1655.mp4",
+      "capturedAt": "2026-03-19T16:55:01",
+      "resolution": "3440x1440",
+      "fps": 50,
+      "duration": 281.3,
+      "codec": "h264",
+      "sizeMB": 274.3,
+      "app": "general-dev",
+      "tags": [
+        "multi-window",
+        "claude-agents",
+        "terminal",
+        "diffs"
+      ],
+      "description": "Full dev session \u2014 multi-window with Claude agents, terminals, code diffs.",
+      "scenes": [
+        {
+          "time": 0,
+          "description": "MacBook internals wallpaper + terminal"
+        },
+        {
+          "time": 80,
+          "description": "Multi-agent workspace active"
+        },
+        {
+          "time": 135,
+          "description": "Dense Claude agents in parallel"
+        },
+        {
+          "time": 202,
+          "description": "Full-stack multi-pane development"
+        }
+      ],
+      "storyboardDir": "storyboard-dev-session-mar19",
+      "analysisStatus": "complete",
+      "composition": "ScreenDemo-Mar19-1655",
+      "reelCandidate": false
+    },
+    {
+      "id": "hudson-dev-session-mar19-1633",
+      "filename": "cleanshot-demo-2026-03-19-1633.mp4",
+      "sourcePath": "~/TMP/CleanShot 2026-03-19 at 16.33.56.mp4",
+      "demosPath": "demos/cleanshot-demo-2026-03-19-1633.mp4",
+      "capturedAt": "2026-03-19T16:33:56",
+      "resolution": "2550x1440",
+      "fps": 50,
+      "duration": 554.4,
+      "codec": "h264",
+      "sizeMB": 163.4,
+      "app": "hudson",
+      "tags": [
+        "hudson",
+        "design-system",
+        "generative",
+        "glyph-engine"
+      ],
+      "description": "Hudson design system \u2014 procedural icon generation, glyph engine, Scout logos.",
+      "scenes": [],
+      "storyboardDir": "storyboard-hudson-dev-mar19",
+      "analysisStatus": "complete",
+      "composition": "HudsonHighlightReel",
+      "reelCandidate": false
+    },
+    {
+      "id": "hud-demo",
+      "filename": "hud.mp4",
+      "sourcePath": null,
+      "demosPath": "demos/hud.mp4",
+      "capturedAt": null,
+      "resolution": "1920x1080",
+      "fps": 25,
+      "duration": 114.9,
+      "codec": "h264",
+      "sizeMB": 12.0,
+      "app": "hud",
+      "tags": [
+        "hud",
+        "dashboard",
+        "monitoring",
+        "terminal"
+      ],
+      "description": "HUD app \u2014 dark developer dashboard with monitoring panels, metrics (2.4F, 42ms, 8.02s), task list, 'ARACH: HEY WHAT CAN YOU DO?'",
+      "scenes": [
+        {
+          "time": 5,
+          "description": "HUD dashboard with metrics and task list"
+        }
+      ],
+      "storyboardDir": null,
+      "analysisStatus": "frames-only",
+      "composition": null,
+      "reelCandidate": false
+    },
+    {
+      "id": "hud-long",
+      "filename": "hud-long.mp4",
+      "sourcePath": null,
+      "demosPath": "demos/hud-long.mp4",
+      "capturedAt": null,
+      "resolution": "1920x1080",
+      "fps": 30,
+      "duration": 309.2,
+      "codec": "h264",
+      "sizeMB": 35.8,
+      "app": "hud",
+      "tags": [
+        "hud",
+        "setup",
+        "onboarding"
+      ],
+      "description": "HUD setup/onboarding modal \u2014 'A spatial canvas for organizing context, windows & workflows', API key config, green 'Enter HUD' button.",
+      "scenes": [
+        {
+          "time": 5,
+          "description": "HUD onboarding modal with config fields"
+        }
+      ],
+      "storyboardDir": null,
+      "analysisStatus": "frames-only",
+      "composition": "HUDExperiment",
+      "reelCandidate": false
+    },
+    {
+      "id": "plexus-ios-voice-mar30",
+      "filename": "plexus-ios-voice-2026-03-30.mp4",
+      "sourcePath": "~/Downloads/ScreenRecording_03-30-2026 12-54-49_1.MP4",
+      "demosPath": "demos/plexus-ios-voice-2026-03-30.mp4",
+      "capturedAt": "2026-03-30T12:54:49",
+      "resolution": "1126x2436",
+      "fps": 60,
+      "duration": 102.3,
+      "codec": "h264",
+      "sizeMB": 31.9,
+      "app": "plexus",
+      "tags": [
+        "plexus",
+        "ios",
+        "voice-agent",
+        "dewey-agent",
+        "hold-to-record",
+        "voice-input",
+        "text-input",
+        "agent-response",
+        "project-status",
+        "portrait"
+      ],
+      "description": "Plexus iOS voice agent demo \u2014 opens Dewey agent session (empty state), hold-to-record voice message, agent responds with detailed project status report (git commits, Hudson template, CI pipeline). User types 'That's awesome' via text input with Paste/Copy/Cut toolbar. Full voice + text interaction flow.",
+      "scenes": [
+        {
+          "time": 0,
+          "end": 3,
+          "description": "Control Center dismissing (trim this)"
+        },
+        {
+          "time": 3,
+          "end": 7,
+          "description": "Dewey agent \u2014 empty state, 'No turns yet', blue mic button + keyboard toggle"
+        },
+        {
+          "time": 7,
+          "end": 12,
+          "description": "Hold-to-record active \u2014 red recording indicator, waveform, 'RELEASE TO SEND', 0:01 timer"
+        },
+        {
+          "time": 12,
+          "end": 50,
+          "description": "Agent responding \u2014 markdown-formatted project status: Early March bug fixes, Hudson template work, CI pipeline hardening. Scrolling through detailed changelog."
+        },
+        {
+          "time": 50,
+          "end": 90,
+          "description": "Full response visible \u2014 commit history (d2a0446), v0.3.2\u2192v0.3.3 bump, template/theming system, CI/publish pipeline"
+        },
+        {
+          "time": 90,
+          "end": 102,
+          "description": "User types 'That's awesome.' in text input \u2014 Paste/Copy/Cut/UPPER toolbar visible, blue send button"
+        }
+      ],
+      "storyboardDir": "storyboard-plexus-ios-voice-2026-03-30",
+      "analysisStatus": "frames-only",
+      "composition": "PlexusiOS",
+      "reelCandidate": true
+    },
+    {
+      "id": "plexus-ios-followup-mar30",
+      "filename": "plexus-ios-followup-2026-03-30.mp4",
+      "sourcePath": "~/Downloads/ScreenRecording_03-30-2026 12-57-02_1.MP4",
+      "demosPath": "demos/plexus-ios-followup-2026-03-30.mp4",
+      "capturedAt": "2026-03-30T12:57:02",
+      "resolution": "1126x2436",
+      "fps": 60,
+      "duration": 25.8,
+      "codec": "h264",
+      "sizeMB": 12.4,
+      "app": "plexus",
+      "tags": [
+        "plexus",
+        "ios",
+        "voice-agent",
+        "dewey-agent",
+        "follow-up",
+        "thought-process",
+        "git-status",
+        "portrait"
+      ],
+      "description": "Plexus iOS follow-up query \u2014 continuing Dewey agent conversation. Shows previous response with expandable 'Thought process' section (42s ago, 2 blocks). User sends voice follow-up, agent responds instantly: 'local main and origin/main are both at d2a0446. Clean working tree, fully in sync.'",
+      "scenes": [
+        {
+          "time": 0,
+          "end": 3,
+          "description": "Control Center dismissing (trim this)"
+        },
+        {
+          "time": 3,
+          "end": 10,
+          "description": "Previous agent response visible \u2014 project status, 'Thought process' expandable section, '42s ago / 2 blocks'"
+        },
+        {
+          "time": 10,
+          "end": 15,
+          "description": "User attempts voice recording \u2014 'Recording too short (min 0.3s)' error banner"
+        },
+        {
+          "time": 15,
+          "end": 26,
+          "description": "Successful follow-up \u2014 agent responds: 'local main and origin/main are both at d2a0446. Clean working tree, fully in sync.' Shows 'just now' timestamp"
+        }
+      ],
+      "storyboardDir": "storyboard-plexus-ios-followup-2026-03-30",
+      "analysisStatus": "frames-only",
+      "composition": "PlexusiOS-Followup",
+      "reelCandidate": true
+    },
+    {
+      "id": "talkie-capture-scan-apr17",
+      "filename": "ScreenRecording_04-17-2026 15-59-46_1.MP4",
+      "sourcePath": "~/tmp/ScreenRecording_04-17-2026 15-59-46_1.MP4",
+      "demosPath": null,
+      "capturedAt": "2026-04-17T15:59:46",
+      "resolution": "1126x2436",
+      "fps": 60,
+      "duration": 111.5,
+      "codec": "hevc",
+      "sizeMB": 73.8,
+      "app": "talkie",
+      "tags": [
+        "talkie",
+        "capture",
+        "ocr",
+        "google-lens",
+        "french-text",
+        "baudrillard",
+        "ai-readback",
+        "voice-tts",
+        "portrait",
+        "ios"
+      ],
+      "description": "Talkie Capture demo — scans French book page (Baudrillard 'Théorie de la consommation') via Google Lens, extracts text with OCR, displays in Talkie Capture view with AI Commands overlay and voice readback (TTS). Full scan→transcribe→listen flow.",
+      "scenes": [
+        {
+          "time": 0,
+          "end": 5,
+          "description": "iOS Control Center with Talkie active (green camera indicator)"
+        },
+        {
+          "time": 5,
+          "end": 25,
+          "description": "Google Lens camera scanning French book page — blue text selection overlay on Baudrillard text"
+        },
+        {
+          "time": 25,
+          "end": 55,
+          "description": "Talkie 'New Capture' view — OCR'd French text displayed, image thumbnail attached, microphone icon for voice input"
+        },
+        {
+          "time": 55,
+          "end": 80,
+          "description": "Capture detail view — full French text visible with AI Commands panel docked at bottom ('Summarize, explain, or ask something about this capture')"
+        },
+        {
+          "time": 80,
+          "end": 112,
+          "description": "Voice readback active — blue Pause button, progress bar at 0:00/1:52, AI Commands panel with text-to-speech playing"
+        }
+      ],
+      "storyboardDir": "storyboard-screenrecording_04-17-2026-15-59-46_1.mp",
+      "analysisStatus": "complete",
+      "composition": null,
+      "reelCandidate": true
+    },
+    {
+      "id": "talkie-ai-commands-apr17",
+      "filename": "ScreenRecording_04-17-2026 16-02-04_1.MP4",
+      "sourcePath": "~/tmp/ScreenRecording_04-17-2026 16-02-04_1.MP4",
+      "demosPath": null,
+      "capturedAt": "2026-04-17T16:02:04",
+      "resolution": "1126x2436",
+      "fps": 60,
+      "duration": 69.9,
+      "codec": "hevc",
+      "sizeMB": 19.0,
+      "app": "talkie",
+      "tags": [
+        "talkie",
+        "ai-commands",
+        "gpt-5.2",
+        "voice-tts",
+        "speak-when-ready",
+        "philosophical-analysis",
+        "openai",
+        "portrait",
+        "ios"
+      ],
+      "description": "Talkie AI Commands demo — user asks GPT-5.2 'What does the author mean by code and revolution?' about the Baudrillard excerpt. AI generates detailed sociological analysis. 'Speak when ready' toggle active, TTS reads response aloud with Pause/Copy controls.",
+      "scenes": [
+        {
+          "time": 0,
+          "end": 5,
+          "description": "iOS Control Center — 'Talkie Controls' using microphone (orange indicator), 92% battery"
+        },
+        {
+          "time": 5,
+          "end": 30,
+          "description": "AI Commands view — user prompt visible: 'What does the author mean by code and revolution?' with 'Speak when ready' toggle ON"
+        },
+        {
+          "time": 30,
+          "end": 55,
+          "description": "AI response streaming — OpenAI badge, detailed analysis of 'code' as structured sign system and 'revolution' as neutralized consumer difference"
+        },
+        {
+          "time": 55,
+          "end": 70,
+          "description": "Full response with TTS active — Pause button, Copy button, 'gpt-5.2-chat-latest' model indicator, voice reading aloud"
+        }
+      ],
+      "storyboardDir": "storyboard-screenrecording_04-17-2026-16-02-04_1.mp",
+      "analysisStatus": "complete",
+      "composition": null,
+      "reelCandidate": true
+    },
+    {
+      "id": "talkie-captures-books-apr17",
+      "filename": "ScreenRecording_04-17-2026 16-03-31_1.MP4",
+      "sourcePath": "~/tmp/ScreenRecording_04-17-2026 16-03-31_1.MP4",
+      "demosPath": null,
+      "capturedAt": "2026-04-17T16:03:31",
+      "resolution": "1126x2436",
+      "fps": 60,
+      "duration": 129,
+      "codec": "hevc",
+      "sizeMB": 94.1,
+      "app": "talkie",
+      "tags": [
+        "talkie",
+        "captures",
+        "library",
+        "book-scanning",
+        "the-alchemists",
+        "document-scanner",
+        "google-lens",
+        "ocr",
+        "portrait",
+        "ios"
+      ],
+      "description": "Talkie Captures library + second book scan — browses Captures list (Memos/Dictations/Captures tabs, word counts, timestamps), then scans 'The Alchemists' by Neil Irwin via iOS document scanner and Google Lens. Shows full capture library and new scan→OCR workflow.",
+      "scenes": [
+        {
+          "time": 0,
+          "end": 15,
+          "description": "Talkie HOME — Captures tab selected (blue), list of 10+ captures with word counts (271w, 134w), photo indicators, timestamps"
+        },
+        {
+          "time": 15,
+          "end": 40,
+          "description": "iOS document scanner — scanning 'The Alchemists' book cover, blue edge-detection quadrilateral with corner handles"
+        },
+        {
+          "time": 40,
+          "end": 75,
+          "description": "Google Lens — scanning book pages about European economic history (Schuman Declaration, steel/coal collective), text recognition active"
+        },
+        {
+          "time": 75,
+          "end": 105,
+          "description": "ChatGPT camera interface — scanning page about Maastricht, European monetary policy, Bundesbank vs Banca d'Italia"
+        },
+        {
+          "time": 105,
+          "end": 129,
+          "description": "Capture processing — text extraction and import into Talkie captures library"
+        }
+      ],
+      "storyboardDir": "storyboard-screenrecording_04-17-2026-16-03-31_1.mp",
+      "analysisStatus": "complete",
+      "composition": null,
+      "reelCandidate": true
+    },
+    {
+      "id": "talkie-readout-1-apr17",
+      "filename": "ScreenRecording_04-17-2026 17-04-46_1.MP4",
+      "sourcePath": "~/tmp/ScreenRecording_04-17-2026 17-04-46_1.MP4",
+      "demosPath": "demos/talkie-readout-1.mp4",
+      "capturedAt": "2026-04-17T17:04:46",
+      "resolution": "1126x2436",
+      "fps": 60,
+      "duration": 186.4,
+      "codec": "hevc",
+      "sizeMB": null,
+      "app": "talkie",
+      "tags": [
+        "talkie",
+        "capture",
+        "tts",
+        "readout",
+        "voice-playback",
+        "the-alchemists",
+        "document-scanner",
+        "ai-commands",
+        "gpt-5.2",
+        "portrait",
+        "ios"
+      ],
+      "description": "Talkie Capture with TTS readout — scans 'The Alchemists' pages via document scanner, creates capture with OCR text, shows AI Commands with 'On-device voice' option, then plays full TTS readout with visible progress bar (0:00/2:42), play/pause button, 1x speed control. Ends with AI Q&A: 'Who was Darling?' → GPT-5.2 explains Alistair Darling, British Chancellor.",
+      "scenes": [
+        {
+          "time": 0,
+          "end": 8,
+          "description": "New Capture view — garbled OCR text from book scan, image thumbnail"
+        },
+        {
+          "time": 8,
+          "end": 32,
+          "description": "Document scanner — scanning 'The Alchemists' pages, blue edge detection, multiple page captures"
+        },
+        {
+          "time": 32,
+          "end": 60,
+          "description": "Capture view — OCR'd text about British finance, AI Commands panel with 'On-device voice' option visible"
+        },
+        {
+          "time": 60,
+          "end": 90,
+          "description": "Capture detail — scrolling through extracted text, AI Commands docked"
+        },
+        {
+          "time": 90,
+          "end": 140,
+          "description": "TTS readout active — progress bar 0:00/2:42, play/pause button, 1x speed, voice reading text aloud"
+        },
+        {
+          "time": 140,
+          "end": 167,
+          "description": "Capture view with TTS player and AI Commands, browsing captures"
+        },
+        {
+          "time": 167,
+          "end": 186,
+          "description": "AI Commands — user asks 'Who was Darling in this excerpt?', GPT-5.2 responds: Alistair Darling, British Chancellor. Speak when ready toggle ON"
+        }
+      ],
+      "storyboardDir": "storyboard-screenrecording_04-17-2026-17-04-46_1.mp",
+      "analysisStatus": "complete",
+      "composition": "HypeCaptureAnything",
+      "reelCandidate": true
+    },
+    {
+      "id": "talkie-readout-2-apr17",
+      "filename": "ScreenRecording_04-17-2026 17-08-10_1.MP4",
+      "sourcePath": "~/tmp/ScreenRecording_04-17-2026 17-08-10_1.MP4",
+      "demosPath": "demos/talkie-readout-2.mp4",
+      "capturedAt": "2026-04-17T17:08:10",
+      "resolution": "1126x2436",
+      "fps": 60,
+      "duration": 157.1,
+      "codec": "hevc",
+      "sizeMB": null,
+      "app": "talkie",
+      "tags": [
+        "talkie",
+        "capture",
+        "tts",
+        "readout",
+        "voice-playback",
+        "document-scanner",
+        "ai-commands",
+        "gpt-5.2",
+        "fomc",
+        "central-banking",
+        "portrait",
+        "ios"
+      ],
+      "description": "Talkie Capture with AI Q&A and TTS — scans 'The Perilous Maiden Voyage of the QE2' via document scanner, then AI Commands: user asks 'Can you tell me about the FOMC meetings?', GPT-5.2 responds with detailed explanation, Speak when ready ON. Shows capture with TTS playback — 223 words, media player at bottom.",
+      "scenes": [
+        {
+          "time": 0,
+          "end": 14,
+          "description": "iOS Control Center dismissing, app transition"
+        },
+        {
+          "time": 14,
+          "end": 45,
+          "description": "Document scanner — scanning 'The Perilous Maiden Voyage of the QE2' pages, edge detection active"
+        },
+        {
+          "time": 45,
+          "end": 85,
+          "description": "Capture processing — text extraction, OCR results loading"
+        },
+        {
+          "time": 85,
+          "end": 125,
+          "description": "AI Commands — user asks 'Can you tell me about the FOMC meetings?', GPT-5.2 streams detailed response about Federal Open Market Committee, Speak when ready toggle ON"
+        },
+        {
+          "time": 125,
+          "end": 157,
+          "description": "Capture with TTS playback — 223 words, media player at bottom, voice reading response aloud"
+        }
+      ],
+      "storyboardDir": "storyboard-screenrecording_04-17-2026-17-08-10_1.mp",
+      "analysisStatus": "complete",
+      "composition": "HypeAIReadsForYou",
+      "reelCandidate": true
+    }
+  ]
+}

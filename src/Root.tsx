@@ -10,6 +10,7 @@ import { TalkiePixelIntro } from "./intros/TalkiePixelIntro";
 import { TalkieAsciiIntro } from "./intros/TalkieAsciiIntro";
 import { TalkieTacticalIntro } from "./intros/TalkieTacticalIntro";
 import { TalkieComingSoon } from "./intros/TalkieComingSoon";
+import { AmplinkIntro } from "./intros/AmplinkIntro";
 import { Thumbnail } from "./Thumbnail";
 import { TalkieThumbnail } from "./TalkieThumbnail";
 import { QuoteVideo } from "./QuoteVideo";
@@ -31,6 +32,93 @@ import { LatticesVoiceDemo, calculateVoiceDemoFrames } from "./projects/lattices
 import { LatticesMenuBarDemo, calculateMenuBarDemoFrames } from "./projects/lattices-highlight/LatticesMenuBarDemo";
 import { LatticesVoiceCommandsDemo, calculateVoiceCommandsDemoFrames } from "./projects/lattices-highlight/LatticesVoiceCommandsDemo";
 import { LatticesVoiceSessionB, calculateVoiceSessionBFrames } from "./projects/lattices-highlight/LatticesVoiceSessionB";
+import { TalkieHighlightReel, calculateTalkieReelFrames } from "./projects/talkie-reel";
+import { PlexusHighlightReel, calculatePlexusReelFrames } from "./projects/plexus-reel/PlexusHighlightReel";
+import { ScoutQuickCut, calculateScoutQuickCutFrames, ScoutFeatureStack, calculateScoutFeatureStackFrames } from "./projects/scout/ScoutHype";
+import {
+  HypeCaptureAnything,
+  HypeAIReadsForYou,
+  HypeKnowledgeLoop,
+  HypeQuickCut,
+  HypeNarrator,
+  HypeSizzle,
+  HypeRapidFire,
+  HypeSlowBurn,
+  HypeFeatureStack,
+  HypeFeatureStackB,
+  HypeFeatureStackC,
+  HypeFeatureStackCBaudrillard,
+  HypeQuickCutB,
+  HypeQuickCutC,
+  HypeRapidFireB,
+  HypeRapidFireC,
+  HYPE_FPS,
+  calculateHype1Frames,
+  calculateHype2Frames,
+  calculateHype3Frames,
+  calculateHype4Frames,
+  calculateHypeNarratorFrames,
+  calculateHypeSizzleFrames,
+  calculateHypeRapidFireFrames,
+  calculateHypeSlowBurnFrames,
+  calculateHypeFeatureStackFrames,
+  calculateHypeFeatureStackBFrames,
+  calculateHypeFeatureStackCFrames,
+  calculateHypeFeatureStackCBaudrillardFrames,
+  calculateHypeQuickCutBFrames,
+  calculateHypeQuickCutCFrames,
+  calculateHypeRapidFireBFrames,
+  calculateHypeRapidFireCFrames,
+} from "./projects/talkie-capture-hype";
+import { AmplinkSetup } from "./projects/amplink/AmplinkSetup";
+import { AmplinkPairing, calculateAmplinkPairingFrames } from "./projects/amplink/AmplinkPairing";
+import { AmplinkSetupOriginal } from "./projects/amplink/AmplinkSetupOriginal";
+import {
+  AmplinkLoaderPulse,
+  AmplinkLoaderScan,
+  AmplinkLoaderDotBuild,
+  AmplinkLoaderMinimal,
+  AmplinkLoaderBuildScan,
+} from "./projects/amplink/AmplinkLoaders";
+import {
+  AmpRawDotBuild,
+  AmpRawDotIdle,
+  AmpRawDotDissolve,
+  AmpRawScanPass,
+  AmpRawLogoIn,
+  AmpRawLogoOut,
+  AmpRawGlowPulse,
+  AmpRawScanHorizontal,
+} from "./projects/amplink/AmplinkRawMaterials";
+import {
+  DispatchLoaderPulse,
+  DispatchLoaderScan,
+  DispatchLoaderDotBuild,
+  DispatchLoaderMinimal,
+  DispatchLoaderBuildScan,
+  DispatchScanReveal,
+} from "./projects/dispatch/DispatchLoaders";
+import {
+  DispatchRawDotBuild,
+  DispatchRawDotIdle,
+  DispatchRawDotDissolve,
+  DispatchRawScanPass,
+  DispatchRawScanHorizontal,
+  DispatchRawLogoIn,
+  DispatchRawLogoOut,
+  DispatchRawGlowPulse,
+} from "./projects/dispatch/DispatchRawMaterials";
+import {
+  ScoutRawBuild,
+  ScoutRawIdle,
+  ScoutRawDissolve,
+  ScoutRawScanPass,
+  ScoutRawScanHorizontal,
+  ScoutRawLogoIn,
+  ScoutRawLogoOut,
+  ScoutRawGlowPulse,
+} from "./projects/scout/ScoutRawMaterials";
+import { ScoutScanReveal } from "./projects/scout/ScoutScanReveal";
 
 // Video settings
 const FPS = 30;
@@ -464,6 +552,66 @@ export const RemotionRoot: React.FC = () => {
             musicVolume: 0.3,
           }}
         />
+        {/* Plexus iOS — Voice Agent Demo (1:42, skip 3s control center) */}
+        <Composition
+          id="PlexusiOS"
+          component={DemoVideo}
+          durationInFrames={calculateDemoFrames(99, FPS)}
+          fps={FPS}
+          width={1080}
+          height={2336}
+          defaultProps={{
+            videoSrc: "demos/plexus-ios-voice-2026-03-30.mp4",
+            title: "PLEXUS",
+            subtitle: "Voice Agent",
+            tagline: "iOS Demo",
+            releaseDate: "2026",
+            iconSrc: "arach-circle.png",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.2,
+            videoVolume: 0.7,
+            videoStartFrom: 3,
+          }}
+        />
+        {/* Plexus iOS — Follow-up query (0:26, skip 3s control center) */}
+        <Composition
+          id="PlexusiOS-Followup"
+          component={DemoVideo}
+          durationInFrames={calculateDemoFrames(22, FPS)}
+          fps={FPS}
+          width={1080}
+          height={2336}
+          defaultProps={{
+            videoSrc: "demos/plexus-ios-followup-2026-03-30.mp4",
+            title: "PLEXUS",
+            subtitle: "Voice Agent",
+            tagline: "Follow-up Query",
+            releaseDate: "2026",
+            iconSrc: "arach-circle.png",
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.2,
+            videoVolume: 0.7,
+            videoStartFrom: 3,
+          }}
+        />
+        {/* Plexus Highlight Reel — iPhone content in 16:9 landscape frame */}
+        <Composition
+          id="PlexusHighlightReel"
+          component={PlexusHighlightReel}
+          durationInFrames={calculatePlexusReelFrames(FPS)}
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={{
+            musicTrack: "tracks/futuristic-synthwave.mp3",
+            musicVolume: 0.15,
+            title: "PLEXUS",
+            subtitle: "Voice Agent",
+            tagline: "Talk to Your Agents",
+            releaseDate: "2026",
+            iconSrc: "arach-circle.png",
+          }}
+        />
         {/* Latest: 60s Overview with Tactical Intro */}
         <Composition
           id="TalkieOverview"
@@ -548,6 +696,138 @@ export const RemotionRoot: React.FC = () => {
         />
       </Folder>
 
+      {/* Talkie Capture Hype Videos — Apr 17, 2026 */}
+      <Folder name="TalkieCaptureHype">
+        <Composition
+          id="HypeCaptureAnything"
+          component={HypeCaptureAnything}
+          durationInFrames={calculateHype1Frames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeAIReadsForYou"
+          component={HypeAIReadsForYou}
+          durationInFrames={calculateHype2Frames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeKnowledgeLoop"
+          component={HypeKnowledgeLoop}
+          durationInFrames={calculateHype3Frames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeQuickCut"
+          component={HypeQuickCut}
+          durationInFrames={calculateHype4Frames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeNarrator"
+          component={HypeNarrator}
+          durationInFrames={calculateHypeNarratorFrames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeSizzle"
+          component={HypeSizzle}
+          durationInFrames={calculateHypeSizzleFrames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeRapidFire"
+          component={HypeRapidFire}
+          durationInFrames={calculateHypeRapidFireFrames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeSlowBurn"
+          component={HypeSlowBurn}
+          durationInFrames={calculateHypeSlowBurnFrames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeFeatureStack"
+          component={HypeFeatureStack}
+          durationInFrames={calculateHypeFeatureStackFrames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeFeatureStackB"
+          component={HypeFeatureStackB}
+          durationInFrames={calculateHypeFeatureStackBFrames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeFeatureStackC"
+          component={HypeFeatureStackC}
+          durationInFrames={calculateHypeFeatureStackCFrames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeFeatureStackCBaudrillard"
+          component={HypeFeatureStackCBaudrillard}
+          durationInFrames={calculateHypeFeatureStackCBaudrillardFrames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeQuickCutB"
+          component={HypeQuickCutB}
+          durationInFrames={calculateHypeQuickCutBFrames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeQuickCutC"
+          component={HypeQuickCutC}
+          durationInFrames={calculateHypeQuickCutCFrames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeRapidFireB"
+          component={HypeRapidFireB}
+          durationInFrames={calculateHypeRapidFireBFrames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="HypeRapidFireC"
+          component={HypeRapidFireC}
+          durationInFrames={calculateHypeRapidFireCFrames()}
+          fps={HYPE_FPS}
+          width={1920}
+          height={1080}
+        />
+      </Folder>
+
       {/* Screen Demo - Mar 18, 2026 */}
       <Composition
         id="ScreenDemo-Mar18"
@@ -605,6 +885,27 @@ export const RemotionRoot: React.FC = () => {
           subtitle: "Screen Demo",
           tagline: "March 2026",
           releaseDate: "Q1 2026",
+          iconSrc: "arach-circle.png",
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.25,
+          frameStyle: "none",
+        }}
+      />
+
+      {/* Compose Demo - Mar 26, 2026 (~145s, 1126x816) */}
+      <Composition
+        id="ComposeDemo"
+        component={DemoVideo}
+        durationInFrames={calculateDemoFrames(144.6, FPS)}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          videoSrc: "demos/cleanshot-demo-2026-03-26.mp4",
+          title: "COMPOSE",
+          subtitle: "AI Writing Assistant",
+          tagline: "Draft → Refine → Ship",
+          releaseDate: "2026",
           iconSrc: "arach-circle.png",
           musicTrack: "tracks/futuristic-synthwave.mp3",
           musicVolume: 0.25,
@@ -731,6 +1032,76 @@ export const RemotionRoot: React.FC = () => {
           }}
         />
       </Folder>
+
+      {/* Lattices Dev — Apr 18, 2026 (11s, 1920x804) */}
+      <Composition
+        id="LatticesDev-Apr18"
+        component={DemoVideo}
+        durationInFrames={calculateDemoFrames(11, FPS, 0.5, 5)}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          videoSrc: "demos/lattices-dev-2026-04-18.mp4",
+          title: "LATTICES",
+          subtitle: "lattices.dev",
+          tagline: "The Agentic Window Manager",
+          releaseDate: "2026",
+          iconSrc: "lattices-icon.png",
+          introDuration: 0.5,
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.25,
+          frameStyle: "none",
+          objectFit: "contain",
+        }}
+      />
+
+      {/* Talkie Highlight Reel — multi-source curated clips */}
+      <Composition
+        id="TalkieHighlightReel"
+        component={TalkieHighlightReel}
+        durationInFrames={calculateTalkieReelFrames(FPS)}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.3,
+          title: "TALKIE",
+          subtitle: "Voice Engine v2.22",
+          tagline: "Voice-to-Action Framework",
+          releaseDate: "2026",
+          iconSrc: "talkie-icon-1024.png",
+        }}
+      />
+
+      {/* Premotion Webapp Demo — catalog & finished videos showcase */}
+      <Composition
+        id="PromotionWebappDemo"
+        component={DemoVideo}
+        durationInFrames={calculateDemoFrames(54, FPS, 5, 3)}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          videoSrc: "demos/premotion-webapp-demo.mp4",
+          title: "PREMOTION",
+          subtitle: "Video Catalog",
+          tagline: "Source to Ship",
+          releaseDate: "2026",
+          iconSrc: "arach-circle.png",
+          musicTrack: "tracks/futuristic-synthwave.mp3",
+          musicVolume: 0.25,
+          frameStyle: "none" as const,
+          objectFit: "contain" as const,
+          zooms: [
+            { time: 6, scale: 1.35, x: 80, y: -40, duration: 5 },
+            { time: 22, scale: 1.3, x: -50, y: 30, duration: 4 },
+            { time: 35, scale: 1.4, x: 0, y: 50, duration: 4 },
+            { time: 47, scale: 1.25, x: -60, y: -20, duration: 4 },
+          ],
+        }}
+      />
 
       {/* Caption Test — DemoVideo with overlay captions */}
       <Composition
@@ -896,6 +1267,173 @@ export const RemotionRoot: React.FC = () => {
         {introCompositions("TalkiePixelIntroLong", TalkiePixelIntro, 7 * FPS)}
         {introCompositions("TalkieAsciiIntro", TalkieAsciiIntro, INTRO_DURATION)}
         {introCompositions("TalkieTacticalIntro", TalkieTacticalIntro, INTRO_DURATION)}
+        {introCompositions("AmplinkIntro", AmplinkIntro, INTRO_DURATION)}
+      </Folder>
+
+      {/* Amplink */}
+      <Folder name="Amplink">
+        <Composition
+          id="AmplinkSetup"
+          component={AmplinkSetup}
+          durationInFrames={15 * FPS}
+          fps={FPS}
+          width={WIDTH}
+          height={HEIGHT}
+        />
+        <Composition
+          id="AmplinkSetupOriginal"
+          component={AmplinkSetupOriginal}
+          durationInFrames={25 * FPS}
+          fps={FPS}
+          width={WIDTH}
+          height={HEIGHT}
+        />
+        <Composition
+          id="AmplinkPairing"
+          component={AmplinkPairing}
+          durationInFrames={calculateAmplinkPairingFrames(FPS)}
+          fps={FPS}
+          width={WIDTH}
+          height={HEIGHT}
+        />
+
+        {/* Amplink Loaders — 2s loops at iPhone 15 Pro resolution */}
+        <Folder name="Amplink-Loaders">
+          <Composition
+            id="AmplinkLoaderPulse"
+            component={AmplinkLoaderPulse}
+            durationInFrames={60}
+            fps={FPS}
+            width={390}
+            height={844}
+          />
+          <Composition
+            id="AmplinkLoaderScan"
+            component={AmplinkLoaderScan}
+            durationInFrames={60}
+            fps={FPS}
+            width={390}
+            height={844}
+          />
+          <Composition
+            id="AmplinkLoaderDotBuild"
+            component={AmplinkLoaderDotBuild}
+            durationInFrames={60}
+            fps={FPS}
+            width={390}
+            height={844}
+          />
+          <Composition
+            id="AmplinkLoaderMinimal"
+            component={AmplinkLoaderMinimal}
+            durationInFrames={60}
+            fps={FPS}
+            width={390}
+            height={844}
+          />
+          <Composition
+            id="AmplinkLoaderBuildScan"
+            component={AmplinkLoaderBuildScan}
+            durationInFrames={90}
+            fps={FPS}
+            width={390}
+            height={844}
+          />
+        </Folder>
+        <Folder name="Amplink-Raw">
+          <Composition id="AmpRawDotBuild" component={AmpRawDotBuild} durationInFrames={45} fps={FPS} width={512} height={512} />
+          <Composition id="AmpRawDotIdle" component={AmpRawDotIdle} durationInFrames={60} fps={FPS} width={512} height={512} />
+          <Composition id="AmpRawDotDissolve" component={AmpRawDotDissolve} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="AmpRawScanPass" component={AmpRawScanPass} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="AmpRawScanHorizontal" component={AmpRawScanHorizontal} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="AmpRawLogoIn" component={AmpRawLogoIn} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="AmpRawLogoOut" component={AmpRawLogoOut} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="AmpRawGlowPulse" component={AmpRawGlowPulse} durationInFrames={60} fps={FPS} width={512} height={512} />
+        </Folder>
+      </Folder>
+
+      {/* Dispatch */}
+      <Folder name="Dispatch">
+        <Folder name="Dispatch-Loaders">
+          <Composition
+            id="DispatchLoaderPulse"
+            component={DispatchLoaderPulse}
+            durationInFrames={60}
+            fps={FPS}
+            width={390}
+            height={844}
+          />
+          <Composition
+            id="DispatchLoaderScan"
+            component={DispatchLoaderScan}
+            durationInFrames={60}
+            fps={FPS}
+            width={390}
+            height={844}
+          />
+          <Composition
+            id="DispatchLoaderDotBuild"
+            component={DispatchLoaderDotBuild}
+            durationInFrames={60}
+            fps={FPS}
+            width={390}
+            height={844}
+          />
+          <Composition
+            id="DispatchLoaderMinimal"
+            component={DispatchLoaderMinimal}
+            durationInFrames={60}
+            fps={FPS}
+            width={390}
+            height={844}
+          />
+          <Composition
+            id="DispatchLoaderBuildScan"
+            component={DispatchLoaderBuildScan}
+            durationInFrames={90}
+            fps={FPS}
+            width={390}
+            height={844}
+          />
+          <Composition
+            id="DispatchScanReveal"
+            component={DispatchScanReveal}
+            durationInFrames={90}
+            fps={FPS}
+            width={240}
+            height={280}
+            defaultProps={{ wordmark: "Scout" }}
+          />
+        </Folder>
+        <Folder name="Dispatch-Raw">
+          <Composition id="DispatchRawDotBuild" component={DispatchRawDotBuild} durationInFrames={45} fps={FPS} width={512} height={512} />
+          <Composition id="DispatchRawDotIdle" component={DispatchRawDotIdle} durationInFrames={60} fps={FPS} width={512} height={512} />
+          <Composition id="DispatchRawDotDissolve" component={DispatchRawDotDissolve} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="DispatchRawScanPass" component={DispatchRawScanPass} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="DispatchRawScanHorizontal" component={DispatchRawScanHorizontal} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="DispatchRawLogoIn" component={DispatchRawLogoIn} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="DispatchRawLogoOut" component={DispatchRawLogoOut} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="DispatchRawGlowPulse" component={DispatchRawGlowPulse} durationInFrames={60} fps={FPS} width={512} height={512} />
+        </Folder>
+      </Folder>
+
+      {/* OpenScout */}
+      <Folder name="Scout">
+        <Composition id="ScoutQuickCut" component={ScoutQuickCut} durationInFrames={calculateScoutQuickCutFrames()} fps={FPS} width={WIDTH} height={HEIGHT} />
+        <Composition id="ScoutFeatureStack" component={ScoutFeatureStack} durationInFrames={calculateScoutFeatureStackFrames(FPS)} fps={FPS} width={WIDTH} height={HEIGHT} />
+        <Composition id="ScoutScanReveal-OpenScout" component={ScoutScanReveal} durationInFrames={90} fps={FPS} width={WIDTH} height={HEIGHT} defaultProps={{ wordmark: "OpenScout" }} />
+        <Composition id="ScoutScanReveal-Scout" component={ScoutScanReveal} durationInFrames={90} fps={FPS} width={WIDTH} height={HEIGHT} defaultProps={{ wordmark: "Scout" }} />
+        <Composition id="ScoutScanReveal-Dispatch" component={ScoutScanReveal} durationInFrames={90} fps={FPS} width={WIDTH} height={HEIGHT} defaultProps={{ wordmark: "Dispatch" }} />
+        <Folder name="Scout-Raw">
+          <Composition id="ScoutRawBuild" component={ScoutRawBuild} durationInFrames={45} fps={FPS} width={512} height={512} />
+          <Composition id="ScoutRawIdle" component={ScoutRawIdle} durationInFrames={60} fps={FPS} width={512} height={512} />
+          <Composition id="ScoutRawDissolve" component={ScoutRawDissolve} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="ScoutRawScanPass" component={ScoutRawScanPass} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="ScoutRawScanHorizontal" component={ScoutRawScanHorizontal} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="ScoutRawLogoIn" component={ScoutRawLogoIn} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="ScoutRawLogoOut" component={ScoutRawLogoOut} durationInFrames={30} fps={FPS} width={512} height={512} />
+          <Composition id="ScoutRawGlowPulse" component={ScoutRawGlowPulse} durationInFrames={60} fps={FPS} width={512} height={512} />
+        </Folder>
       </Folder>
 
       {/* Thumbnails */}

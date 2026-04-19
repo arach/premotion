@@ -1,0 +1,109 @@
+{
+  "_comment": "Example of a fully populated VideoEntry — the Talkie dashboard video",
+
+  "id": "talkie-dashboard-mar26",
+  "filename": "talkie-dashboard-2026-03-26.mp4",
+  "sourcePath": "~/TMP/CleanShot 2026-03-26 at 15.53.17.mp4",
+  "demosPath": "demos/talkie-dashboard-2026-03-26.mp4",
+  "capturedAt": "2026-03-26T15:53:17",
+
+  "source": {
+    "resolution": "1160x698",
+    "width": 1160,
+    "height": 698,
+    "fps": 50,
+    "duration": 58,
+    "codec": "h264",
+    "sizeMB": 19.1,
+    "aspectRatio": "16:10",
+    "hasAudio": true
+  },
+
+  "content": {
+    "project": "talkie",
+    "alsoShows": ["compose"],
+    "contentType": "app-demo",
+    "features": [
+      "home-dashboard",
+      "streak-counter",
+      "memo-list",
+      "dictation-list",
+      "top-apps-tracking",
+      "activity-heatmap",
+      "shortcuts-bar",
+      "library-readouts",
+      "readout-detail",
+      "readout-service-calls",
+      "elevenlabs-voice",
+      "llm-pipeline"
+    ],
+    "views": [
+      "HOME",
+      "LIBRARY → Readouts",
+      "Readout Detail Pane"
+    ],
+    "narrative": "A walkthrough of Talkie's two main surfaces: the HOME dashboard showing daily usage stats (109-day streak, 391 memos, 18.6k dictations), top apps, shortcuts, and activity heatmap — then navigating to the LIBRARY Readouts tab showing AI-generated spoken summaries with full context (source app, LLM model, voice provider, latency).",
+    "tags": ["talkie", "dashboard", "readouts", "elevenlabs", "llama-3.3", "stats", "heatmap", "voice-ai"]
+  },
+
+  "scenes": [
+    {
+      "start": 0,
+      "end": 15,
+      "description": "Claude Code terminal showing Compose demo code — transition from previous recording session",
+      "visibleApp": "claude-code",
+      "activity": "idle"
+    },
+    {
+      "start": 15,
+      "end": 27,
+      "description": "Talkie HOME dashboard — 109-day streak, 113 today, 391 memos, 18.6k dictations, 6.6k words. Top apps: iTerm2 (15,828), Codex (1,076), Chrome (636), Ghostty (448), ChatGPT (359). Shortcuts: Compose (C), Record (R), Dictations (D), Notes (N), Screenshots (S). Green activity heatmap. Recent Memos list with timestamps. Recent Dictations list showing conversation fragments.",
+      "visibleApp": "talkie",
+      "visibleFeatures": ["home-dashboard", "streak-counter", "top-apps", "shortcuts-bar", "activity-heatmap", "recent-memos", "recent-dictations"],
+      "activity": "active",
+      "frameFile": "frame_003.jpg"
+    },
+    {
+      "start": 27,
+      "end": 37,
+      "description": "LIBRARY view → Readouts tab — scrollable list of readout summaries with timestamps. Entries include 'A video demo was copied and analyzed...', 'Here's a concise spoken summary...', 'You've made changes to 6 files...'. Filter bar: Today, This Week, More.",
+      "visibleApp": "talkie",
+      "visibleFeatures": ["library-readouts", "readout-list", "time-filters"],
+      "activity": "active"
+    },
+    {
+      "start": 37,
+      "end": 43,
+      "description": "Readout detail pane — SELECTED TEXT shows Compose demo pipeline summary (4 numbered steps). CONTEXT section: Source=iTerm2, Mode=Explanation, Voice=ElevenLabs, Latency=1895ms.",
+      "visibleApp": "talkie",
+      "visibleFeatures": ["readout-detail", "context-metadata", "elevenlabs-voice"],
+      "activity": "active",
+      "frameFile": "frame_005.jpg"
+    },
+    {
+      "start": 43,
+      "end": 58,
+      "description": "Readout detail scrolled down — SERVICE CALLS section: LLM provider (llama-3.3-70b-versatile via Groq), system prompt ('You are helping someone understand a terminal selection quickly. Explain the selected text in a concise spoken-friendly way.'), followed by the generated explanation text.",
+      "visibleApp": "talkie",
+      "visibleFeatures": ["readout-service-calls", "llm-pipeline", "groq-provider"],
+      "activity": "active",
+      "frameFile": "frame_007.jpg"
+    }
+  ],
+
+  "analysis": {
+    "status": "analyzed",
+    "storyboardDir": "storyboard-talkie-dashboard-mar26",
+    "edlFile": "storyboard-talkie-dashboard-mar26/edl.json",
+    "transcriptFile": null,
+    "analyzedAt": "2026-03-26T20:51:35Z",
+    "visionCallsUsed": 8
+  },
+
+  "production": {
+    "compositions": [],
+    "reelCandidate": true,
+    "includedInReels": [],
+    "note": "Key Talkie content — dashboard + readouts. First 15s is claude-code transition, use startFrom=15 for reel clips."
+  }
+}

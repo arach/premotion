@@ -1,12 +1,14 @@
 import type { Plugin } from "vite";
-import { spawn } from "child_process";
-import { existsSync, copyFileSync, readFileSync } from "fs";
+import { spawn, execSync } from "child_process";
+import { existsSync, copyFileSync, readFileSync, writeFileSync, readdirSync, statSync } from "fs";
 import { join, basename } from "path";
 import Anthropic from "@anthropic-ai/sdk";
 
 const ROOT = import.meta.dirname || ".";
 const PUBLIC = join(ROOT, "public");
 const DEMOS = join(PUBLIC, "demos");
+const OUT = join(ROOT, "out");
+const FEEDBACK_PATH = join(ROOT, "catalog", "feedback.json");
 
 const running = new Map<string, { status: string; log: string[] }>();
 
@@ -98,10 +100,97 @@ function fmtTime(s: number | null | undefined): string {
   return `${m}:${String(sec).padStart(2, "0")}`;
 }
 
+function loadFeedback(): Record<string, { rating: string; notes: string; updatedAt: string }> {
+  if (existsSync(FEEDBACK_PATH)) {
+    return JSON.parse(readFileSync(FEEDBACK_PATH, "utf-8"));
+  }
+  return {};
+}
+
+function saveFeedback(data: Record<string, any>) {
+  writeFileSync(FEEDBACK_PATH, JSON.stringify(data, null, 2));
+}
+
+function scanRenders(): any[] {
+  if (!existsSync(OUT)) return [];
+  const feedback = loadFeedback();
+  const files = readdirSync(OUT).filter(f => f.endsWith(".mp4"));
+  const renders = files.map(f => {
+    const fullPath = join(OUT, f);
+    const stat = statSync(fullPath);
+    const name = f.replace(/\.mp4$/, "");
+    const sizeMB = +(stat.size / 1048576).toFixed(1);
+
+    let duration = 0;
+    try {
+      const probe = execSync(
+        `ffprobe -v error -show_entries format=duration -of csv=p=0 "${fullPath}"`,
+        { timeout: 5000 }
+      ).toString().trim();
+      duration = Math.round(parseFloat(probe) || 0);
+    } catch {}
+
+    let project = "other";
+    if (name.startsWith("Hype")) project = "talkie-hype";
+    else if (name.startsWith("Talkie") || name.startsWith("Capture")) project = "talkie";
+    else if (name.toLowerCase().includes("amp") || name.startsWith("Amplink")) project = "amplink";
+    else if (name.toLowerCase().includes("dispatch")) project = "dispatch";
+    else if (name.toLowerCase().includes("scout")) project = "scout";
+    else if (name.toLowerCase().includes("lattice")) project = "lattices";
+    else if (name.toLowerCase().includes("hudson")) project = "hudson";
+    else if (name.startsWith("raw-")) project = "raw-assets";
+    else if (name.toLowerCase().includes("quote")) project = "quotes";
+
+    const fb = feedback[name];
+
+    return {
+      name,
+      filename: f,
+      sizeMB,
+      duration,
+      project,
+      modifiedAt: stat.mtime.toISOString(),
+      feedback: fb || null,
+    };
+  });
+  renders.sort((a, b) => new Date(b.modifiedAt).getTime() - new Date(a.modifiedAt).getTime());
+  return renders;
+}
+
 export function apiPlugin(): Plugin {
   return {
     name: "premotion-api",
     configureServer(server) {
+      // Serve /renders/ from out/ directory
+      server.middlewares.use((req, res, next) => {
+        if (req.url?.startsWith("/renders/")) {
+          const filePath = join(OUT, decodeURIComponent(req.url.slice("/renders/".length)));
+          if (existsSync(filePath)) {
+            const stat = statSync(filePath);
+            res.setHeader("Content-Type", "video/mp4");
+            res.setHeader("Content-Length", stat.size);
+            res.setHeader("Accept-Ranges", "bytes");
+
+            const range = req.headers.range;
+            if (range) {
+              const parts = range.replace(/bytes=/, "").split("-");
+              const start = parseInt(parts[0], 10);
+              const end = parts[1] ? parseInt(parts[1], 10) : stat.size - 1;
+              res.statusCode = 206;
+              res.setHeader("Content-Range", `bytes ${start}-${end}/${stat.size}`);
+              res.setHeader("Content-Length", end - start + 1);
+              const { createReadStream } = require("fs");
+              createReadStream(filePath, { start, end }).pipe(res);
+            } else {
+              const { createReadStream } = require("fs");
+              createReadStream(filePath).pipe(res);
+            }
+            return;
+          }
+        }
+        next();
+      });
+
       server.middlewares.use(async (req, res, next) => {
         if (!req.url?.startsWith("/api/")) return next();
 
@@ -209,6 +298,29 @@ export function apiPlugin(): Plugin {
           } catch (err: any) {
             res.end(JSON.stringify({ ok: false, error: err.message }));
           }
+          return;
+        }
+
+        // GET /api/renders
+        if (req.method === "GET" && req.url === "/api/renders") {
+          const renders = scanRenders();
+          res.end(JSON.stringify({ ok: true, renders }));
+          return;
+        }
+
+        // POST /api/feedback
+        if (req.method === "POST" && req.url === "/api/feedback") {
+          let body = "";
+          for await (const chunk of req) body += chunk;
+          const { name, rating, notes } = JSON.parse(body);
+          if (!name) {
+            res.end(JSON.stringify({ ok: false, error: "name required" }));
+            return;
+          }
+          const feedback = loadFeedback();
+          feedback[name] = { rating: rating || "", notes: notes || "", updatedAt: new Date().toISOString() };
+          saveFeedback(feedback);
+          res.end(JSON.stringify({ ok: true }));
           return;
         }
 

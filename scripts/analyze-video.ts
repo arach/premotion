@@ -22,11 +22,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const PUBLIC_DIR = join(__dirname, "..", "public/demos");
 
-const inputPath = process.argv[2];
+const args = process.argv.slice(2);
+const framesOnly = args.includes("--frames-only");
+const inputPath = args.find(a => !a.startsWith("--"));
 
 if (!inputPath) {
-	log("Usage: bun run analyze <video-file>");
+	log("Usage: bun run analyze <video-file> [--frames-only]");
 	log("  e.g. bun run analyze ~/tmp/demo.mp4");
+	log("  --frames-only  Scene detect + keyframes + pixel diff only (no vision API)");
 	process.exit(1);
 }
 
@@ -55,7 +58,7 @@ log(`\n╔═══════════════════════�
 log(`║  PREMOTION — Video Analyzer              ║`);
 log(`╚══════════════════════════════════════════╝`);
 
-const edl = await analyzeVideo(resolved, { outDir });
+const edl = await analyzeVideo(resolved, { outDir, skipVision: framesOnly });
 
 log(`\n── Results ──────────────────────────────`);
 log(`  Scenes:      ${edl.scenes.length}`);

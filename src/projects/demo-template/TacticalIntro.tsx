@@ -192,7 +192,7 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 					letterSpacing: "0.05em",
 				}}
 			>
-				<div>v2.22.0-beta</div>
+				<div>v2.5.5</div>
 			</div>
 
 			{/* Bottom-right: Status indicator */}

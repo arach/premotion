@@ -4,22 +4,27 @@
   "description": "Video editing with Remotion",
   "type": "module",
   "scripts": {
-    "dev": "remotion studio",
+    "dev": "vite",
+    "studio": "remotion studio",
     "build": "remotion render FullVideo out/video.mp4",
     "render": "remotion render",
     "quote": "node scripts/make-quote.mjs",
-    "analyze": "bun run scripts/analyze-video.ts"
+    "ingest": "bun run scripts/ingest.ts",
+    "analyze": "bun run scripts/analyze-video.ts",
+    "catalog": "bun run scripts/build-catalog.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
-    "@remotion/captions": "^4.0.422",
-    "@remotion/cli": "^4.0.0",
-    "@remotion/google-fonts": "4.0.407",
-    "@remotion/media": "^4.0.0",
-    "@remotion/transitions": "^4.0.0",
+    "@remotion/captions": "^4.0.441",
+    "@remotion/cli": "^4.0.441",
+    "@remotion/google-fonts": "^4.0.441",
+    "@remotion/media": "^4.0.441",
+    "@remotion/transitions": "^4.0.441",
+    "@vitejs/plugin-react": "^6.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "remotion": "^4.0.0"
+    "remotion": "^4.0.441",
+    "vite": "^8.0.3"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",

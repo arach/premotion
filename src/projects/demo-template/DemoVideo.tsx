@@ -1,5 +1,6 @@
 import {
 	useVideoConfig,
+	useCurrentFrame,
 	Sequence,
 	AbsoluteFill,
 	Audio,
@@ -42,6 +43,10 @@ export interface DemoVideoProps {
 	captionStyle?: "none" | "overlay" | "bar";
 	transcriptFile?: string;
 	captionBarHeight?: number;
+	// Video fit
+	objectFit?: "cover" | "contain";
+	// Zoom keyframes: [{time: seconds into content, scale, x, y, duration}]
+	zooms?: { time: number; scale: number; x?: number; y?: number; duration?: number }[];
 }
 
 // Reusable demo video template: Intro → Content → Outro
@@ -66,6 +71,8 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 	captionStyle = "none",
 	transcriptFile,
 	captionBarHeight = 120,
+	objectFit = "cover",
+	zooms = [],
 }) => {
 	const { fps, durationInFrames, height } = useVideoConfig();
 	const hasCaptions = captionStyle !== "none" && !!transcriptFile;
@@ -80,6 +87,38 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 	const outroStart = introFrames + contentFrames;
 
 	const sfxVolume = 0.35;
+	const frame = useCurrentFrame();
+	const contentFrame = frame - contentStart;
+
+	// Compute zoom transform
+	let zoomScale = 1;
+	let zoomTx = 0;
+	let zoomTy = 0;
+	if (zooms.length && contentFrame >= 0) {
+		for (const z of zooms) {
+			const zStart = z.time * fps;
+			const easeInDur = fps * 0.6;
+			const zHold = zStart + easeInDur;
+			const zEnd = zStart + (z.duration ?? 1) * fps;
+			const easeOutEnd = zEnd + fps * 0.8;
+			if (contentFrame >= zStart && contentFrame < zEnd) {
+				const t = Math.min(1, (contentFrame - zStart) / easeInDur);
+				const eased = t < 1 ? t * t * (3 - 2 * t) : 1;
+				zoomScale = 1 + (z.scale - 1) * eased;
+				zoomTx = (z.x ?? 0) * eased;
+				zoomTy = (z.y ?? 0) * eased;
+			} else if (contentFrame >= zEnd && contentFrame < easeOutEnd) {
+				const t = (contentFrame - zEnd) / (easeOutEnd - zEnd);
+				const eased = t * t * (3 - 2 * t);
+				zoomScale = z.scale + (1 - z.scale) * eased;
+				zoomTx = (z.x ?? 0) * (1 - eased);
+				zoomTy = (z.y ?? 0) * (1 - eased);
+			}
+		}
+	}
+	const zoomStyle: React.CSSProperties = zoomScale !== 1 || zoomTx !== 0 || zoomTy !== 0
+		? { transform: `scale(${zoomScale}) translate(${zoomTx}px, ${zoomTy}px)`, transformOrigin: "center center" }
+		: {};
 
 	return (
 		<AbsoluteFill style={{ backgroundColor: "#0a0a0e" }}>
@@ -141,7 +180,8 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 			{/* Layer 4: Main Content */}
 			<Sequence name="Content" from={contentStart} durationInFrames={contentFrames}>
 				<AbsoluteFill style={{ flexDirection: "column", display: "flex" }}>
-					<div style={{ height: videoHeight, position: "relative" }}>
+					<div style={{ height: videoHeight, position: "relative", overflow: "hidden" }}>
+						<div style={{ width: "100%", height: "100%", ...zoomStyle }}>
 						{frameStyle === "retro" ? (
 							<RetroComputerFrame
 								monitorColor={retroMonitorColor}
@@ -150,7 +190,7 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 								<OffthreadVideo
 									src={staticFile(videoSrc)}
 									startFrom={videoStartFromFrames}
-									style={{ width: "100%", height: "100%", objectFit: "cover" }}
+									style={{ width: "100%", height: "100%", objectFit }}
 									volume={videoVolume}
 								/>
 							</RetroComputerFrame>
@@ -159,7 +199,7 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 								<OffthreadVideo
 									src={staticFile(videoSrc)}
 									startFrom={videoStartFromFrames}
-									style={{ width: "100%", height: "100%", objectFit: "cover" }}
+									style={{ width: "100%", height: "100%", objectFit }}
 									volume={videoVolume}
 								/>
 							</MidjourneyComputerFrame>
@@ -167,7 +207,7 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 							<OffthreadVideo
 								src={staticFile(videoSrc)}
 								startFrom={videoStartFromFrames}
-								style={{ width: "100%", height: "100%", objectFit: "cover" }}
+								style={{ width: "100%", height: "100%", objectFit }}
 								volume={musicFadeOutStart != null ? (f) => {
 									const fadeIn = Math.floor(musicFadeOutStart * fps);
 									const fadeEnd = fadeIn + Math.floor(1.5 * fps);
@@ -177,6 +217,7 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 								} : videoVolume}
 							/>
 						)}
+						</div>
 						{/* Overlay captions (positioned over the video) */}
 						{captionStyle === "overlay" && transcriptFile && (
 							<TranscriptCaptions transcriptFile={transcriptFile} timeOffset={videoStartFrom} />
