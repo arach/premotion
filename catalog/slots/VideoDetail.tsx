@@ -23,7 +23,7 @@ function resolveSrc(video: Video): string {
 }
 
 export function VideoDetail({ video }: { video: Video }) {
-  const { closeVideo, openFrame } = useCatalog();
+  const { closeVideo, openFrame, projectVideo, projectId, videoId, closeProjectInput } = useCatalog();
   const review = useReviewContext();
   const hasFrames =
     !!video.frameCount &&
@@ -33,6 +33,7 @@ export function VideoDetail({ video }: { video: Video }) {
 
   const src = resolveSrc(video);
   const isComposing = !!review.composing;
+  const isViewingInput = projectId != null && videoId !== projectId;
 
   return (
     <div className="flex flex-col h-full">
@@ -40,11 +41,16 @@ export function VideoDetail({ video }: { video: Video }) {
       <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-2.5 border-b border-white/[0.06]">
         <div className="flex items-center gap-3 min-w-0">
           <button
-            onClick={closeVideo}
+            onClick={isViewingInput ? closeProjectInput : closeVideo}
             className="text-white/30 hover:text-white/60 transition-colors shrink-0"
           >
             <ArrowLeft size={14} />
           </button>
+          {isViewingInput && projectVideo && (
+            <span className="text-[10px] font-mono text-white/25 shrink-0 truncate max-w-[80px]">
+              {projectVideo.id} ›
+            </span>
+          )}
           <h1 className="text-[14px] font-medium text-white/90 truncate">{video.id}</h1>
           <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400/60 shrink-0">{video.app}</span>
           {video.stage && video.stage !== 'source' && (
@@ -53,6 +59,9 @@ export function VideoDetail({ video }: { video: Video }) {
             }`}>
               {video.stage}
             </span>
+          )}
+          {isViewingInput && (
+            <span className="text-[9px] font-mono uppercase tracking-wider text-white/20 shrink-0">input</span>
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">

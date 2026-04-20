@@ -19,13 +19,14 @@ export function CatalogGrid() {
     sort,
     setSort,
     deleteVideo,
+    setView,
   } = useCatalog();
 
   const isCurated = filter === 'curated';
 
   return (
     <div className="px-6 py-5">
-      <StatsRow counts={counts} />
+      <StatsRow counts={counts} onNew={() => setView('new')} />
 
       {!isCurated && (
         <div className="flex items-center gap-2 mb-4">
@@ -69,6 +70,7 @@ export function CatalogGrid() {
 // ---------------------------------------------------------------------------
 function StatsRow({
   counts,
+  onNew,
 }: {
   counts: {
     total: number;
@@ -80,6 +82,7 @@ function StatsRow({
     reel: number;
     curated: number;
   };
+  onNew: () => void;
 }) {
   const items = [
     { label: 'Total', value: counts.total },
@@ -89,7 +92,7 @@ function StatsRow({
     { label: 'Curated', value: counts.curated },
   ];
   return (
-    <div className="flex gap-6 pb-5 mb-5 border-b border-white/[0.04]">
+    <div className="flex items-center gap-6 pb-5 mb-5 border-b border-white/[0.04]">
       {items.map(i => (
         <div key={i.label} className="flex flex-col">
           <span className="text-[22px] font-mono tabular-nums text-white/80">
@@ -100,6 +103,13 @@ function StatsRow({
           </span>
         </div>
       ))}
+      <div className="flex-1" />
+      <button
+        onClick={onNew}
+        className="flex items-center gap-1.5 px-3 py-2 rounded-sm bg-cyan-400/[0.08] border border-cyan-400/20 text-cyan-300/90 hover:bg-cyan-400/[0.12] hover:text-cyan-200 transition-all text-[11px] font-mono uppercase tracking-wider"
+      >
+        + New
+      </button>
     </div>
   );
 }

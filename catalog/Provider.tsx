@@ -56,6 +56,12 @@ export interface CatalogContextValue {
   sort: string;
   setSort: (s: string) => void;
 
+  // Project context — anchors left panel to a "project" video
+  projectId: string | null;
+  projectVideo: Video | null;
+  openProjectInput: (id: string) => void;
+  closeProjectInput: () => void;
+
   // Derived
   selectedVideo: Video | null;
   filteredVideos: Video[];
@@ -77,6 +83,17 @@ export interface CatalogContextValue {
 
   // Actions
   deleteVideo: (id: string) => Promise<void>;
+
+  // View state
+  view: string | null;
+  setView: (v: string | null) => void;
+  pendingFiles: string[];
+  setPendingFiles: (files: string[]) => void;
+
+  // Code viewer (transient)
+  viewingFile: string | null;
+  openFile: (path: string) => void;
+  closeFile: () => void;
 
   // Lightbox (transient)
   lightbox: LightboxState | null;
@@ -104,6 +121,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const filter = searchParams.get('filter') ?? 'all';
   const search = searchParams.get('q') ?? '';
   const videoId = searchParams.get('video');
+  const projectId = searchParams.get('project');
   const frameParam = searchParams.get('frame');
   const frameIndex = frameParam != null && frameParam !== '' && !Number.isNaN(Number(frameParam))
     ? Number(frameParam)
@@ -145,7 +163,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   const openVideo = useCallback(
     (id: string) => {
-      writeParams(p => p.set('video', id));
+      writeParams(p => {
+        p.set('video', id);
+        p.set('project', id);
+      });
     },
     [writeParams],
   );
@@ -153,10 +174,24 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const closeVideo = useCallback(() => {
     writeParams(p => {
       p.delete('video');
+      p.delete('project');
       p.delete('frame');
       p.delete('review');
     });
   }, [writeParams]);
+
+  const openProjectInput = useCallback(
+    (id: string) => {
+      writeParams(p => p.set('video', id));
+    },
+    [writeParams],
+  );
+
+  const closeProjectInput = useCallback(() => {
+    if (projectId) {
+      writeParams(p => p.set('video', projectId));
+    }
+  }, [writeParams, projectId]);
 
   const openFrame = useCallback(
     (idx: number) => {
@@ -235,6 +270,11 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const selectedVideo = useMemo(
     () => (videoId ? data?.videos.find(v => v.id === videoId) ?? null : null),
     [data, videoId],
+  );
+
+  const projectVideo = useMemo(
+    () => (projectId ? data?.videos.find(v => v.id === projectId) ?? null : null),
+    [data, projectId],
   );
 
   const appBreakdown = useMemo(() => {
@@ -382,6 +422,16 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     }
   }, [data, videoId, closeVideo]);
 
+  // --- View state ---
+  const [view, setViewState] = useState<string | null>(null);
+  const setView = useCallback((v: string | null) => setViewState(v), []);
+  const [pendingFiles, setPendingFiles] = useState<string[]>([]);
+
+  // --- Code viewer ---
+  const [viewingFile, setViewingFile] = useState<string | null>(null);
+  const openFile = useCallback((path: string) => setViewingFile(path), []);
+  const closeFile = useCallback(() => setViewingFile(null), []);
+
   // --- Lightbox ---
   const [lightbox, setLightbox] = useState<LightboxState | null>(null);
   const openLightbox = useCallback((s: LightboxState) => setLightbox(s), []);
@@ -409,6 +459,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       setSnippetCategory,
       sort,
       setSort,
+      projectId,
+      projectVideo,
+      openProjectInput,
+      closeProjectInput,
       selectedVideo,
       filteredVideos,
       filteredSnippets,
@@ -416,6 +470,13 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       counts,
       snippetCategoryCounts,
       deleteVideo,
+      view,
+      setView,
+      pendingFiles,
+      setPendingFiles,
+      viewingFile,
+      openFile,
+      closeFile,
       lightbox,
       openLightbox,
       closeLightbox,
@@ -441,6 +502,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       setSnippetCategory,
       sort,
       setSort,
+      projectId,
+      projectVideo,
+      openProjectInput,
+      closeProjectInput,
       selectedVideo,
       filteredVideos,
       filteredSnippets,
@@ -448,6 +513,13 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       counts,
       snippetCategoryCounts,
       deleteVideo,
+      view,
+      setView,
+      pendingFiles,
+      setPendingFiles,
+      viewingFile,
+      openFile,
+      closeFile,
       lightbox,
       openLightbox,
       closeLightbox,

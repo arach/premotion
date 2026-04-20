@@ -2,11 +2,14 @@
 
 import { useCatalog } from '../Provider';
 import { CatalogGrid } from './CatalogGrid';
+import { CodePanel } from './CodePanel';
 import { FrameViewer } from './FrameViewer';
+import { NewProject } from './NewProject';
+import { QueueView } from './QueueView';
 import { VideoDetail } from './VideoDetail';
 
 export function CatalogContent() {
-  const { loading, selectedVideo, frameIndex } = useCatalog();
+  const { loading, selectedVideo, frameIndex, viewingFile, view } = useCatalog();
 
   if (loading) {
     return (
@@ -14,6 +17,18 @@ export function CatalogContent() {
         Loading catalog…
       </div>
     );
+  }
+
+  if (view === 'new') {
+    return <NewProject />;
+  }
+
+  if (view === 'queue') {
+    return <QueueView />;
+  }
+
+  if (viewingFile) {
+    return <CodePanel />;
   }
 
   return (
