@@ -16,6 +16,7 @@ import type {
   CuratedSnippetsData,
   Video,
 } from '@/lib/types';
+import { ReviewProvider } from './ReviewContext';
 
 // ---------------------------------------------------------------------------
 // Lightbox state — transient UI, not URL-backed
@@ -52,6 +53,8 @@ export interface CatalogContextValue {
   closeReview: () => void;
   snippetCategory: string;
   setSnippetCategory: (c: string) => void;
+  sort: string;
+  setSort: (s: string) => void;
 
   // Derived
   selectedVideo: Video | null;
@@ -60,13 +63,20 @@ export interface CatalogContextValue {
   appBreakdown: Record<string, number>;
   counts: {
     total: number;
+    source: number;
+    wip: number;
+    final: number;
     analyzed: number;
+    needsWork: number;
     transcribed: number;
     reel: number;
     curated: number;
     orphans: number;
   };
   snippetCategoryCounts: Record<string, number>;
+
+  // Actions
+  deleteVideo: (id: string) => Promise<void>;
 
   // Lightbox (transient)
   lightbox: LightboxState | null;
@@ -100,6 +110,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     : null;
   const reviewOpen = searchParams.get('review') === '1';
   const snippetCategory = searchParams.get('category') ?? 'all';
+  const sort = searchParams.get('sort') ?? 'newest';
 
   const writeParams = useCallback(
     (mutate: (p: URLSearchParams) => void) => {
@@ -179,6 +190,16 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     [writeParams],
   );
 
+  const setSort = useCallback(
+    (s: string) => {
+      writeParams(p => {
+        if (s === 'newest') p.delete('sort');
+        else p.set('sort', s);
+      });
+    },
+    [writeParams],
+  );
+
   // --- Data loading ---
   const [data, setData] = useState<CatalogData | null>(null);
   const [snippetsData, setSnippetsData] = useState<CuratedSnippetsData | null>(
@@ -225,18 +246,26 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   }, [data]);
 
   const counts = useMemo(
-    () => ({
-      total: data?.videos.length ?? 0,
-      analyzed:
-        data?.videos.filter(
-          v =>
-            v.analysisStatus === 'complete' || v.analysisStatus === 'analyzed',
-        ).length ?? 0,
-      transcribed: data?.videos.filter(v => v.transcript || v.srt).length ?? 0,
-      reel: data?.videos.filter(v => v.reelCandidate).length ?? 0,
-      curated: snippets.length,
-      orphans: data?.orphanStoryboards?.length ?? 0,
-    }),
+    () => {
+      const vs = data?.videos ?? [];
+      const source = vs.filter(v => v.stage === 'source' || !v.stage);
+      return {
+        total: vs.length,
+        source: source.length,
+        wip: vs.filter(v => v.stage === 'wip').length,
+        final: vs.filter(v => v.stage === 'final').length,
+        analyzed: vs.filter(
+          v => v.analysisStatus === 'complete' || v.analysisStatus === 'analyzed',
+        ).length,
+        needsWork: source.filter(
+          v => v.analysisStatus === 'none' || v.analysisStatus === 'frames-only',
+        ).length,
+        transcribed: vs.filter(v => v.transcript || v.srt).length,
+        reel: vs.filter(v => v.reelCandidate).length,
+        curated: snippets.length,
+        orphans: data?.orphanStoryboards?.length ?? 0,
+      };
+    },
     [data, snippets.length],
   );
 
@@ -252,7 +281,13 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     if (!data) return [];
     let vs = data.videos;
     if (filter !== 'all' && filter !== 'curated') {
-      if (filter === 'analyzed') {
+      if (filter === 'source') {
+        vs = vs.filter(v => v.stage === 'source' || !v.stage);
+      } else if (filter === 'wip') {
+        vs = vs.filter(v => v.stage === 'wip');
+      } else if (filter === 'final') {
+        vs = vs.filter(v => v.stage === 'final');
+      } else if (filter === 'analyzed') {
         vs = vs.filter(
           v =>
             v.analysisStatus === 'complete' || v.analysisStatus === 'analyzed',
@@ -260,7 +295,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       } else if (filter === 'needs-work') {
         vs = vs.filter(
           v =>
-            v.analysisStatus === 'none' || v.analysisStatus === 'frames-only',
+            (v.stage === 'source' || !v.stage) &&
+            (v.analysisStatus === 'none' || v.analysisStatus === 'frames-only'),
         );
       } else if (filter === 'transcribed') {
         vs = vs.filter(v => v.transcript || v.srt);
@@ -279,8 +315,33 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
           .includes(q),
       );
     }
-    return vs;
-  }, [data, filter, search]);
+    const sorted = [...vs];
+    switch (sort) {
+      case 'oldest':
+        sorted.sort((a, b) => new Date(a.capturedAt ?? 0).getTime() - new Date(b.capturedAt ?? 0).getTime());
+        break;
+      case 'longest':
+        sorted.sort((a, b) => b.duration - a.duration);
+        break;
+      case 'shortest':
+        sorted.sort((a, b) => a.duration - b.duration);
+        break;
+      case 'largest':
+        sorted.sort((a, b) => b.sizeMB - a.sizeMB);
+        break;
+      case 'smallest':
+        sorted.sort((a, b) => a.sizeMB - b.sizeMB);
+        break;
+      case 'name':
+        sorted.sort((a, b) => a.id.localeCompare(b.id));
+        break;
+      case 'newest':
+      default:
+        sorted.sort((a, b) => new Date(b.capturedAt ?? 0).getTime() - new Date(a.capturedAt ?? 0).getTime());
+        break;
+    }
+    return sorted;
+  }, [data, filter, search, sort]);
 
   const filteredSnippets = useMemo(() => {
     let ss = snippets;
@@ -298,6 +359,28 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     }
     return ss;
   }, [snippets, search, snippetCategory]);
+
+  // --- Delete ---
+  const deleteVideo = useCallback(async (id: string) => {
+    const video = data?.videos.find(v => v.id === id);
+    if (!video) return;
+    if (!confirm(`Delete ${video.filename}?`)) return;
+    try {
+      const res = await fetch(`/api/catalog/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoUrl: video.videoUrl }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setData(prev => prev ? {
+        ...prev,
+        videos: prev.videos.filter(v => v.id !== id),
+      } : prev);
+      if (videoId === id) closeVideo();
+    } catch (err) {
+      console.error('Delete failed:', err);
+    }
+  }, [data, videoId, closeVideo]);
 
   // --- Lightbox ---
   const [lightbox, setLightbox] = useState<LightboxState | null>(null);
@@ -324,12 +407,15 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       closeReview,
       snippetCategory,
       setSnippetCategory,
+      sort,
+      setSort,
       selectedVideo,
       filteredVideos,
       filteredSnippets,
       appBreakdown,
       counts,
       snippetCategoryCounts,
+      deleteVideo,
       lightbox,
       openLightbox,
       closeLightbox,
@@ -353,12 +439,15 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       closeReview,
       snippetCategory,
       setSnippetCategory,
+      sort,
+      setSort,
       selectedVideo,
       filteredVideos,
       filteredSnippets,
       appBreakdown,
       counts,
       snippetCategoryCounts,
+      deleteVideo,
       lightbox,
       openLightbox,
       closeLightbox,
@@ -366,6 +455,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <CatalogContext.Provider value={value}>{children}</CatalogContext.Provider>
+    <CatalogContext.Provider value={value}>
+      <ReviewProvider>{children}</ReviewProvider>
+    </CatalogContext.Provider>
   );
 }

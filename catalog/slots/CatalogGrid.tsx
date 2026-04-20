@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback, useState } from 'react';
 import { useCatalog } from '../Provider';
 import { formatDuration } from '@/lib/types';
 import type { CuratedSnippet, Video } from '@/lib/types';
@@ -15,6 +16,9 @@ export function CatalogGrid() {
     snippets,
     counts,
     openVideo,
+    sort,
+    setSort,
+    deleteVideo,
   } = useCatalog();
 
   const isCurated = filter === 'curated';
@@ -22,6 +26,25 @@ export function CatalogGrid() {
   return (
     <div className="px-6 py-5">
       <StatsRow counts={counts} />
+
+      {!isCurated && (
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-white/25">Sort</span>
+          <select
+            value={sort}
+            onChange={e => setSort(e.target.value)}
+            className="bg-white/[0.04] border border-white/[0.08] rounded-sm px-2 py-1 text-[11px] font-mono text-white/60 outline-none cursor-pointer hover:border-white/[0.15] transition-colors"
+          >
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="longest">Longest</option>
+            <option value="shortest">Shortest</option>
+            <option value="largest">Largest</option>
+            <option value="smallest">Smallest</option>
+            <option value="name">Name</option>
+          </select>
+        </div>
+      )}
 
       {isCurated ? (
         <CuratedSection
@@ -32,7 +55,10 @@ export function CatalogGrid() {
           categoryCounts={snippetCategoryCounts}
         />
       ) : (
-        <VideoGrid videos={filteredVideos} onOpen={openVideo} />
+        <>
+          <DropZone />
+          <VideoGrid videos={filteredVideos} onOpen={openVideo} onDelete={deleteVideo} />
+        </>
       )}
     </div>
   );
@@ -46,6 +72,9 @@ function StatsRow({
 }: {
   counts: {
     total: number;
+    source: number;
+    wip: number;
+    final: number;
     analyzed: number;
     transcribed: number;
     reel: number;
@@ -53,10 +82,10 @@ function StatsRow({
   };
 }) {
   const items = [
-    { label: 'Videos', value: counts.total },
+    { label: 'Total', value: counts.total },
+    { label: 'Source', value: counts.source },
+    { label: 'Final', value: counts.final },
     { label: 'Analyzed', value: counts.analyzed },
-    { label: 'Transcribed', value: counts.transcribed },
-    { label: 'Reel Ready', value: counts.reel },
     { label: 'Curated', value: counts.curated },
   ];
   return (
@@ -81,9 +110,11 @@ function StatsRow({
 function VideoGrid({
   videos,
   onOpen,
+  onDelete,
 }: {
   videos: Video[];
   onOpen: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
 }) {
   const hasFrames = videos.filter(v => (v.frameCount ?? 0) > 0);
   const empty = videos.filter(v => (v.frameCount ?? 0) === 0);
@@ -101,14 +132,14 @@ function VideoGrid({
       {hasFrames.length > 0 && (
         <Bucket label={`${hasFrames.length} indexed`}>
           {hasFrames.map(v => (
-            <VideoCard key={v.id} video={v} onOpen={onOpen} />
+            <VideoCard key={v.id} video={v} onOpen={onOpen} onDelete={onDelete} />
           ))}
         </Bucket>
       )}
       {empty.length > 0 && (
         <Bucket label={`${empty.length} unprocessed`} dim>
           {empty.map(v => (
-            <VideoCard key={v.id} video={v} onOpen={onOpen} dim />
+            <VideoCard key={v.id} video={v} onOpen={onOpen} onDelete={onDelete} dim />
           ))}
         </Bucket>
       )}
@@ -144,10 +175,12 @@ function Bucket({
 function VideoCard({
   video,
   onOpen,
+  onDelete,
   dim,
 }: {
   video: Video;
   onOpen: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
   dim?: boolean;
 }) {
   const statusColor =
@@ -156,17 +189,36 @@ function VideoCard({
       : video.analysisStatus === 'frames-only'
         ? 'bg-amber-400/50'
         : 'bg-white/10';
+
+  const stageLabel = video.stage === 'final' ? 'Final' : video.stage === 'wip' ? 'WIP' : null;
+
   return (
-    <button
-      onClick={() => onOpen(video.id)}
-      className={`group flex flex-col text-left p-3 rounded-sm border border-white/[0.04] hover:border-white/[0.12] bg-white/[0.015] hover:bg-white/[0.035] transition-colors ${
+    <div
+      className={`group relative flex flex-col text-left p-3 rounded-sm border border-white/[0.04] hover:border-white/[0.12] bg-white/[0.015] hover:bg-white/[0.035] transition-colors cursor-pointer ${
         dim ? 'opacity-60' : ''
       }`}
+      onClick={() => onOpen(video.id)}
     >
+      <button
+        onClick={e => { e.stopPropagation(); onDelete(video.id); }}
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-white/20 hover:text-red-400 transition-all text-[11px] p-1"
+        title="Delete video"
+      >
+        x
+      </button>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400/60">
-          {video.app}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400/60">
+            {video.app}
+          </span>
+          {stageLabel && (
+            <span className={`text-[9px] font-mono uppercase tracking-wider ${
+              video.stage === 'final' ? 'text-emerald-400/60' : 'text-amber-400/50'
+            }`}>
+              {stageLabel}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {video.reelCandidate && (
             <span className="text-[9px] font-mono uppercase tracking-wider text-amber-400/70">
@@ -187,6 +239,7 @@ function VideoCard({
       <div className="flex items-center gap-3 mt-3 text-[10px] font-mono text-white/30">
         <span>{formatDuration(video.duration)}</span>
         <span>{video.resolution}</span>
+        <span>{video.sizeMB.toFixed(1)} MB</span>
         {video.frameCount != null && video.frameCount > 0 && (
           <span>{video.frameCount} frames</span>
         )}
@@ -203,7 +256,98 @@ function VideoCard({
           ))}
         </div>
       )}
-    </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Drop zone — ingest videos by path
+// ---------------------------------------------------------------------------
+
+const VIDEO_EXTS = ['.mp4', '.mov', '.webm', '.mkv'];
+
+function DropZone() {
+  const [over, setOver] = useState(false);
+  const [uploads, setUploads] = useState<{ name: string; status: 'pending' | 'done' | 'error'; msg?: string }[]>([]);
+
+  const ingest = useCallback(async (files: FileList) => {
+    const valid = Array.from(files).filter(f =>
+      VIDEO_EXTS.some(ext => f.name.toLowerCase().endsWith(ext))
+    );
+    if (!valid.length) return;
+
+    const entries = valid.map(f => ({ name: f.name, status: 'pending' as const }));
+    setUploads(prev => [...prev, ...entries]);
+
+    for (const file of valid) {
+      try {
+        const filePath = (file as any).path as string | undefined;
+
+        let res: Response;
+        if (filePath) {
+          res = await fetch('/api/catalog/ingest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: filePath }),
+          });
+        } else {
+          const form = new FormData();
+          form.append('file', file);
+          res = await fetch('/api/catalog/ingest', { method: 'POST', body: form });
+        }
+
+        const data = await res.json();
+        setUploads(prev =>
+          prev.map(u =>
+            u.name === file.name
+              ? { name: file.name, status: res.ok ? 'done' : 'error', msg: data.error }
+              : u
+          )
+        );
+      } catch (err: any) {
+        setUploads(prev =>
+          prev.map(u =>
+            u.name === file.name ? { name: file.name, status: 'error', msg: err.message } : u
+          )
+        );
+      }
+    }
+  }, []);
+
+  return (
+    <div className="mb-4">
+      <div
+        onDragOver={e => { e.preventDefault(); setOver(true); }}
+        onDragLeave={() => setOver(false)}
+        onDrop={e => { e.preventDefault(); setOver(false); ingest(e.dataTransfer.files); }}
+        className={`border border-dashed rounded-sm px-4 py-3 text-center transition-colors cursor-default ${
+          over
+            ? 'border-cyan-400/40 bg-cyan-400/[0.04] text-cyan-300/60'
+            : 'border-white/[0.08] text-white/20 hover:border-white/[0.15] hover:text-white/30'
+        }`}
+      >
+        <span className="text-[11px] font-mono">
+          Drop videos here to ingest
+        </span>
+      </div>
+      {uploads.length > 0 && (
+        <div className="mt-2 flex flex-col gap-1">
+          {uploads.map(u => (
+            <div key={u.name} className="flex items-center gap-2 text-[10px] font-mono">
+              <span className={
+                u.status === 'done' ? 'text-emerald-400/70' :
+                u.status === 'error' ? 'text-red-400/70' :
+                'text-white/30 animate-pulse'
+              }>
+                {u.status === 'done' ? '✓' : u.status === 'error' ? '✗' : '…'}
+              </span>
+              <span className="text-white/50 truncate">{u.name}</span>
+              {u.msg && <span className="text-red-400/50">{u.msg}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

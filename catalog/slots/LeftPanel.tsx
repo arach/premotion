@@ -11,11 +11,17 @@ interface FilterRow {
 export function CatalogLeftPanel() {
   const { filter, setFilter, counts, appBreakdown } = useCatalog();
 
-  const statusRows: FilterRow[] = [
+  const stageRows: FilterRow[] = [
     { id: 'all', label: 'All', count: counts.total },
+    { id: 'source', label: 'Source', count: counts.source },
+    { id: 'wip', label: 'WIP', count: counts.wip },
+    { id: 'final', label: 'Final', count: counts.final },
+  ];
+
+  const statusRows: FilterRow[] = [
     { id: 'curated', label: 'Best Snippets', count: counts.curated },
     { id: 'analyzed', label: 'Analyzed', count: counts.analyzed },
-    { id: 'needs-work', label: 'Needs Work', count: counts.total - counts.analyzed },
+    { id: 'needs-work', label: 'Needs Work', count: counts.needsWork },
     { id: 'transcribed', label: 'Transcribed', count: counts.transcribed },
     { id: 'reel', label: 'Reel Candidates', count: counts.reel },
   ];
@@ -26,7 +32,8 @@ export function CatalogLeftPanel() {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto frame-scrollbar py-2">
-      <Section label="Filter" rows={statusRows} active={filter} onSelect={setFilter} />
+      <Section label="Stage" rows={stageRows} active={filter} onSelect={setFilter} />
+      <Section label="Status" rows={statusRows} active={filter} onSelect={setFilter} />
       {appRows.length > 0 && (
         <Section label="By App" rows={appRows} active={filter} onSelect={setFilter} />
       )}
