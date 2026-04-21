@@ -27,7 +27,7 @@ export const FullVideo: React.FC<FullVideoProps> = ({
   introDuration,
   outroDuration,
   transitionDuration,
-  handle = "@arachh",
+  handle = "@arach",
 }) => {
   const { fps } = useVideoConfig();
 

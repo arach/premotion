@@ -43,3 +43,8 @@ src/components/debug/
 src/projects/hostai-montage/
 src/projects/audit-demo/
 public/hostai-*
+.data/
+.clip-cache/
+.queue/
+.openscout/
+static/

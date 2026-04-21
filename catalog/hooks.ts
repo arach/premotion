@@ -1,7 +1,7 @@
 'use client';
 
 import { createElement, useMemo, type ReactNode } from 'react';
-import type { CommandOption, SearchConfig, StatusColor } from '@hudson/sdk';
+import type { CommandOption, SearchConfig, StatusColor } from '@hudsonos/sdk';
 import { useCatalog } from './Provider';
 
 // ---------------------------------------------------------------------------

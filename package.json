@@ -14,13 +14,14 @@
     "analyze": "bun run scripts/analyze-video.ts"
   },
   "dependencies": {
-    "@hudson/sdk": "file:../hudson/packages/hudson-sdk",
     "@anthropic-ai/sdk": "^0.80.0",
+    "@hudsonos/sdk": "file:../hudson/packages/hudson-sdk",
     "@remotion/captions": "^4.0.422",
     "@remotion/cli": "^4.0.0",
     "@remotion/google-fonts": "4.0.407",
     "@remotion/media": "^4.0.0",
     "@remotion/transitions": "^4.0.0",
+    "better-sqlite3": "^12.9.0",
     "lucide-react": "^0.574.0",
     "next": "^16.1.6",
     "react": "^19.2.3",
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

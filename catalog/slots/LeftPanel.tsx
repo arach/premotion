@@ -61,7 +61,7 @@ export function CatalogLeftPanel() {
           }`}
         >
           <Plus size={12} />
-          {dragOver ? 'Drop here' : 'New'}
+          {dragOver ? 'Drop here' : 'New Composition'}
         </button>
       </div>
 

@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, Check, FileCode2, Save } from 'lucide-react';
-import { CodeEditor } from '@hudson/sdk/controls';
-import type { CodeLanguage } from '@hudson/sdk/controls';
+import { CodeEditor } from '@hudsonos/sdk/controls';
+import type { CodeLanguage } from '@hudsonos/sdk/controls';
 import { useCatalog } from '../Provider';
 
 function langFromPath(path: string): CodeLanguage {

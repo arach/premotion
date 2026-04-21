@@ -4,7 +4,7 @@ import { useCatalog } from '../Provider';
 import { CatalogGrid } from './CatalogGrid';
 import { CodePanel } from './CodePanel';
 import { FrameViewer } from './FrameViewer';
-import { NewProject } from './NewProject';
+import { NewComposition } from './NewComposition';
 import { QueueView } from './QueueView';
 import { VideoDetail } from './VideoDetail';
 
@@ -20,7 +20,7 @@ export function CatalogContent() {
   }
 
   if (view === 'new') {
-    return <NewProject />;
+    return <NewComposition />;
   }
 
   if (view === 'queue') {
