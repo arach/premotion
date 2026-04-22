@@ -34,7 +34,7 @@ export async function createJob(compositionId: string, body: CreateJobRequest) {
     return { error: 'prompt is required', status: 400 };
   }
 
-  const validKinds = ['generate', 'prepare', 'render'];
+  const validKinds = ['generate', 'revise', 'prepare', 'render'];
   if (!validKinds.includes(kind)) {
     return { error: `kind must be one of: ${validKinds.join(', ')}`, status: 400 };
   }

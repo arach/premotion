@@ -8,6 +8,7 @@ import { FrameViewer } from './FrameViewer';
 import { MusicView } from './MusicView';
 import { NewComposition } from './NewComposition';
 import { QueueView } from './QueueView';
+import { SettingsView } from './SettingsView';
 import { VideoDetail } from './VideoDetail';
 
 export function CatalogContent() {
@@ -35,6 +36,10 @@ export function CatalogContent() {
 
   if (view === 'music') {
     return <MusicView />;
+  }
+
+  if (view === 'settings') {
+    return <SettingsView />;
   }
 
   if (viewingFile) {

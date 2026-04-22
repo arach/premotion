@@ -1,6 +1,8 @@
 import { getDb, updateJobStatus, updateJobAgent, completeJob, failJob, appendActivity } from './db';
 import type { JobKind } from './types';
+import { readProviderConfig, type ProviderConfig } from '@/lib/provider';
 import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
@@ -88,20 +90,69 @@ interface CompositionPlan {
 
 // ── LLM client ──────────────────────────────────────────────────
 
-function createLLMClient(): Anthropic {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  const baseURL = process.env.ANTHROPIC_BASE_URL;
-  if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY not set in environment');
+async function callLLM(opts: {
+  system: string;
+  userMessage: string;
+  maxTokens: number;
+}): Promise<{ text: string; inputTokens: number; outputTokens: number; model: string }> {
+  const config = readProviderConfig();
+  if (!config.apiKey) throw new Error('No API key configured — go to Settings to add a provider');
+  if (!config.model) throw new Error('No model configured — go to Settings to choose a model');
+
+  if (config.format === 'openai') {
+    return callOpenAI(config, opts);
   }
-  return new Anthropic({
-    apiKey,
-    ...(baseURL ? { baseURL } : {}),
-  });
+  return callAnthropic(config, opts);
 }
 
-function getLLMModel(): string {
-  return process.env.LLM_MODEL || 'claude-sonnet-4-20250514';
+async function callAnthropic(
+  config: ProviderConfig,
+  opts: { system: string; userMessage: string; maxTokens: number },
+) {
+  const client = new Anthropic({
+    apiKey: config.apiKey,
+    ...(config.baseUrl ? { baseURL: config.baseUrl } : {}),
+  });
+  const response = await client.messages.create({
+    model: config.model,
+    max_tokens: opts.maxTokens,
+    system: opts.system,
+    messages: [{ role: 'user', content: opts.userMessage }],
+  });
+  const text = response.content
+    .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+    .map(b => b.text)
+    .join('');
+  return {
+    text,
+    inputTokens: response.usage?.input_tokens ?? 0,
+    outputTokens: response.usage?.output_tokens ?? 0,
+    model: config.model,
+  };
+}
+
+async function callOpenAI(
+  config: ProviderConfig,
+  opts: { system: string; userMessage: string; maxTokens: number },
+) {
+  const client = new OpenAI({
+    apiKey: config.apiKey,
+    baseURL: config.baseUrl || undefined,
+  });
+  const response = await client.chat.completions.create({
+    model: config.model,
+    max_tokens: opts.maxTokens,
+    messages: [
+      { role: 'system', content: opts.system },
+      { role: 'user', content: opts.userMessage },
+    ],
+  });
+  return {
+    text: response.choices[0]?.message?.content ?? '',
+    inputTokens: response.usage?.prompt_tokens ?? 0,
+    outputTokens: response.usage?.completion_tokens ?? 0,
+    model: config.model,
+  };
 }
 
 // ── System prompt for the composition planner ───────────────────
@@ -168,6 +219,13 @@ interface CompositionPlan {
 9. If the user asks for a "demo video", keep clips longer (15-60s) with minimal cuts.
 10. Always include a brief description of your editing rationale in the description field.
 
+## Revision jobs
+
+When the job kind is "revise", you'll receive the current Composition.tsx source and timestamped review notes.
+Your job is to produce a new composition plan that addresses the feedback while preserving the parts that work.
+Parse the existing TSX to understand the current clip selection, timing, and structure — then apply the reviewer's notes.
+Common feedback types: FEEDBACK (general notes), ZOOM (add/adjust zoom on a region).
+
 Respond with ONLY the JSON object, no markdown fences, no explanation.`;
 
 // ── Build the user message for the LLM ──────────────────────────
@@ -192,8 +250,20 @@ function buildUserMessage(ctx: {
     if (audio.length > 0) {
       parts.push(`\n## Available Audio\n${audio.map(a => `- ${a}`).join('\n')}`);
     }
-    // Include any other input keys
-    const otherKeys = Object.keys(ctx.inputs).filter(k => k !== 'clips' && k !== 'audio');
+
+    if (ctx.kind === 'revise') {
+      const originalSource = ctx.inputs.originalSource as string | undefined;
+      const reviewNotes = ctx.inputs.reviewNotes as string | undefined;
+      if (originalSource) {
+        parts.push(`\n## Current Composition Source (TSX)\nRevise this composition based on the feedback below. Keep the same clips and structure unless the feedback says otherwise.\n\n\`\`\`tsx\n${originalSource}\n\`\`\``);
+      }
+      if (reviewNotes) {
+        parts.push(`\n## Review Feedback\n${reviewNotes}`);
+      }
+    }
+
+    const skipKeys = new Set(['clips', 'audio', 'originalSource', 'reviewNotes']);
+    const otherKeys = Object.keys(ctx.inputs).filter(k => !skipKeys.has(k));
     if (otherKeys.length > 0) {
       parts.push(`\n## Additional Inputs`);
       for (const key of otherKeys) {
@@ -716,31 +786,23 @@ async function processJob(ctx: {
     // ── Stage 2: Call LLM to plan the composition ───────────
     updateState('planning composition', 15, `Sending prompt to LLM with ${clips.length} clips`);
 
-    const client = createLLMClient();
-    const model = getLLMModel();
-
     const userMessage = buildUserMessage({ prompt, inputs, params, kind });
+    const providerConfig = readProviderConfig();
 
     appendActivity(jobId, {
       stage: 'llm',
-      message: `Calling ${model} for composition plan`,
+      message: `Calling ${providerConfig.name || providerConfig.model} (${providerConfig.format}) for composition plan`,
     });
 
-    console.log(`[worker] Job ${jobId}: calling ${model} for composition plan`);
+    console.log(`[worker] Job ${jobId}: calling ${providerConfig.model} via ${providerConfig.format} format`);
 
-    const response = await client.messages.create({
-      model,
-      max_tokens: 4096,
+    const llmResult = await callLLM({
       system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userMessage }],
+      userMessage,
+      maxTokens: 4096,
     });
 
-    const responseText = response.content
-      .filter((block): block is Anthropic.TextBlock => block.type === 'text')
-      .map(block => block.text)
-      .join('');
-
-    if (!responseText) {
+    if (!llmResult.text) {
       throw new Error('LLM returned no text content');
     }
 
@@ -748,13 +810,13 @@ async function processJob(ctx: {
 
     appendActivity(jobId, {
       stage: 'llm',
-      message: `LLM responded (${responseText.length} chars, ${response.usage?.input_tokens ?? '?'} in / ${response.usage?.output_tokens ?? '?'} out tokens)`,
+      message: `LLM responded (${llmResult.text.length} chars, ${llmResult.inputTokens} in / ${llmResult.outputTokens} out tokens)`,
     });
 
     // ── Stage 3: Parse and validate the plan ────────────────
     let plan: CompositionPlan;
     try {
-      plan = parsePlan(responseText);
+      plan = parsePlan(llmResult.text);
     } catch (parseErr: any) {
       console.error(`[worker] Job ${jobId}: plan parse failed:`, parseErr.message);
       appendActivity(jobId, { stage: 'error', message: `Plan parse failed: ${parseErr.message}` });

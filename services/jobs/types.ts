@@ -1,4 +1,4 @@
-export type JobKind = 'generate' | 'prepare' | 'render';
+export type JobKind = 'generate' | 'revise' | 'prepare' | 'render';
 export type JobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'canceled';
 
 export interface CreateJobRequest {

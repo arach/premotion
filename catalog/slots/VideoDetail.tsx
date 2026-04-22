@@ -1,12 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import {
   ArrowLeft,
   Film,
+  Loader2,
   MessageSquarePlus,
+  RotateCcw,
 } from 'lucide-react';
 import { useCatalog } from '../Provider';
 import { useReviewContext } from '../ReviewContext';
+import { exportNotesAsPrompt } from '../reviewNotes';
 import { formatDuration, formatTime } from '@/lib/types';
 import type { ReviewNoteKind, ReviewRect, Video } from '@/lib/types';
 
@@ -23,8 +27,9 @@ function resolveSrc(video: Video): string {
 }
 
 export function VideoDetail({ video }: { video: Video }) {
-  const { closeVideo, openFrame, projectVideo, projectId, videoId, closeProjectInput } = useCatalog();
+  const { closeVideo, openFrame, projectVideo, projectId, videoId, closeProjectInput, setView } = useCatalog();
   const review = useReviewContext();
+  const [revising, setRevising] = useState(false);
   const hasFrames =
     !!video.frameCount &&
     video.frameCount > 0 &&
@@ -34,6 +39,51 @@ export function VideoDetail({ video }: { video: Video }) {
   const src = resolveSrc(video);
   const isComposing = !!review.composing;
   const isViewingInput = projectId != null && videoId !== projectId;
+  const isFinal = video.stage === 'final';
+  const compositionId = isFinal ? inferCompositionId(video) : null;
+  const canRevise = isFinal && compositionId && review.notes.length > 0;
+
+  const submitRevision = async () => {
+    if (!compositionId || review.notes.length === 0) return;
+    setRevising(true);
+    try {
+      let originalSource = '';
+      const sourcePath = `.compositions/${compositionId}/Composition.tsx`;
+      try {
+        const res = await fetch(`/api/source?path=${encodeURIComponent(sourcePath)}`);
+        if (res.ok) {
+          const data = await res.json();
+          originalSource = data.content ?? '';
+        }
+      } catch {}
+
+      const reviewText = exportNotesAsPrompt(video, review.notes);
+      const revisionId = `${compositionId}-rev-${Date.now().toString(36)}`;
+
+      const res = await fetch(`/api/compositions/${encodeURIComponent(revisionId)}/jobs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: 'revise',
+          prompt: `Revise the composition "${compositionId}" based on the review feedback. Apply the requested changes while keeping the same source clips and overall structure unless the notes explicitly ask otherwise.`,
+          inputs: {
+            originalSource,
+            reviewNotes: reviewText,
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error('Revision submit failed:', err);
+        return;
+      }
+
+      setView('queue');
+    } finally {
+      setRevising(false);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -65,6 +115,16 @@ export function VideoDetail({ video }: { video: Video }) {
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {canRevise && (
+            <button
+              onClick={submitRevision}
+              disabled={revising}
+              className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-amber-300/70 hover:text-amber-200 bg-amber-400/[0.06] hover:bg-amber-400/10 border border-amber-400/15 px-2 py-1 rounded-sm transition-colors disabled:opacity-50"
+            >
+              {revising ? <Loader2 size={10} className="animate-spin" /> : <RotateCcw size={10} />}
+              Revise ({review.notes.length})
+            </button>
+          )}
           {hasFrames && (
             <button
               onClick={() => openFrame(0)}
@@ -273,6 +333,14 @@ export function VideoDetail({ video }: { video: Video }) {
       </div>
     </div>
   );
+}
+
+function inferCompositionId(video: Video): string | null {
+  if (video.composition) return video.composition;
+  if (!video.videoUrl) return null;
+  const filename = video.videoUrl.split('/').pop();
+  if (!filename) return null;
+  return filename.replace(/\.mp4$/i, '');
 }
 
 // ---------------------------------------------------------------------------
