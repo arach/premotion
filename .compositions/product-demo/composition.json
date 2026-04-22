@@ -1,0 +1,83 @@
+{
+  "title": "HUD & Capture Feature Demo",
+  "description": "A professional 60-second product walkthrough showcasing the HUD interface and capture features. Three main feature clips (HUD, Capture Overview, Full Demo) are sequenced with smooth fade transitions, each labeled with scene titles. The minimal intro establishes the product context, and a subtle outro closes the demo.",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "durationSec": 60,
+  "introStyle": "minimal",
+  "introDurationSec": 3,
+  "outroDurationSec": 4,
+  "transitionType": "fade",
+  "transitionDurationFrames": 20,
+  "clips": [
+    {
+      "src": "demos/hud.mp4",
+      "startFrom": 0,
+      "duration": 14,
+      "label": "HUD Interface",
+      "videoVolume": 0.8
+    },
+    {
+      "src": "demos/capture-overview.mp4",
+      "startFrom": 0,
+      "duration": 14,
+      "label": "Capture Features",
+      "videoVolume": 0.8
+    },
+    {
+      "src": "demos/60s Demo - Full Overview.mp4",
+      "startFrom": 0,
+      "duration": 22,
+      "label": "Complete Walkthrough",
+      "videoVolume": 0.8
+    }
+  ],
+  "textOverlays": [
+    {
+      "text": "HUD Interface",
+      "startAt": 3,
+      "duration": 14,
+      "position": "bottom-center",
+      "style": "title"
+    },
+    {
+      "text": "Display Settings & Metrics",
+      "startAt": 3,
+      "duration": 14,
+      "position": "bottom-left",
+      "style": "caption"
+    },
+    {
+      "text": "Capture Features",
+      "startAt": 17,
+      "duration": 14,
+      "position": "bottom-center",
+      "style": "title"
+    },
+    {
+      "text": "Recording & Export Options",
+      "startAt": 17,
+      "duration": 14,
+      "position": "bottom-left",
+      "style": "caption"
+    },
+    {
+      "text": "Complete Walkthrough",
+      "startAt": 31,
+      "duration": 22,
+      "position": "bottom-center",
+      "style": "title"
+    },
+    {
+      "text": "End-to-End Demo",
+      "startAt": 31,
+      "duration": 22,
+      "position": "bottom-left",
+      "style": "caption"
+    }
+  ],
+  "audioTracks": [],
+  "subtitle": "Product Demo: HUD & Capture Features",
+  "tagline": "Powerful tools at your fingertips"
+}

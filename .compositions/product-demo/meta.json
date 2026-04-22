@@ -1,0 +1,16 @@
+{
+  "compositionId": "product-demo",
+  "jobId": "job_mo8vsqix_lvn067",
+  "kind": "generate",
+  "createdAt": "2026-04-21T17:12:16.803Z",
+  "plan": {
+    "title": "HUD & Capture Feature Demo",
+    "description": "A professional 60-second product walkthrough showcasing the HUD interface and capture features. Three main feature clips (HUD, Capture Overview, Full Demo) are sequenced with smooth fade transitions, each labeled with scene titles. The minimal intro establishes the product context, and a subtle outro closes the demo.",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "durationSec": 60,
+    "clipCount": 3,
+    "audioTrackCount": 0
+  }
+}

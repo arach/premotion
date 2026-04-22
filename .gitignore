@@ -28,6 +28,7 @@ public/*.wav
 # Video assets
 public/*.mp4
 public/demos/
+public/out
 
 # Transcripts
 public/transcripts/

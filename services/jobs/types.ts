@@ -31,6 +31,7 @@ export interface JobRecord {
   heartbeatAt: string | null;
   result: JobResult | null;
   error: JobError | null;
+  activity: ActivityEntry[];
   idempotencyKey: string | null;
   createdAt: string;
   updatedAt: string;
@@ -43,6 +44,13 @@ export interface JobResult {
 
 export interface JobError {
   message: string;
+}
+
+export interface ActivityEntry {
+  stage: string;
+  message: string;
+  detail?: string;
+  timestamp: string;
 }
 
 export interface CreateJobResponse {

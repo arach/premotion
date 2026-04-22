@@ -1,0 +1,67 @@
+{
+  "title": "Premotion Demo",
+  "description": "Professional demo montage showcasing two screen recordings with a tactical intro. Clips are arranged to create a cohesive flow, using subtle zooms to highlight key content areas. Clean cuts between clips maintain momentum while text overlays provide scene context.",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "durationSec": 35,
+  "introStyle": "tactical",
+  "introDurationSec": 2,
+  "outroDurationSec": 2,
+  "transitionType": "cut",
+  "transitionDurationFrames": 0,
+  "clips": [
+    {
+      "src": "CleanShot 2026-04-21 at 11.47.21.mp4",
+      "startFrom": 0,
+      "duration": 15,
+      "label": "Primary Demo",
+      "zoom": {
+        "scale": 1.05,
+        "originX": 0.5,
+        "originY": 0.5,
+        "startAtSec": 3
+      },
+      "videoVolume": 1
+    },
+    {
+      "src": "CleanShot 2026-04-21 at 11.44.04.mp4",
+      "startFrom": 0,
+      "duration": 14,
+      "label": "Secondary Demo",
+      "zoom": {
+        "scale": 1.08,
+        "originX": 0.5,
+        "originY": 0.5,
+        "startAtSec": 2
+      },
+      "videoVolume": 1
+    }
+  ],
+  "textOverlays": [
+    {
+      "text": "Premotion Demo",
+      "startAt": 0.5,
+      "duration": 2,
+      "position": "top-center",
+      "style": "title"
+    },
+    {
+      "text": "Feature One",
+      "startAt": 3,
+      "duration": 10,
+      "position": "bottom-left",
+      "style": "caption"
+    },
+    {
+      "text": "Feature Two",
+      "startAt": 18,
+      "duration": 10,
+      "position": "bottom-left",
+      "style": "caption"
+    }
+  ],
+  "audioTracks": [],
+  "subtitle": "A quick look at Premotion capabilities",
+  "tagline": "Build videos with code"
+}

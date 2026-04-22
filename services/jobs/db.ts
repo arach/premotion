@@ -34,11 +34,13 @@ function migrate() {
       heartbeat_at TEXT,
       result_json TEXT,
       error_json TEXT,
+      activity_json TEXT,
       idempotency_key TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )
   `);
+  try { db.exec(`ALTER TABLE jobs ADD COLUMN activity_json TEXT`); } catch {}
   db.exec(`CREATE INDEX IF NOT EXISTS idx_jobs_composition ON jobs(composition_id)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_jobs_comp_kind_status ON jobs(composition_id, kind, status)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_jobs_updated ON jobs(updated_at)`);
@@ -142,6 +144,14 @@ export function failJob(jobId: string, error: { message: string }) {
   ).run('failed', JSON.stringify(error), now, jobId);
 }
 
+export function appendActivity(jobId: string, entry: { stage: string; message: string; detail?: string }) {
+  const now = new Date().toISOString();
+  const row = getDb().prepare('SELECT activity_json FROM jobs WHERE job_id = ?').get(jobId) as any;
+  const log: Array<Record<string, unknown>> = row?.activity_json ? JSON.parse(row.activity_json) : [];
+  log.push({ ...entry, timestamp: now });
+  getDb().prepare('UPDATE jobs SET activity_json = ?, updated_at = ? WHERE job_id = ?').run(JSON.stringify(log), now, jobId);
+}
+
 function rowToRecord(row: any): JobRecord {
   return {
     jobId: row.job_id,
@@ -157,6 +167,7 @@ function rowToRecord(row: any): JobRecord {
     heartbeatAt: row.heartbeat_at,
     result: row.result_json ? JSON.parse(row.result_json) : null,
     error: row.error_json ? JSON.parse(row.error_json) : null,
+    activity: row.activity_json ? JSON.parse(row.activity_json) : [],
     idempotencyKey: row.idempotency_key,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

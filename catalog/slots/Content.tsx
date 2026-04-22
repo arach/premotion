@@ -1,9 +1,11 @@
 'use client';
 
 import { useCatalog } from '../Provider';
+import { AssetsView } from './AssetsView';
 import { CatalogGrid } from './CatalogGrid';
 import { CodePanel } from './CodePanel';
 import { FrameViewer } from './FrameViewer';
+import { MusicView } from './MusicView';
 import { NewComposition } from './NewComposition';
 import { QueueView } from './QueueView';
 import { VideoDetail } from './VideoDetail';
@@ -25,6 +27,14 @@ export function CatalogContent() {
 
   if (view === 'queue') {
     return <QueueView />;
+  }
+
+  if (view === 'assets') {
+    return <AssetsView />;
+  }
+
+  if (view === 'music') {
+    return <MusicView />;
   }
 
   if (viewingFile) {

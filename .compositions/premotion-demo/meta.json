@@ -1,0 +1,16 @@
+{
+  "compositionId": "premotion-demo",
+  "jobId": "job_mo8tsryb_dy0nu3",
+  "kind": "generate",
+  "createdAt": "2026-04-21T17:26:31.851Z",
+  "plan": {
+    "title": "Premotion Demo",
+    "description": "Professional demo montage showcasing two screen recordings with a tactical intro. Clips are arranged to create a cohesive flow, using subtle zooms to highlight key content areas. Clean cuts between clips maintain momentum while text overlays provide scene context.",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "durationSec": 35,
+    "clipCount": 2,
+    "audioTrackCount": 0
+  }
+}

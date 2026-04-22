@@ -1,0 +1,75 @@
+{
+  "title": "Lattices Snap Zones",
+  "description": "Highlight reel showcasing the snap zone functionality in Lattices. Features two key segments from the source footage: the initial snap zone demo (4-20s) and a secondary demonstration (30-40s). Tactical intro establishes the product identity, with subtle zoom effects drawing attention to the snap zone actions panel during key moments. Clean monospace captions reinforce the technical aesthetic.",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "durationSec": 30,
+  "introStyle": "tactical",
+  "introDurationSec": 2,
+  "outroDurationSec": 2,
+  "transitionType": "cut",
+  "transitionDurationFrames": 0,
+  "clips": [
+    {
+      "src": "lattices-snap-zones-2026-04-19.mp4",
+      "startFrom": 4,
+      "duration": 16,
+      "label": "Snap Zone Demo - Initial",
+      "zoom": {
+        "scale": 1.2,
+        "originX": 0.7,
+        "originY": 0.3,
+        "startAtSec": 2
+      },
+      "videoVolume": 1
+    },
+    {
+      "src": "lattices-snap-zones-2026-04-19.mp4",
+      "startFrom": 30,
+      "duration": 10,
+      "label": "Snap Zone Demo - Secondary",
+      "videoVolume": 1
+    }
+  ],
+  "textOverlays": [
+    {
+      "text": "LATTICES SNAP ZONES",
+      "startAt": 0,
+      "duration": 2,
+      "position": "center",
+      "style": "title"
+    },
+    {
+      "text": "Window management, reimagined",
+      "startAt": 0.5,
+      "duration": 1.5,
+      "position": "center",
+      "style": "subtitle"
+    },
+    {
+      "text": "Snap Zone Activated",
+      "startAt": 4,
+      "duration": 3,
+      "position": "bottom-center",
+      "style": "caption"
+    },
+    {
+      "text": "Tiling Active",
+      "startAt": 9,
+      "duration": 3,
+      "position": "bottom-center",
+      "style": "caption"
+    },
+    {
+      "text": "Zone Boundary Set",
+      "startAt": 32,
+      "duration": 3,
+      "position": "bottom-center",
+      "style": "caption"
+    }
+  ],
+  "audioTracks": [],
+  "subtitle": "Snap Zone Actions Panel",
+  "tagline": "Redefine your workspace boundaries"
+}

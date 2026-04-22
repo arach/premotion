@@ -30,12 +30,20 @@ export function useCatalogCommands(): CommandOption[] {
 // useStatus — total count + state color
 // ---------------------------------------------------------------------------
 export function useCatalogStatus(): { label: string; color: StatusColor } {
-  const { loading, filteredVideos, filter, filteredSnippets } = useCatalog();
+  const { loading, filteredVideos, data, filter, filteredSnippets, view } = useCatalog();
   if (loading) return { label: 'loading…', color: 'amber' };
   if (filter === 'curated') {
     return { label: `${filteredSnippets.length} snippets`, color: 'emerald' };
   }
-  return { label: `${filteredVideos.length} videos`, color: 'emerald' };
+  if (view === 'assets') {
+    const source = (data?.videos ?? []).filter(v => v.stage === 'source' || !v.stage);
+    return { label: `${source.length} assets`, color: 'emerald' };
+  }
+  if (view === 'queue') {
+    return { label: 'queue', color: 'emerald' };
+  }
+  const finals = filteredVideos.filter(v => v.stage === 'final');
+  return { label: `${finals.length} videos`, color: 'emerald' };
 }
 
 // ---------------------------------------------------------------------------

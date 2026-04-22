@@ -1,9 +1,901 @@
 {
   "meta": {
-    "generatedAt": "2026-04-19T22:34:07.792Z",
-    "videoCount": 146
+    "generatedAt": "2026-04-22T00:20:00.905Z",
+    "videoCount": 152
   },
   "videos": [
+    {
+      "id": "lattices-snap-zones",
+      "filename": "lattices-snap-zones.mp4",
+      "sourcePath": null,
+      "demosPath": "out/lattices-snap-zones.mp4",
+      "capturedAt": "2026-04-22T00:19:49.109Z",
+      "resolution": "1920x1080",
+      "fps": 30,
+      "duration": 30.06,
+      "codec": "h264",
+      "sizeMB": 10.31,
+      "app": "lattices",
+      "tags": [],
+      "description": "lattices-snap-zones",
+      "scenes": [],
+      "storyboardDir": null,
+      "analysisStatus": "none",
+      "composition": null,
+      "reelCandidate": false,
+      "stage": "final",
+      "videoUrl": "out/lattices-snap-zones.mp4"
+    },
+    {
+      "id": "lattices-snap-zones-2026-04-19",
+      "filename": "lattices-snap-zones-2026-04-19.mp4",
+      "sourcePath": null,
+      "demosPath": "demos/lattices-snap-zones-2026-04-19.mp4",
+      "capturedAt": "2026-04-22T00:10:54.941Z",
+      "resolution": "1720x720",
+      "fps": 22,
+      "duration": 49.28,
+      "codec": "h264",
+      "sizeMB": 8.25,
+      "app": "lattices",
+      "tags": [
+        "idle"
+      ],
+      "description": "lattices-snap-zones-2026-04-19",
+      "scenes": [
+        {
+          "index": 1,
+          "start": 0,
+          "end": 1.48,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "idle"
+        },
+        {
+          "index": 2,
+          "start": 1.48,
+          "end": 2.94,
+          "description": "Idle frame at 0:01",
+          "tags": [
+            "idle"
+          ],
+          "contentType": "idle",
+          "activity": "idle"
+        },
+        {
+          "index": 3,
+          "start": 2.94,
+          "end": 4.04,
+          "description": "Idle frame at 0:03",
+          "tags": [
+            "idle"
+          ],
+          "contentType": "idle",
+          "activity": "idle"
+        },
+        {
+          "index": 4,
+          "start": 4.04,
+          "end": 5.181667,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "active"
+        },
+        {
+          "index": 5,
+          "start": 5.181667,
+          "end": 15,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "active"
+        },
+        {
+          "index": 6,
+          "start": 15,
+          "end": 21.263333,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "active"
+        },
+        {
+          "index": 7,
+          "start": 21.263333,
+          "end": 30,
+          "description": "Idle frame at 0:21",
+          "tags": [
+            "idle"
+          ],
+          "contentType": "idle",
+          "activity": "idle"
+        },
+        {
+          "index": 8,
+          "start": 30,
+          "end": 41.148333,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "active"
+        },
+        {
+          "index": 9,
+          "start": 41.148333,
+          "end": 43.208333,
+          "description": "Idle frame at 0:41",
+          "tags": [
+            "idle"
+          ],
+          "contentType": "idle",
+          "activity": "idle"
+        },
+        {
+          "index": 10,
+          "start": 43.208333,
+          "end": 49.278688,
+          "description": "Idle frame at 0:43",
+          "tags": [
+            "idle"
+          ],
+          "contentType": "idle",
+          "activity": "idle"
+        }
+      ],
+      "storyboardDir": "storyboard-lattices-snap-zones-2026-04-19",
+      "analysisStatus": "complete",
+      "composition": null,
+      "reelCandidate": false,
+      "stage": "source",
+      "frameCount": 10,
+      "frames": [
+        "frame_001.jpg",
+        "frame_002.jpg",
+        "frame_003.jpg",
+        "frame_004.jpg",
+        "frame_005.jpg",
+        "frame_006.jpg",
+        "frame_007.jpg",
+        "frame_008.jpg",
+        "frame_009.jpg",
+        "frame_010.jpg"
+      ],
+      "edl": {
+        "source": "lattices-snap-zones-2026-04-19.mp4",
+        "duration": 49.3,
+        "resolution": "1720x720",
+        "fps": 50,
+        "analyzedAt": "2026-04-22T00:11:44.357Z",
+        "scenes": [
+          {
+            "index": 1,
+            "start": 0,
+            "end": 1.48,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "idle"
+          },
+          {
+            "index": 2,
+            "start": 1.48,
+            "end": 2.94,
+            "description": "Idle frame at 0:01",
+            "tags": [
+              "idle"
+            ],
+            "contentType": "idle",
+            "activity": "idle"
+          },
+          {
+            "index": 3,
+            "start": 2.94,
+            "end": 4.04,
+            "description": "Idle frame at 0:03",
+            "tags": [
+              "idle"
+            ],
+            "contentType": "idle",
+            "activity": "idle"
+          },
+          {
+            "index": 4,
+            "start": 4.04,
+            "end": 5.181667,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "active"
+          },
+          {
+            "index": 5,
+            "start": 5.181667,
+            "end": 15,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "active"
+          },
+          {
+            "index": 6,
+            "start": 15,
+            "end": 21.263333,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "active"
+          },
+          {
+            "index": 7,
+            "start": 21.263333,
+            "end": 30,
+            "description": "Idle frame at 0:21",
+            "tags": [
+              "idle"
+            ],
+            "contentType": "idle",
+            "activity": "idle"
+          },
+          {
+            "index": 8,
+            "start": 30,
+            "end": 41.148333,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "active"
+          },
+          {
+            "index": 9,
+            "start": 41.148333,
+            "end": 43.208333,
+            "description": "Idle frame at 0:41",
+            "tags": [
+              "idle"
+            ],
+            "contentType": "idle",
+            "activity": "idle"
+          },
+          {
+            "index": 10,
+            "start": 43.208333,
+            "end": 49.278688,
+            "description": "Idle frame at 0:43",
+            "tags": [
+              "idle"
+            ],
+            "contentType": "idle",
+            "activity": "idle"
+          }
+        ],
+        "highlights": [],
+        "suggestedClips": [],
+        "deadTime": [],
+        "stats": {
+          "totalSceneBreaks": 10,
+          "activeTime": 12,
+          "idleTime": 37,
+          "transitionTime": 0,
+          "framesAnalyzed": 5,
+          "estimatedTokens": 10000
+        },
+        "storyboardDir": "storyboard-lattices-snap-zones-2026-04-19"
+      },
+      "videoUrl": "demos/lattices-snap-zones-2026-04-19.mp4"
+    },
+    {
+      "id": "premotion-catalog-2026-04-21",
+      "filename": "premotion-catalog-2026-04-21.mp4",
+      "sourcePath": null,
+      "demosPath": "demos/premotion-catalog-2026-04-21.mp4",
+      "capturedAt": "2026-04-21T19:11:05.798Z",
+      "resolution": "3440x1440",
+      "fps": 49,
+      "duration": 57.99,
+      "codec": "h264",
+      "sizeMB": 28.97,
+      "app": "other",
+      "tags": [
+        "idle"
+      ],
+      "description": "premotion-catalog-2026-04-21",
+      "scenes": [
+        {
+          "index": 1,
+          "start": 0,
+          "end": 15,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "idle"
+        },
+        {
+          "index": 2,
+          "start": 15,
+          "end": 30,
+          "description": "Idle frame at 0:15",
+          "tags": [
+            "idle"
+          ],
+          "contentType": "idle",
+          "activity": "idle"
+        },
+        {
+          "index": 3,
+          "start": 30,
+          "end": 45,
+          "description": "Idle frame at 0:30",
+          "tags": [
+            "idle"
+          ],
+          "contentType": "idle",
+          "activity": "idle"
+        },
+        {
+          "index": 4,
+          "start": 45,
+          "end": 57.988333,
+          "description": "Idle frame at 0:45",
+          "tags": [
+            "idle"
+          ],
+          "contentType": "idle",
+          "activity": "idle"
+        }
+      ],
+      "storyboardDir": "storyboard-premotion-catalog-2026-04-21",
+      "analysisStatus": "complete",
+      "composition": null,
+      "reelCandidate": false,
+      "stage": "source",
+      "frameCount": 4,
+      "frames": [
+        "frame_001.jpg",
+        "frame_002.jpg",
+        "frame_003.jpg",
+        "frame_004.jpg"
+      ],
+      "edl": {
+        "source": "premotion-catalog-2026-04-21.mp4",
+        "duration": 58,
+        "resolution": "3440x1440",
+        "fps": 50,
+        "analyzedAt": "2026-04-21T19:12:53.482Z",
+        "scenes": [
+          {
+            "index": 1,
+            "start": 0,
+            "end": 15,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "idle"
+          },
+          {
+            "index": 2,
+            "start": 15,
+            "end": 30,
+            "description": "Idle frame at 0:15",
+            "tags": [
+              "idle"
+            ],
+            "contentType": "idle",
+            "activity": "idle"
+          },
+          {
+            "index": 3,
+            "start": 30,
+            "end": 45,
+            "description": "Idle frame at 0:30",
+            "tags": [
+              "idle"
+            ],
+            "contentType": "idle",
+            "activity": "idle"
+          },
+          {
+            "index": 4,
+            "start": 45,
+            "end": 57.988333,
+            "description": "Idle frame at 0:45",
+            "tags": [
+              "idle"
+            ],
+            "contentType": "idle",
+            "activity": "idle"
+          }
+        ],
+        "highlights": [],
+        "suggestedClips": [],
+        "deadTime": [],
+        "stats": {
+          "totalSceneBreaks": 4,
+          "activeTime": 0,
+          "idleTime": 58,
+          "transitionTime": 0,
+          "framesAnalyzed": 1,
+          "estimatedTokens": 5200
+        },
+        "storyboardDir": "storyboard-premotion-catalog-2026-04-21"
+      },
+      "videoUrl": "demos/premotion-catalog-2026-04-21.mp4"
+    },
+    {
+      "id": "premotion-studio-2026-04-20",
+      "filename": "premotion-studio-2026-04-20.mp4",
+      "sourcePath": null,
+      "demosPath": "demos/premotion-studio-2026-04-20.mp4",
+      "capturedAt": "2026-04-21T19:11:05.769Z",
+      "resolution": "1722x1440",
+      "fps": 22,
+      "duration": 166.66,
+      "codec": "h264",
+      "sizeMB": 31.83,
+      "app": "other",
+      "tags": [
+        "idle"
+      ],
+      "description": "premotion-studio-2026-04-20",
+      "scenes": [
+        {
+          "index": 1,
+          "start": 0,
+          "end": 15,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "idle"
+        },
+        {
+          "index": 2,
+          "start": 15,
+          "end": 24.266667,
+          "description": "Idle frame at 0:15",
+          "tags": [
+            "idle"
+          ],
+          "contentType": "idle",
+          "activity": "idle"
+        },
+        {
+          "index": 3,
+          "start": 24.266667,
+          "end": 30,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "idle"
+        },
+        {
+          "index": 4,
+          "start": 30,
+          "end": 36.298333,
+          "description": "Idle frame at 0:30",
+          "tags": [
+            "idle"
+          ],
+          "contentType": "idle",
+          "activity": "idle"
+        },
+        {
+          "index": 5,
+          "start": 36.298333,
+          "end": 45,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "active"
+        },
+        {
+          "index": 6,
+          "start": 45,
+          "end": 50.765,
+          "description": "Idle frame at 0:45",
+          "tags": [
+            "idle"
+          ],
+          "contentType": "idle",
+          "activity": "idle"
+        },
+        {
+          "index": 7,
+          "start": 50.765,
+          "end": 63.531667,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "active"
+        },
+        {
+          "index": 8,
+          "start": 63.531667,
+          "end": 74.631667,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "active"
+        },
+        {
+          "index": 9,
+          "start": 74.631667,
+          "end": 84.665,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "active"
+        },
+        {
+          "index": 10,
+          "start": 84.665,
+          "end": 90,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "active"
+        },
+        {
+          "index": 11,
+          "start": 90,
+          "end": 105,
+          "description": "Idle frame at 1:30",
+          "tags": [
+            "idle"
+          ],
+          "contentType": "idle",
+          "activity": "idle"
+        },
+        {
+          "index": 12,
+          "start": 105,
+          "end": 120,
+          "description": "Idle frame at 1:45",
+          "tags": [
+            "idle"
+          ],
+          "contentType": "idle",
+          "activity": "idle"
+        },
+        {
+          "index": 13,
+          "start": 120,
+          "end": 132.23,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "active"
+        },
+        {
+          "index": 14,
+          "start": 132.23,
+          "end": 136.496667,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "idle"
+        },
+        {
+          "index": 15,
+          "start": 136.496667,
+          "end": 137.496667,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "transition"
+        },
+        {
+          "index": 16,
+          "start": 137.496667,
+          "end": 145.23,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "transition"
+        },
+        {
+          "index": 17,
+          "start": 145.23,
+          "end": 146.33,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "idle"
+        },
+        {
+          "index": 18,
+          "start": 146.33,
+          "end": 156.93,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "idle"
+        },
+        {
+          "index": 19,
+          "start": 156.93,
+          "end": 166.659646,
+          "description": "",
+          "tags": [],
+          "contentType": "other",
+          "activity": "idle"
+        }
+      ],
+      "storyboardDir": "storyboard-premotion-studio-2026-04-20",
+      "analysisStatus": "complete",
+      "composition": null,
+      "reelCandidate": false,
+      "stage": "source",
+      "frameCount": 19,
+      "frames": [
+        "frame_001.jpg",
+        "frame_002.jpg",
+        "frame_003.jpg",
+        "frame_004.jpg",
+        "frame_005.jpg",
+        "frame_006.jpg",
+        "frame_007.jpg",
+        "frame_008.jpg",
+        "frame_009.jpg",
+        "frame_010.jpg",
+        "frame_011.jpg",
+        "frame_012.jpg",
+        "frame_013.jpg",
+        "frame_014.jpg",
+        "frame_015.jpg",
+        "frame_016.jpg",
+        "frame_017.jpg",
+        "frame_018.jpg",
+        "frame_019.jpg"
+      ],
+      "edl": {
+        "source": "premotion-studio-2026-04-20.mp4",
+        "duration": 166.7,
+        "resolution": "1722x1440",
+        "fps": 30,
+        "analyzedAt": "2026-04-21T19:12:56.529Z",
+        "scenes": [
+          {
+            "index": 1,
+            "start": 0,
+            "end": 15,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "idle"
+          },
+          {
+            "index": 2,
+            "start": 15,
+            "end": 24.266667,
+            "description": "Idle frame at 0:15",
+            "tags": [
+              "idle"
+            ],
+            "contentType": "idle",
+            "activity": "idle"
+          },
+          {
+            "index": 3,
+            "start": 24.266667,
+            "end": 30,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "idle"
+          },
+          {
+            "index": 4,
+            "start": 30,
+            "end": 36.298333,
+            "description": "Idle frame at 0:30",
+            "tags": [
+              "idle"
+            ],
+            "contentType": "idle",
+            "activity": "idle"
+          },
+          {
+            "index": 5,
+            "start": 36.298333,
+            "end": 45,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "active"
+          },
+          {
+            "index": 6,
+            "start": 45,
+            "end": 50.765,
+            "description": "Idle frame at 0:45",
+            "tags": [
+              "idle"
+            ],
+            "contentType": "idle",
+            "activity": "idle"
+          },
+          {
+            "index": 7,
+            "start": 50.765,
+            "end": 63.531667,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "active"
+          },
+          {
+            "index": 8,
+            "start": 63.531667,
+            "end": 74.631667,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "active"
+          },
+          {
+            "index": 9,
+            "start": 74.631667,
+            "end": 84.665,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "active"
+          },
+          {
+            "index": 10,
+            "start": 84.665,
+            "end": 90,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "active"
+          },
+          {
+            "index": 11,
+            "start": 90,
+            "end": 105,
+            "description": "Idle frame at 1:30",
+            "tags": [
+              "idle"
+            ],
+            "contentType": "idle",
+            "activity": "idle"
+          },
+          {
+            "index": 12,
+            "start": 105,
+            "end": 120,
+            "description": "Idle frame at 1:45",
+            "tags": [
+              "idle"
+            ],
+            "contentType": "idle",
+            "activity": "idle"
+          },
+          {
+            "index": 13,
+            "start": 120,
+            "end": 132.23,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "active"
+          },
+          {
+            "index": 14,
+            "start": 132.23,
+            "end": 136.496667,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "idle"
+          },
+          {
+            "index": 15,
+            "start": 136.496667,
+            "end": 137.496667,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "transition"
+          },
+          {
+            "index": 16,
+            "start": 137.496667,
+            "end": 145.23,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "transition"
+          },
+          {
+            "index": 17,
+            "start": 145.23,
+            "end": 146.33,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "idle"
+          },
+          {
+            "index": 18,
+            "start": 146.33,
+            "end": 156.93,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "idle"
+          },
+          {
+            "index": 19,
+            "start": 156.93,
+            "end": 166.659646,
+            "description": "",
+            "tags": [],
+            "contentType": "other",
+            "activity": "idle"
+          }
+        ],
+        "highlights": [],
+        "suggestedClips": [],
+        "deadTime": [],
+        "stats": {
+          "totalSceneBreaks": 19,
+          "activeTime": 25,
+          "idleTime": 139,
+          "transitionTime": 3,
+          "framesAnalyzed": 14,
+          "estimatedTokens": 17200
+        },
+        "storyboardDir": "storyboard-premotion-studio-2026-04-20"
+      },
+      "videoUrl": "demos/premotion-studio-2026-04-20.mp4"
+    },
+    {
+      "id": "premotion-demo",
+      "filename": "premotion-demo.mp4",
+      "sourcePath": null,
+      "demosPath": "out/premotion-demo.mp4",
+      "capturedAt": "2026-04-21T18:49:16.407Z",
+      "resolution": "1920x1080",
+      "fps": 30,
+      "duration": 35.05,
+      "codec": "h264",
+      "sizeMB": 16.26,
+      "app": "other",
+      "tags": [],
+      "description": "premotion-demo",
+      "scenes": [],
+      "storyboardDir": null,
+      "analysisStatus": "none",
+      "composition": null,
+      "reelCandidate": false,
+      "stage": "final",
+      "videoUrl": "out/premotion-demo.mp4"
+    },
+    {
+      "id": "product-demo",
+      "filename": "product-demo.mp4",
+      "sourcePath": null,
+      "demosPath": "out/product-demo.mp4",
+      "capturedAt": "2026-04-21T18:42:16.925Z",
+      "resolution": "1920x1080",
+      "fps": 30,
+      "duration": 60.05,
+      "codec": "h264",
+      "sizeMB": 7.74,
+      "app": "other",
+      "tags": [],
+      "description": "product-demo",
+      "scenes": [],
+      "storyboardDir": null,
+      "analysisStatus": "none",
+      "composition": null,
+      "reelCandidate": false,
+      "stage": "final",
+      "videoUrl": "out/product-demo.mp4"
+    },
     {
       "id": "scoutfeaturestack",
       "filename": "ScoutFeatureStack.mp4",
@@ -3563,1516 +4455,6 @@
       "composition": null,
       "reelCandidate": false,
       "stage": "source",
-      "transcript": {
-        "text": " Quick update, Lattice has just hardened the voice pipeline with Talkie. It's debugged where Talkie restarts with being missed, added a reconnect cycle with the Daemon API, and capped hands-off mode to six actions per turn. They're coordinating with Talkie on clean reconnection handling. Also, box and pre-motion wrapped up, word timestamps are working, commit landed. Just needs you to copy the debug binary to the app bundle when convenient. Who needs that? Who needs that? That's Lattice's and Talkie. Lattice's is hardening the voice pipeline web socket connection and waiting for Talkie to confirm how reconnection works on their end. Nothing you need to do, they're sorting it out between themselves. Yes, Talkie is up and responding. It just gave Lattice's a detailed breakdown of how reconnection works. Orphan sessions stay alive for 15 minutes, reconnecting with the same client ID reclaims them cleanly. Lattice has confirmed they're good to ship on their side. The two are fully coordinated.",
-        "segments": [
-          {
-            "id": 0,
-            "seek": 0,
-            "start": 3.2399999999999993,
-            "end": 7.06,
-            "text": " Quick update, Lattice has just hardened the voice pipeline with Talkie.",
-            "tokens": [
-              50364,
-              12101,
-              5623,
-              11,
-              441,
-              1591,
-              573,
-              575,
-              445,
-              42605,
-              264,
-              3177,
-              15517,
-              365,
-              8780,
-              414,
-              13,
-              50714
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.28144073486328125,
-            "compression_ratio": 1.5269709543568464,
-            "no_speech_prob": 0.6636908054351807,
-            "words": [
-              {
-                "word": " Quick",
-                "start": 3.2399999999999993,
-                "end": 3.7199999999999998,
-                "probability": 0.2261285036802292
-              },
-              {
-                "word": " update,",
-                "start": 3.7199999999999998,
-                "end": 4.2,
-                "probability": 0.9740850329399109
-              },
-              {
-                "word": " Lattice",
-                "start": 4.66,
-                "end": 4.82,
-                "probability": 0.6781670947869619
-              },
-              {
-                "word": " has",
-                "start": 4.82,
-                "end": 5.04,
-                "probability": 0.5150629878044128
-              },
-              {
-                "word": " just",
-                "start": 5.04,
-                "end": 5.28,
-                "probability": 0.9934560656547546
-              },
-              {
-                "word": " hardened",
-                "start": 5.28,
-                "end": 5.46,
-                "probability": 0.8536378741264343
-              },
-              {
-                "word": " the",
-                "start": 5.46,
-                "end": 5.68,
-                "probability": 0.9466767907142639
-              },
-              {
-                "word": " voice",
-                "start": 5.68,
-                "end": 5.82,
-                "probability": 0.9559024572372437
-              },
-              {
-                "word": " pipeline",
-                "start": 5.82,
-                "end": 6.14,
-                "probability": 0.9632934331893921
-              },
-              {
-                "word": " with",
-                "start": 6.14,
-                "end": 6.48,
-                "probability": 0.8697940707206726
-              },
-              {
-                "word": " Talkie.",
-                "start": 6.48,
-                "end": 7.06,
-                "probability": 0.6053864359855652
-              }
-            ]
-          },
-          {
-            "id": 1,
-            "seek": 0,
-            "start": 7.34,
-            "end": 11.94,
-            "text": " It's debugged where Talkie restarts with being missed, added a reconnect cycle with the Daemon API,",
-            "tokens": [
-              50714,
-              467,
-              311,
-              24083,
-              3004,
-              689,
-              8780,
-              414,
-              1472,
-              11814,
-              365,
-              885,
-              6721,
-              11,
-              3869,
-              257,
-              30095,
-              6586,
-              365,
-              264,
-              3933,
-              36228,
-              9362,
-              11,
-              50964
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.28144073486328125,
-            "compression_ratio": 1.5269709543568464,
-            "no_speech_prob": 0.6636908054351807,
-            "words": [
-              {
-                "word": " It's",
-                "start": 7.34,
-                "end": 7.52,
-                "probability": 0.795505940914154
-              },
-              {
-                "word": " debugged",
-                "start": 7.52,
-                "end": 7.7,
-                "probability": 0.3805467337369919
-              },
-              {
-                "word": " where",
-                "start": 7.7,
-                "end": 7.9,
-                "probability": 0.5168809294700623
-              },
-              {
-                "word": " Talkie",
-                "start": 7.9,
-                "end": 8.24,
-                "probability": 0.9753170013427734
-              },
-              {
-                "word": " restarts",
-                "start": 8.24,
-                "end": 8.64,
-                "probability": 0.9091991186141968
-              },
-              {
-                "word": " with",
-                "start": 8.64,
-                "end": 8.84,
-                "probability": 0.3083053231239319
-              },
-              {
-                "word": " being",
-                "start": 8.84,
-                "end": 9.04,
-                "probability": 0.7311683297157288
-              },
-              {
-                "word": " missed,",
-                "start": 9.04,
-                "end": 9.48,
-                "probability": 0.9766870737075806
-              },
-              {
-                "word": " added",
-                "start": 9.96,
-                "end": 10.08,
-                "probability": 0.8182651400566101
-              },
-              {
-                "word": " a",
-                "start": 10.08,
-                "end": 10.32,
-                "probability": 0.9632863998413086
-              },
-              {
-                "word": " reconnect",
-                "start": 10.32,
-                "end": 10.56,
-                "probability": 0.885526180267334
-              },
-              {
-                "word": " cycle",
-                "start": 10.56,
-                "end": 10.88,
-                "probability": 0.9873158931732178
-              },
-              {
-                "word": " with",
-                "start": 10.88,
-                "end": 11.12,
-                "probability": 0.9248067140579224
-              },
-              {
-                "word": " the",
-                "start": 11.12,
-                "end": 11.26,
-                "probability": 0.589997410774231
-              },
-              {
-                "word": " Daemon",
-                "start": 11.26,
-                "end": 11.42,
-                "probability": 0.6545482873916626
-              },
-              {
-                "word": " API,",
-                "start": 11.42,
-                "end": 11.94,
-                "probability": 0.9869720339775085
-              }
-            ]
-          },
-          {
-            "id": 2,
-            "seek": 0,
-            "start": 12.62,
-            "end": 14.88,
-            "text": " and capped hands-off mode to six actions per turn.",
-            "tokens": [
-              50964,
-              293,
-              1335,
-              3320,
-              2377,
-              12,
-              4506,
-              4391,
-              281,
-              2309,
-              5909,
-              680,
-              1261,
-              13,
-              51114
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.28144073486328125,
-            "compression_ratio": 1.5269709543568464,
-            "no_speech_prob": 0.6636908054351807,
-            "words": [
-              {
-                "word": " and",
-                "start": 12.62,
-                "end": 12.84,
-                "probability": 0.9944368600845337
-              },
-              {
-                "word": " capped",
-                "start": 12.84,
-                "end": 12.98,
-                "probability": 0.9705100357532501
-              },
-              {
-                "word": " hands",
-                "start": 12.98,
-                "end": 13.24,
-                "probability": 0.9280573129653931
-              },
-              {
-                "word": "-off",
-                "start": 13.24,
-                "end": 13.44,
-                "probability": 0.8009447157382965
-              },
-              {
-                "word": " mode",
-                "start": 13.44,
-                "end": 13.6,
-                "probability": 0.9888100028038025
-              },
-              {
-                "word": " to",
-                "start": 13.6,
-                "end": 13.84,
-                "probability": 0.9919127225875854
-              },
-              {
-                "word": " six",
-                "start": 13.84,
-                "end": 14.04,
-                "probability": 0.9081548452377319
-              },
-              {
-                "word": " actions",
-                "start": 14.04,
-                "end": 14.4,
-                "probability": 0.9919987320899963
-              },
-              {
-                "word": " per",
-                "start": 14.4,
-                "end": 14.66,
-                "probability": 0.9909613728523254
-              },
-              {
-                "word": " turn.",
-                "start": 14.66,
-                "end": 14.88,
-                "probability": 0.9759929776191711
-              }
-            ]
-          },
-          {
-            "id": 3,
-            "seek": 0,
-            "start": 15.3,
-            "end": 17.72,
-            "text": " They're coordinating with Talkie on clean reconnection handling.",
-            "tokens": [
-              51114,
-              814,
-              434,
-              37824,
-              365,
-              8780,
-              414,
-              322,
-              2541,
-              30095,
-              313,
-              13175,
-              13,
-              51264
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.28144073486328125,
-            "compression_ratio": 1.5269709543568464,
-            "no_speech_prob": 0.6636908054351807,
-            "words": [
-              {
-                "word": " They're",
-                "start": 15.3,
-                "end": 15.62,
-                "probability": 0.9435369372367859
-              },
-              {
-                "word": " coordinating",
-                "start": 15.62,
-                "end": 15.88,
-                "probability": 0.9962506890296936
-              },
-              {
-                "word": " with",
-                "start": 15.88,
-                "end": 16.2,
-                "probability": 0.976154625415802
-              },
-              {
-                "word": " Talkie",
-                "start": 16.2,
-                "end": 16.42,
-                "probability": 0.9933734238147736
-              },
-              {
-                "word": " on",
-                "start": 16.42,
-                "end": 16.66,
-                "probability": 0.9957589507102966
-              },
-              {
-                "word": " clean",
-                "start": 16.66,
-                "end": 16.88,
-                "probability": 0.9709513783454895
-              },
-              {
-                "word": " reconnection",
-                "start": 16.88,
-                "end": 17.46,
-                "probability": 0.9598298668861389
-              },
-              {
-                "word": " handling.",
-                "start": 17.46,
-                "end": 17.72,
-                "probability": 0.9747589826583862
-              }
-            ]
-          },
-          {
-            "id": 4,
-            "seek": 0,
-            "start": 18.5,
-            "end": 22.96,
-            "text": " Also, box and pre-motion wrapped up, word timestamps are working, commit landed.",
-            "tokens": [
-              51264,
-              2743,
-              11,
-              2424,
-              293,
-              659,
-              12,
-              44968,
-              14226,
-              493,
-              11,
-              1349,
-              49108,
-              23150,
-              366,
-              1364,
-              11,
-              5599,
-              15336,
-              13,
-              51514
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.28144073486328125,
-            "compression_ratio": 1.5269709543568464,
-            "no_speech_prob": 0.6636908054351807,
-            "words": [
-              {
-                "word": " Also,",
-                "start": 18.5,
-                "end": 18.94,
-                "probability": 0.9963701963424683
-              },
-              {
-                "word": " box",
-                "start": 19.16,
-                "end": 19.26,
-                "probability": 0.285877525806427
-              },
-              {
-                "word": " and",
-                "start": 19.26,
-                "end": 19.44,
-                "probability": 0.8629822731018066
-              },
-              {
-                "word": " pre",
-                "start": 19.44,
-                "end": 19.64,
-                "probability": 0.9456614255905151
-              },
-              {
-                "word": "-motion",
-                "start": 19.64,
-                "end": 19.84,
-                "probability": 0.9765596091747284
-              },
-              {
-                "word": " wrapped",
-                "start": 19.84,
-                "end": 20.12,
-                "probability": 0.971659779548645
-              },
-              {
-                "word": " up,",
-                "start": 20.12,
-                "end": 20.58,
-                "probability": 0.9894387125968933
-              },
-              {
-                "word": " word",
-                "start": 20.94,
-                "end": 21,
-                "probability": 0.5125645995140076
-              },
-              {
-                "word": " timestamps",
-                "start": 21,
-                "end": 21.46,
-                "probability": 0.8751502335071564
-              },
-              {
-                "word": " are",
-                "start": 21.46,
-                "end": 21.68,
-                "probability": 0.9896547794342041
-              },
-              {
-                "word": " working,",
-                "start": 21.68,
-                "end": 22.06,
-                "probability": 0.9990860223770142
-              },
-              {
-                "word": " commit",
-                "start": 22.38,
-                "end": 22.6,
-                "probability": 0.9740437269210815
-              },
-              {
-                "word": " landed.",
-                "start": 22.6,
-                "end": 22.96,
-                "probability": 0.9039408564567566
-              }
-            ]
-          },
-          {
-            "id": 5,
-            "seek": 2296,
-            "start": 22.96,
-            "end": 27.6,
-            "text": " Just needs you to copy the debug binary to the app bundle when convenient.",
-            "tokens": [
-              50364,
-              1449,
-              2203,
-              291,
-              281,
-              5055,
-              264,
-              24083,
-              17434,
-              281,
-              264,
-              724,
-              24438,
-              562,
-              10851,
-              13,
-              50714
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.2821586227416992,
-            "compression_ratio": 1.0843373493975903,
-            "no_speech_prob": 0.7276248931884766,
-            "words": [
-              {
-                "word": " Just",
-                "start": 22.96,
-                "end": 23.88,
-                "probability": 0.10753072053194046
-              },
-              {
-                "word": " needs",
-                "start": 23.88,
-                "end": 24.16,
-                "probability": 0.5399637818336487
-              },
-              {
-                "word": " you",
-                "start": 24.16,
-                "end": 24.58,
-                "probability": 0.9501546025276184
-              },
-              {
-                "word": " to",
-                "start": 24.58,
-                "end": 24.8,
-                "probability": 0.9782022833824158
-              },
-              {
-                "word": " copy",
-                "start": 24.8,
-                "end": 24.94,
-                "probability": 0.9925302863121033
-              },
-              {
-                "word": " the",
-                "start": 24.94,
-                "end": 25.16,
-                "probability": 0.9780168533325195
-              },
-              {
-                "word": " debug",
-                "start": 25.16,
-                "end": 25.38,
-                "probability": 0.9818664193153381
-              },
-              {
-                "word": " binary",
-                "start": 25.38,
-                "end": 25.84,
-                "probability": 0.9535307884216309
-              },
-              {
-                "word": " to",
-                "start": 25.84,
-                "end": 26.16,
-                "probability": 0.9697403311729431
-              },
-              {
-                "word": " the",
-                "start": 26.16,
-                "end": 26.3,
-                "probability": 0.9881435036659241
-              },
-              {
-                "word": " app",
-                "start": 26.3,
-                "end": 26.5,
-                "probability": 0.8817936778068542
-              },
-              {
-                "word": " bundle",
-                "start": 26.5,
-                "end": 26.66,
-                "probability": 0.9522875547409058
-              },
-              {
-                "word": " when",
-                "start": 26.66,
-                "end": 26.92,
-                "probability": 0.8288859724998474
-              },
-              {
-                "word": " convenient.",
-                "start": 26.92,
-                "end": 27.6,
-                "probability": 0.980678379535675
-              }
-            ]
-          },
-          {
-            "id": 6,
-            "seek": 2296,
-            "start": 30.02,
-            "end": 31.22,
-            "text": " Who needs that?",
-            "tokens": [
-              50714,
-              2102,
-              2203,
-              300,
-              30,
-              50864
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.2821586227416992,
-            "compression_ratio": 1.0843373493975903,
-            "no_speech_prob": 0.7276248931884766,
-            "words": [
-              {
-                "word": " Who",
-                "start": 30.02,
-                "end": 30.12,
-                "probability": 0.5916109681129456
-              },
-              {
-                "word": " needs",
-                "start": 30.12,
-                "end": 30.36,
-                "probability": 0.9956265687942505
-              },
-              {
-                "word": " that?",
-                "start": 30.36,
-                "end": 31.22,
-                "probability": 0.998627781867981
-              }
-            ]
-          },
-          {
-            "id": 7,
-            "seek": 3122,
-            "start": 46.6,
-            "end": 48.72,
-            "text": " Who needs that?",
-            "tokens": [
-              50364,
-              2102,
-              2203,
-              300,
-              30,
-              50514
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.40100063596452984,
-            "compression_ratio": 0.6521739130434783,
-            "no_speech_prob": 0.46125227212905884,
-            "words": [
-              {
-                "word": " Who",
-                "start": 46.6,
-                "end": 48,
-                "probability": 0.7122169137001038
-              },
-              {
-                "word": " needs",
-                "start": 48,
-                "end": 48.26,
-                "probability": 0.9942208528518677
-              },
-              {
-                "word": " that?",
-                "start": 48.26,
-                "end": 48.72,
-                "probability": 0.9975897073745728
-              }
-            ]
-          },
-          {
-            "id": 8,
-            "seek": 6122,
-            "start": 66.34,
-            "end": 67.92,
-            "text": " That's Lattice's and Talkie.",
-            "tokens": [
-              50364,
-              663,
-              311,
-              441,
-              1591,
-              573,
-              311,
-              293,
-              8780,
-              414,
-              13,
-              50614
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.16739076082823706,
-            "compression_ratio": 1.5032679738562091,
-            "no_speech_prob": 0.23358096182346344,
-            "words": [
-              {
-                "word": " That's",
-                "start": 66.34,
-                "end": 66.9,
-                "probability": 0.6035719513893127
-              },
-              {
-                "word": " Lattice's",
-                "start": 66.9,
-                "end": 67.2,
-                "probability": 0.6004011631011963
-              },
-              {
-                "word": " and",
-                "start": 67.2,
-                "end": 67.48,
-                "probability": 0.6400508880615234
-              },
-              {
-                "word": " Talkie.",
-                "start": 67.48,
-                "end": 67.92,
-                "probability": 0.5943994969129562
-              }
-            ]
-          },
-          {
-            "id": 9,
-            "seek": 6122,
-            "start": 68.48,
-            "end": 71.3,
-            "text": " Lattice's is hardening the voice pipeline web socket connection",
-            "tokens": [
-              50614,
-              441,
-              1591,
-              573,
-              311,
-              307,
-              1152,
-              4559,
-              264,
-              3177,
-              15517,
-              3670,
-              19741,
-              4984,
-              50864
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.16739076082823706,
-            "compression_ratio": 1.5032679738562091,
-            "no_speech_prob": 0.23358096182346344,
-            "words": [
-              {
-                "word": " Lattice's",
-                "start": 68.48,
-                "end": 69.04,
-                "probability": 0.9798998236656189
-              },
-              {
-                "word": " is",
-                "start": 69.04,
-                "end": 69.28,
-                "probability": 0.9725739359855652
-              },
-              {
-                "word": " hardening",
-                "start": 69.28,
-                "end": 69.58,
-                "probability": 0.9199486970901489
-              },
-              {
-                "word": " the",
-                "start": 69.58,
-                "end": 69.7,
-                "probability": 0.9674120545387268
-              },
-              {
-                "word": " voice",
-                "start": 69.7,
-                "end": 69.88,
-                "probability": 0.7063319683074951
-              },
-              {
-                "word": " pipeline",
-                "start": 69.88,
-                "end": 70.26,
-                "probability": 0.7691510915756226
-              },
-              {
-                "word": " web",
-                "start": 70.26,
-                "end": 70.5,
-                "probability": 0.6091982126235962
-              },
-              {
-                "word": " socket",
-                "start": 70.5,
-                "end": 70.74,
-                "probability": 0.5946051478385925
-              },
-              {
-                "word": " connection",
-                "start": 70.74,
-                "end": 71.3,
-                "probability": 0.9951934218406677
-              }
-            ]
-          },
-          {
-            "id": 10,
-            "seek": 6122,
-            "start": 71.3,
-            "end": 74.88,
-            "text": " and waiting for Talkie to confirm how reconnection works on their end.",
-            "tokens": [
-              50864,
-              293,
-              3806,
-              337,
-              8780,
-              414,
-              281,
-              9064,
-              577,
-              30095,
-              313,
-              1985,
-              322,
-              641,
-              917,
-              13,
-              51064
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.16739076082823706,
-            "compression_ratio": 1.5032679738562091,
-            "no_speech_prob": 0.23358096182346344,
-            "words": [
-              {
-                "word": " and",
-                "start": 71.3,
-                "end": 71.66,
-                "probability": 0.7471315860748291
-              },
-              {
-                "word": " waiting",
-                "start": 71.66,
-                "end": 71.94,
-                "probability": 0.9925260543823242
-              },
-              {
-                "word": " for",
-                "start": 71.94,
-                "end": 72.26,
-                "probability": 0.995983362197876
-              },
-              {
-                "word": " Talkie",
-                "start": 72.26,
-                "end": 72.48,
-                "probability": 0.9877898693084717
-              },
-              {
-                "word": " to",
-                "start": 72.48,
-                "end": 72.68,
-                "probability": 0.9971480965614319
-              },
-              {
-                "word": " confirm",
-                "start": 72.68,
-                "end": 73.12,
-                "probability": 0.9954773783683777
-              },
-              {
-                "word": " how",
-                "start": 73.12,
-                "end": 73.5,
-                "probability": 0.9916384816169739
-              },
-              {
-                "word": " reconnection",
-                "start": 73.5,
-                "end": 74.02,
-                "probability": 0.9259671866893768
-              },
-              {
-                "word": " works",
-                "start": 74.02,
-                "end": 74.2,
-                "probability": 0.9965028762817383
-              },
-              {
-                "word": " on",
-                "start": 74.2,
-                "end": 74.4,
-                "probability": 0.9876365065574646
-              },
-              {
-                "word": " their",
-                "start": 74.4,
-                "end": 74.58,
-                "probability": 0.9708794355392456
-              },
-              {
-                "word": " end.",
-                "start": 74.58,
-                "end": 74.88,
-                "probability": 0.9980682730674744
-              }
-            ]
-          },
-          {
-            "id": 11,
-            "seek": 6122,
-            "start": 75.3,
-            "end": 78.44,
-            "text": " Nothing you need to do, they're sorting it out between themselves.",
-            "tokens": [
-              51064,
-              6693,
-              291,
-              643,
-              281,
-              360,
-              11,
-              436,
-              434,
-              32411,
-              309,
-              484,
-              1296,
-              2969,
-              13,
-              51264
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.16739076082823706,
-            "compression_ratio": 1.5032679738562091,
-            "no_speech_prob": 0.23358096182346344,
-            "words": [
-              {
-                "word": " Nothing",
-                "start": 75.3,
-                "end": 75.48,
-                "probability": 0.9652297496795654
-              },
-              {
-                "word": " you",
-                "start": 75.48,
-                "end": 75.66,
-                "probability": 0.6555014252662659
-              },
-              {
-                "word": " need",
-                "start": 75.66,
-                "end": 75.8,
-                "probability": 0.9945679903030396
-              },
-              {
-                "word": " to",
-                "start": 75.8,
-                "end": 76,
-                "probability": 0.9984839558601379
-              },
-              {
-                "word": " do,",
-                "start": 76,
-                "end": 76.36,
-                "probability": 0.9980762004852295
-              },
-              {
-                "word": " they're",
-                "start": 76.7,
-                "end": 76.9,
-                "probability": 0.9767501354217529
-              },
-              {
-                "word": " sorting",
-                "start": 76.9,
-                "end": 77.12,
-                "probability": 0.9980783462524414
-              },
-              {
-                "word": " it",
-                "start": 77.12,
-                "end": 77.36,
-                "probability": 0.9912490844726562
-              },
-              {
-                "word": " out",
-                "start": 77.36,
-                "end": 77.52,
-                "probability": 0.9971509575843811
-              },
-              {
-                "word": " between",
-                "start": 77.52,
-                "end": 77.78,
-                "probability": 0.9831052422523499
-              },
-              {
-                "word": " themselves.",
-                "start": 77.78,
-                "end": 78.44,
-                "probability": 0.9889805316925049
-              }
-            ]
-          },
-          {
-            "id": 12,
-            "seek": 9122,
-            "start": 105.66,
-            "end": 107.6,
-            "text": " Yes, Talkie is up and responding.",
-            "tokens": [
-              50364,
-              1079,
-              11,
-              8780,
-              414,
-              307,
-              493,
-              293,
-              16670,
-              13,
-              51214
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.11151326669229043,
-            "compression_ratio": 1.402116402116402,
-            "no_speech_prob": 0.44853341579437256,
-            "words": [
-              {
-                "word": " Yes,",
-                "start": 105.66,
-                "end": 106.22,
-                "probability": 0.10436975210905075
-              },
-              {
-                "word": " Talkie",
-                "start": 106.56,
-                "end": 106.74,
-                "probability": 0.3038622848689556
-              },
-              {
-                "word": " is",
-                "start": 106.74,
-                "end": 106.88,
-                "probability": 0.6712062358856201
-              },
-              {
-                "word": " up",
-                "start": 106.88,
-                "end": 106.98,
-                "probability": 0.9765663146972656
-              },
-              {
-                "word": " and",
-                "start": 106.98,
-                "end": 107.2,
-                "probability": 0.9872758984565735
-              },
-              {
-                "word": " responding.",
-                "start": 107.2,
-                "end": 107.6,
-                "probability": 0.9978806972503662
-              }
-            ]
-          },
-          {
-            "id": 13,
-            "seek": 9122,
-            "start": 108.34,
-            "end": 111.6,
-            "text": " It just gave Lattice's a detailed breakdown of how reconnection works.",
-            "tokens": [
-              51214,
-              467,
-              445,
-              2729,
-              441,
-              1591,
-              573,
-              311,
-              257,
-              9942,
-              18188,
-              295,
-              577,
-              30095,
-              313,
-              1985,
-              13,
-              51364
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.11151326669229043,
-            "compression_ratio": 1.402116402116402,
-            "no_speech_prob": 0.44853341579437256,
-            "words": [
-              {
-                "word": " It",
-                "start": 108.34,
-                "end": 108.46,
-                "probability": 0.7952577471733093
-              },
-              {
-                "word": " just",
-                "start": 108.46,
-                "end": 108.68,
-                "probability": 0.9924617409706116
-              },
-              {
-                "word": " gave",
-                "start": 108.68,
-                "end": 108.88,
-                "probability": 0.9705928564071655
-              },
-              {
-                "word": " Lattice's",
-                "start": 108.88,
-                "end": 109.32,
-                "probability": 0.7232666313648224
-              },
-              {
-                "word": " a",
-                "start": 109.32,
-                "end": 109.56,
-                "probability": 0.9428654313087463
-              },
-              {
-                "word": " detailed",
-                "start": 109.56,
-                "end": 109.76,
-                "probability": 0.941530168056488
-              },
-              {
-                "word": " breakdown",
-                "start": 109.76,
-                "end": 110.16,
-                "probability": 0.9924989342689514
-              },
-              {
-                "word": " of",
-                "start": 110.16,
-                "end": 110.42,
-                "probability": 0.9508092999458313
-              },
-              {
-                "word": " how",
-                "start": 110.42,
-                "end": 110.6,
-                "probability": 0.9966408014297485
-              },
-              {
-                "word": " reconnection",
-                "start": 110.6,
-                "end": 111.14,
-                "probability": 0.8753727376461029
-              },
-              {
-                "word": " works.",
-                "start": 111.14,
-                "end": 111.6,
-                "probability": 0.9967173933982849
-              }
-            ]
-          },
-          {
-            "id": 14,
-            "seek": 9122,
-            "start": 111.94,
-            "end": 114.24,
-            "text": " Orphan sessions stay alive for 15 minutes,",
-            "tokens": [
-              51364,
-              1610,
-              950,
-              282,
-              11081,
-              1754,
-              5465,
-              337,
-              2119,
-              2077,
-              11,
-              51514
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.11151326669229043,
-            "compression_ratio": 1.402116402116402,
-            "no_speech_prob": 0.44853341579437256,
-            "words": [
-              {
-                "word": " Orphan",
-                "start": 111.94,
-                "end": 112.22,
-                "probability": 0.9547582467397054
-              },
-              {
-                "word": " sessions",
-                "start": 112.22,
-                "end": 112.52,
-                "probability": 0.8222922682762146
-              },
-              {
-                "word": " stay",
-                "start": 112.52,
-                "end": 112.84,
-                "probability": 0.990944504737854
-              },
-              {
-                "word": " alive",
-                "start": 112.84,
-                "end": 113.12,
-                "probability": 0.9861496686935425
-              },
-              {
-                "word": " for",
-                "start": 113.12,
-                "end": 113.38,
-                "probability": 0.9929558038711548
-              },
-              {
-                "word": " 15",
-                "start": 113.38,
-                "end": 113.64,
-                "probability": 0.8759478330612183
-              },
-              {
-                "word": " minutes,",
-                "start": 113.64,
-                "end": 114.24,
-                "probability": 0.9927748441696167
-              }
-            ]
-          },
-          {
-            "id": 15,
-            "seek": 9122,
-            "start": 114.56,
-            "end": 117.6,
-            "text": " reconnecting with the same client ID reclaims them cleanly.",
-            "tokens": [
-              51514,
-              30095,
-              278,
-              365,
-              264,
-              912,
-              6423,
-              7348,
-              40074,
-              82,
-              552,
-              2541,
-              356,
-              13,
-              51664
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.11151326669229043,
-            "compression_ratio": 1.402116402116402,
-            "no_speech_prob": 0.44853341579437256,
-            "words": [
-              {
-                "word": " reconnecting",
-                "start": 114.56,
-                "end": 114.98,
-                "probability": 0.979992002248764
-              },
-              {
-                "word": " with",
-                "start": 114.98,
-                "end": 115.18,
-                "probability": 0.9768953323364258
-              },
-              {
-                "word": " the",
-                "start": 115.18,
-                "end": 115.32,
-                "probability": 0.9951430559158325
-              },
-              {
-                "word": " same",
-                "start": 115.32,
-                "end": 115.52,
-                "probability": 0.9982572197914124
-              },
-              {
-                "word": " client",
-                "start": 115.52,
-                "end": 115.84,
-                "probability": 0.9892400503158569
-              },
-              {
-                "word": " ID",
-                "start": 115.84,
-                "end": 116.2,
-                "probability": 0.9210464954376221
-              },
-              {
-                "word": " reclaims",
-                "start": 116.2,
-                "end": 116.78,
-                "probability": 0.962975412607193
-              },
-              {
-                "word": " them",
-                "start": 116.78,
-                "end": 117,
-                "probability": 0.9762452840805054
-              },
-              {
-                "word": " cleanly.",
-                "start": 117,
-                "end": 117.6,
-                "probability": 0.993211179971695
-              }
-            ]
-          },
-          {
-            "id": 16,
-            "seek": 9122,
-            "start": 118.06,
-            "end": 120.48,
-            "text": " Lattice has confirmed they're good to ship on their side.",
-            "tokens": [
-              51664,
-              441,
-              1591,
-              573,
-              575,
-              11341,
-              436,
-              434,
-              665,
-              281,
-              5374,
-              322,
-              641,
-              1252,
-              13,
-              51814
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.11151326669229043,
-            "compression_ratio": 1.402116402116402,
-            "no_speech_prob": 0.44853341579437256,
-            "words": [
-              {
-                "word": " Lattice",
-                "start": 118.06,
-                "end": 118.34,
-                "probability": 0.9958266615867615
-              },
-              {
-                "word": " has",
-                "start": 118.34,
-                "end": 118.58,
-                "probability": 0.589871883392334
-              },
-              {
-                "word": " confirmed",
-                "start": 118.58,
-                "end": 118.94,
-                "probability": 0.9972501397132874
-              },
-              {
-                "word": " they're",
-                "start": 118.94,
-                "end": 119.24,
-                "probability": 0.8999470174312592
-              },
-              {
-                "word": " good",
-                "start": 119.24,
-                "end": 119.36,
-                "probability": 0.9778614640235901
-              },
-              {
-                "word": " to",
-                "start": 119.36,
-                "end": 119.56,
-                "probability": 0.9990658164024353
-              },
-              {
-                "word": " ship",
-                "start": 119.56,
-                "end": 119.66,
-                "probability": 0.8764623403549194
-              },
-              {
-                "word": " on",
-                "start": 119.66,
-                "end": 119.88,
-                "probability": 0.9924845099449158
-              },
-              {
-                "word": " their",
-                "start": 119.88,
-                "end": 120.1,
-                "probability": 0.982201874256134
-              },
-              {
-                "word": " side.",
-                "start": 120.1,
-                "end": 120.48,
-                "probability": 0.9966281056404114
-              }
-            ]
-          },
-          {
-            "id": 17,
-            "seek": 12048,
-            "start": 120.48,
-            "end": 122.6,
-            "text": " The two are fully coordinated.",
-            "tokens": [
-              50364,
-              440,
-              732,
-              366,
-              4498,
-              29591,
-              13,
-              50514
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.18516181574927437,
-            "compression_ratio": 0.7894736842105263,
-            "no_speech_prob": 0.8529041409492493,
-            "words": [
-              {
-                "word": " The",
-                "start": 120.48,
-                "end": 121.14,
-                "probability": 0.584861695766449
-              },
-              {
-                "word": " two",
-                "start": 121.14,
-                "end": 121.38,
-                "probability": 0.9860134720802307
-              },
-              {
-                "word": " are",
-                "start": 121.38,
-                "end": 121.64,
-                "probability": 0.9957311749458313
-              },
-              {
-                "word": " fully",
-                "start": 121.64,
-                "end": 121.98,
-                "probability": 0.9931787252426147
-              },
-              {
-                "word": " coordinated.",
-                "start": 121.98,
-                "end": 122.6,
-                "probability": 0.992763340473175
-              }
-            ]
-          }
-        ],
-        "language": "en"
-      },
       "videoUrl": "demos/lattices-voice-2026-03-22-b.mp4"
     },
     {
@@ -5095,3175 +4477,6 @@
       "composition": null,
       "reelCandidate": false,
       "stage": "source",
-      "transcript": {
-        "text": " Hey, can you show me what you're capable of? Can you look at my pre-motion cloud code window and tell me what you see? Anything specific you want to know or do with it? Anything specific you want to know or do with it? Anything specific you want to know or do with it? Yeah, I can hear you just fine. Okay, you've got four main terminals visible from left to right on your primary display. Leftmost is the big item in the pre-motion directory. Next to it is another pre-motion item stacked on top of the open scout one. Then on the right there's a tall item titled implement workspace persistence and editor view. There's also a smaller chrome window mixed in on the far right showing the CLI docs. The rest of your terminals are off-screen or in the hidden strip. Want me to bring any specific ones forward or organize them? Are you able to see the Z index on any of these? Because I think you mentioned some windows that are not absolutely the frontmost. Did you? Yes, I can see the Z index. The frontmost window right now is the big item titled Iraq at pre-motion on the far left. Then chrome with the CLI docs, then the cloud item, then the open scout item, then the GitHub Chrome window, and then the big implement workspace persistence item on the right. Everything else is behind those or off-screen. You know, the chrome that you're mentioning, I don't see it. Could you bring it up for me? Got it. Okay. Interesting, because it was behind stuff. Now it's in my view, I see what you're talking about. Can you explain to me why you thought it was in the front? Heard you. Because in the snapshot, the CLI chrome window was listed second, right after the frontmost pre-motion item. That put it ahead of the cloud terminal, the open scout terminal, and the GitHub chrome window in Z order. It must have been partially covered or behind another window on your screen even though it was higher in the stacking order. Thank you.",
-        "segments": [
-          {
-            "id": 0,
-            "seek": 0,
-            "start": 3.0599999999999987,
-            "end": 6.56,
-            "text": " Hey, can you show me what you're capable of?",
-            "tokens": [
-              50364,
-              1911,
-              11,
-              393,
-              291,
-              855,
-              385,
-              437,
-              291,
-              434,
-              8189,
-              295,
-              30,
-              50714
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.43044427235921223,
-            "compression_ratio": 0.9166666666666666,
-            "no_speech_prob": 0.357862263917923,
-            "words": [
-              {
-                "word": " Hey,",
-                "start": 3.0599999999999987,
-                "end": 3.539999999999999,
-                "probability": 0.7285205721855164
-              },
-              {
-                "word": " can",
-                "start": 3.539999999999999,
-                "end": 4.02,
-                "probability": 0.947922945022583
-              },
-              {
-                "word": " you",
-                "start": 4.02,
-                "end": 4.18,
-                "probability": 0.9942354559898376
-              },
-              {
-                "word": " show",
-                "start": 4.18,
-                "end": 4.32,
-                "probability": 0.999121367931366
-              },
-              {
-                "word": " me",
-                "start": 4.32,
-                "end": 4.44,
-                "probability": 0.998602569103241
-              },
-              {
-                "word": " what",
-                "start": 4.44,
-                "end": 4.58,
-                "probability": 0.9969522953033447
-              },
-              {
-                "word": " you're",
-                "start": 4.58,
-                "end": 4.82,
-                "probability": 0.9694713354110718
-              },
-              {
-                "word": " capable",
-                "start": 4.82,
-                "end": 5.22,
-                "probability": 0.993432879447937
-              },
-              {
-                "word": " of?",
-                "start": 5.22,
-                "end": 6.56,
-                "probability": 0.9916988611221313
-              }
-            ]
-          },
-          {
-            "id": 1,
-            "seek": 3000,
-            "start": 34.14,
-            "end": 44.08,
-            "text": " Can you look at my pre-motion cloud code window and tell me what you see?",
-            "tokens": [
-              50414,
-              1664,
-              291,
-              574,
-              412,
-              452,
-              659,
-              12,
-              44968,
-              4588,
-              3089,
-              4910,
-              293,
-              980,
-              385,
-              437,
-              291,
-              536,
-              30,
-              51014
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.3299335071018764,
-            "compression_ratio": 1,
-            "no_speech_prob": 0.13875027000904083,
-            "words": [
-              {
-                "word": " Can",
-                "start": 34.14,
-                "end": 34.98,
-                "probability": 0.2800323963165283
-              },
-              {
-                "word": " you",
-                "start": 34.98,
-                "end": 35.3,
-                "probability": 0.9984153509140015
-              },
-              {
-                "word": " look",
-                "start": 35.3,
-                "end": 35.62,
-                "probability": 0.9924350380897522
-              },
-              {
-                "word": " at",
-                "start": 35.62,
-                "end": 36.42,
-                "probability": 0.9929139614105225
-              },
-              {
-                "word": " my",
-                "start": 36.42,
-                "end": 40.08,
-                "probability": 0.39032721519470215
-              },
-              {
-                "word": " pre",
-                "start": 40.08,
-                "end": 40.5,
-                "probability": 0.8335137963294983
-              },
-              {
-                "word": "-motion",
-                "start": 40.5,
-                "end": 41.02,
-                "probability": 0.9540325999259949
-              },
-              {
-                "word": " cloud",
-                "start": 41.02,
-                "end": 41.4,
-                "probability": 0.7551472187042236
-              },
-              {
-                "word": " code",
-                "start": 41.4,
-                "end": 41.64,
-                "probability": 0.9305968284606934
-              },
-              {
-                "word": " window",
-                "start": 41.64,
-                "end": 42.16,
-                "probability": 0.9909569621086121
-              },
-              {
-                "word": " and",
-                "start": 42.16,
-                "end": 42.68,
-                "probability": 0.8786724805831909
-              },
-              {
-                "word": " tell",
-                "start": 42.68,
-                "end": 42.86,
-                "probability": 0.9973053932189941
-              },
-              {
-                "word": " me",
-                "start": 42.86,
-                "end": 43.18,
-                "probability": 0.9992632269859314
-              },
-              {
-                "word": " what",
-                "start": 43.18,
-                "end": 43.34,
-                "probability": 0.9986312985420227
-              },
-              {
-                "word": " you",
-                "start": 43.34,
-                "end": 43.54,
-                "probability": 0.9986151456832886
-              },
-              {
-                "word": " see?",
-                "start": 43.54,
-                "end": 44.08,
-                "probability": 0.9989017248153687
-              }
-            ]
-          },
-          {
-            "id": 2,
-            "seek": 6000,
-            "start": 62.16,
-            "end": 63.98,
-            "text": " Anything specific you want to know or do with it?",
-            "tokens": [
-              50414,
-              11998,
-              2685,
-              291,
-              528,
-              281,
-              458,
-              420,
-              360,
-              365,
-              309,
-              30,
-              50614
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.220264094216483,
-            "compression_ratio": 0.875,
-            "no_speech_prob": 0.7453080415725708,
-            "words": [
-              {
-                "word": " Anything",
-                "start": 62.16,
-                "end": 62.44,
-                "probability": 0.011580279096961021
-              },
-              {
-                "word": " specific",
-                "start": 62.44,
-                "end": 62.72,
-                "probability": 0.9437864422798157
-              },
-              {
-                "word": " you",
-                "start": 62.72,
-                "end": 62.86,
-                "probability": 0.9427779316902161
-              },
-              {
-                "word": " want",
-                "start": 62.86,
-                "end": 62.96,
-                "probability": 0.7441923022270203
-              },
-              {
-                "word": " to",
-                "start": 62.96,
-                "end": 63.1,
-                "probability": 0.9886360168457031
-              },
-              {
-                "word": " know",
-                "start": 63.1,
-                "end": 63.2,
-                "probability": 0.5361455082893372
-              },
-              {
-                "word": " or",
-                "start": 63.2,
-                "end": 63.28,
-                "probability": 0.9490571618080139
-              },
-              {
-                "word": " do",
-                "start": 63.28,
-                "end": 63.34,
-                "probability": 0.9572701454162598
-              },
-              {
-                "word": " with",
-                "start": 63.34,
-                "end": 63.54,
-                "probability": 0.9718878269195557
-              },
-              {
-                "word": " it?",
-                "start": 63.54,
-                "end": 63.98,
-                "probability": 0.9911231994628906
-              }
-            ]
-          },
-          {
-            "id": 3,
-            "seek": 9000,
-            "start": 117.89999999999999,
-            "end": 119.98,
-            "text": " Anything specific you want to know or do with it?",
-            "tokens": [
-              50364,
-              11998,
-              2685,
-              291,
-              528,
-              281,
-              458,
-              420,
-              360,
-              365,
-              309,
-              30,
-              50564
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.4996279648372105,
-            "compression_ratio": 0.875,
-            "no_speech_prob": 0.8590108752250671,
-            "words": [
-              {
-                "word": " Anything",
-                "start": 117.89999999999999,
-                "end": 119.3,
-                "probability": 0.000018977949366671965
-              },
-              {
-                "word": " specific",
-                "start": 119.3,
-                "end": 119.98,
-                "probability": 0.00012029486242681742
-              },
-              {
-                "word": " you",
-                "start": 119.98,
-                "end": 119.98,
-                "probability": 0.0898594781756401
-              },
-              {
-                "word": " want",
-                "start": 119.98,
-                "end": 119.98,
-                "probability": 0.3512190878391266
-              },
-              {
-                "word": " to",
-                "start": 119.98,
-                "end": 119.98,
-                "probability": 0.8066422343254089
-              },
-              {
-                "word": " know",
-                "start": 119.98,
-                "end": 119.98,
-                "probability": 0.03243664652109146
-              },
-              {
-                "word": " or",
-                "start": 119.98,
-                "end": 119.98,
-                "probability": 0.006380052771419287
-              },
-              {
-                "word": " do",
-                "start": 119.98,
-                "end": 119.98,
-                "probability": 0.01814972423017025
-              },
-              {
-                "word": " with",
-                "start": 119.98,
-                "end": 119.98,
-                "probability": 0.04020440950989723
-              },
-              {
-                "word": " it?",
-                "start": 119.98,
-                "end": 119.98,
-                "probability": 0.03173178806900978
-              }
-            ]
-          },
-          {
-            "id": 4,
-            "seek": 12000,
-            "start": 147.7,
-            "end": 149.98,
-            "text": " Anything specific you want to know or do with it?",
-            "tokens": [
-              50364,
-              11998,
-              2685,
-              291,
-              528,
-              281,
-              458,
-              420,
-              360,
-              365,
-              309,
-              30,
-              50564
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.3639137585957845,
-            "compression_ratio": 0.875,
-            "no_speech_prob": 0.8781030774116516,
-            "words": [
-              {
-                "word": " Anything",
-                "start": 147.7,
-                "end": 149.1,
-                "probability": 0.000006148641659819987
-              },
-              {
-                "word": " specific",
-                "start": 149.1,
-                "end": 149.98,
-                "probability": 0.0005067993188276887
-              },
-              {
-                "word": " you",
-                "start": 149.98,
-                "end": 149.98,
-                "probability": 0.07561931014060974
-              },
-              {
-                "word": " want",
-                "start": 149.98,
-                "end": 149.98,
-                "probability": 0.3944889307022095
-              },
-              {
-                "word": " to",
-                "start": 149.98,
-                "end": 149.98,
-                "probability": 0.7837522625923157
-              },
-              {
-                "word": " know",
-                "start": 149.98,
-                "end": 149.98,
-                "probability": 0.044232625514268875
-              },
-              {
-                "word": " or",
-                "start": 149.98,
-                "end": 149.98,
-                "probability": 0.007616892922669649
-              },
-              {
-                "word": " do",
-                "start": 149.98,
-                "end": 149.98,
-                "probability": 0.016984572634100914
-              },
-              {
-                "word": " with",
-                "start": 149.98,
-                "end": 149.98,
-                "probability": 0.028651272878050804
-              },
-              {
-                "word": " it?",
-                "start": 149.98,
-                "end": 149.98,
-                "probability": 0.03891448676586151
-              }
-            ]
-          },
-          {
-            "id": 5,
-            "seek": 14998,
-            "start": 155.45999999999998,
-            "end": 157.98,
-            "text": " Yeah, I can hear you just fine.",
-            "tokens": [
-              50364,
-              865,
-              11,
-              286,
-              393,
-              1568,
-              291,
-              445,
-              2489,
-              13,
-              50764
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.3226697047551473,
-            "compression_ratio": 0.7948717948717948,
-            "no_speech_prob": 0.5639832019805908,
-            "words": [
-              {
-                "word": " Yeah,",
-                "start": 155.45999999999998,
-                "end": 155.92,
-                "probability": 0.2600308358669281
-              },
-              {
-                "word": " I",
-                "start": 155.92,
-                "end": 156.04,
-                "probability": 0.9801282286643982
-              },
-              {
-                "word": " can",
-                "start": 156.04,
-                "end": 156.24,
-                "probability": 0.9812628626823425
-              },
-              {
-                "word": " hear",
-                "start": 156.24,
-                "end": 156.34,
-                "probability": 0.9874361753463745
-              },
-              {
-                "word": " you",
-                "start": 156.34,
-                "end": 156.54,
-                "probability": 0.9982064962387085
-              },
-              {
-                "word": " just",
-                "start": 156.54,
-                "end": 156.8,
-                "probability": 0.985201895236969
-              },
-              {
-                "word": " fine.",
-                "start": 156.8,
-                "end": 157.98,
-                "probability": 0.99986732006073
-              }
-            ]
-          },
-          {
-            "id": 6,
-            "seek": 17998,
-            "start": 184.36,
-            "end": 188.9,
-            "text": " Okay, you've got four main terminals visible from left to right on your primary display.",
-            "tokens": [
-              50364,
-              1033,
-              11,
-              291,
-              600,
-              658,
-              1451,
-              2135,
-              38579,
-              8974,
-              490,
-              1411,
-              281,
-              558,
-              322,
-              428,
-              6194,
-              4674,
-              13,
-              50814
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.1300777651600002,
-            "compression_ratio": 1.6072874493927125,
-            "no_speech_prob": 0.623181164264679,
-            "words": [
-              {
-                "word": " Okay,",
-                "start": 184.36,
-                "end": 184.84,
-                "probability": 0.33562523126602173
-              },
-              {
-                "word": " you've",
-                "start": 184.84,
-                "end": 185.32,
-                "probability": 0.7048384249210358
-              },
-              {
-                "word": " got",
-                "start": 185.32,
-                "end": 185.42,
-                "probability": 0.9964730143547058
-              },
-              {
-                "word": " four",
-                "start": 185.42,
-                "end": 185.68,
-                "probability": 0.8234273195266724
-              },
-              {
-                "word": " main",
-                "start": 185.68,
-                "end": 185.86,
-                "probability": 0.9704033136367798
-              },
-              {
-                "word": " terminals",
-                "start": 185.86,
-                "end": 186.3,
-                "probability": 0.9917844533920288
-              },
-              {
-                "word": " visible",
-                "start": 186.3,
-                "end": 186.7,
-                "probability": 0.9117658734321594
-              },
-              {
-                "word": " from",
-                "start": 186.7,
-                "end": 186.96,
-                "probability": 0.9674493074417114
-              },
-              {
-                "word": " left",
-                "start": 186.96,
-                "end": 187.16,
-                "probability": 0.9936701059341431
-              },
-              {
-                "word": " to",
-                "start": 187.16,
-                "end": 187.4,
-                "probability": 0.9906125068664551
-              },
-              {
-                "word": " right",
-                "start": 187.4,
-                "end": 187.54,
-                "probability": 0.9963076114654541
-              },
-              {
-                "word": " on",
-                "start": 187.54,
-                "end": 187.74,
-                "probability": 0.9388176798820496
-              },
-              {
-                "word": " your",
-                "start": 187.74,
-                "end": 187.9,
-                "probability": 0.28750863671302795
-              },
-              {
-                "word": " primary",
-                "start": 187.9,
-                "end": 188.16,
-                "probability": 0.984209418296814
-              },
-              {
-                "word": " display.",
-                "start": 188.16,
-                "end": 188.9,
-                "probability": 0.9961920976638794
-              }
-            ]
-          },
-          {
-            "id": 7,
-            "seek": 17998,
-            "start": 189.36,
-            "end": 191.8,
-            "text": " Leftmost is the big item in the pre-motion directory.",
-            "tokens": [
-              50814,
-              16405,
-              1761,
-              307,
-              264,
-              955,
-              3174,
-              294,
-              264,
-              659,
-              12,
-              44968,
-              21120,
-              13,
-              50964
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.1300777651600002,
-            "compression_ratio": 1.6072874493927125,
-            "no_speech_prob": 0.623181164264679,
-            "words": [
-              {
-                "word": " Leftmost",
-                "start": 189.36,
-                "end": 189.78,
-                "probability": 0.8452077507972717
-              },
-              {
-                "word": " is",
-                "start": 189.78,
-                "end": 189.96,
-                "probability": 0.9703473448753357
-              },
-              {
-                "word": " the",
-                "start": 189.96,
-                "end": 190.08,
-                "probability": 0.9717174172401428
-              },
-              {
-                "word": " big",
-                "start": 190.08,
-                "end": 190.28,
-                "probability": 0.9896454811096191
-              },
-              {
-                "word": " item",
-                "start": 190.28,
-                "end": 190.6,
-                "probability": 0.46778392791748047
-              },
-              {
-                "word": " in",
-                "start": 190.6,
-                "end": 190.82,
-                "probability": 0.732374370098114
-              },
-              {
-                "word": " the",
-                "start": 190.82,
-                "end": 190.84,
-                "probability": 0.9644193053245544
-              },
-              {
-                "word": " pre",
-                "start": 190.84,
-                "end": 191.02,
-                "probability": 0.20663000643253326
-              },
-              {
-                "word": "-motion",
-                "start": 191.02,
-                "end": 191.2,
-                "probability": 0.9654066562652588
-              },
-              {
-                "word": " directory.",
-                "start": 191.2,
-                "end": 191.8,
-                "probability": 0.9944380521774292
-              }
-            ]
-          },
-          {
-            "id": 8,
-            "seek": 17998,
-            "start": 192.46,
-            "end": 196.26,
-            "text": " Next to it is another pre-motion item stacked on top of the open scout one.",
-            "tokens": [
-              50964,
-              3087,
-              281,
-              309,
-              307,
-              1071,
-              659,
-              12,
-              44968,
-              3174,
-              28867,
-              322,
-              1192,
-              295,
-              264,
-              1269,
-              34392,
-              472,
-              13,
-              51214
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.1300777651600002,
-            "compression_ratio": 1.6072874493927125,
-            "no_speech_prob": 0.623181164264679,
-            "words": [
-              {
-                "word": " Next",
-                "start": 192.46,
-                "end": 192.7,
-                "probability": 0.9940859079360962
-              },
-              {
-                "word": " to",
-                "start": 192.7,
-                "end": 192.88,
-                "probability": 0.9971838593482971
-              },
-              {
-                "word": " it",
-                "start": 192.88,
-                "end": 193,
-                "probability": 0.996892511844635
-              },
-              {
-                "word": " is",
-                "start": 193,
-                "end": 193.14,
-                "probability": 0.9730343818664551
-              },
-              {
-                "word": " another",
-                "start": 193.14,
-                "end": 193.38,
-                "probability": 0.998241662979126
-              },
-              {
-                "word": " pre",
-                "start": 193.38,
-                "end": 193.66,
-                "probability": 0.992326021194458
-              },
-              {
-                "word": "-motion",
-                "start": 193.66,
-                "end": 193.9,
-                "probability": 0.9928951263427734
-              },
-              {
-                "word": " item",
-                "start": 193.9,
-                "end": 194.36,
-                "probability": 0.9820965528488159
-              },
-              {
-                "word": " stacked",
-                "start": 194.36,
-                "end": 194.78,
-                "probability": 0.734722375869751
-              },
-              {
-                "word": " on",
-                "start": 194.78,
-                "end": 195.02,
-                "probability": 0.9964224696159363
-              },
-              {
-                "word": " top",
-                "start": 195.02,
-                "end": 195.2,
-                "probability": 0.9886898398399353
-              },
-              {
-                "word": " of",
-                "start": 195.2,
-                "end": 195.36,
-                "probability": 0.9935725927352905
-              },
-              {
-                "word": " the",
-                "start": 195.36,
-                "end": 195.48,
-                "probability": 0.9967987537384033
-              },
-              {
-                "word": " open",
-                "start": 195.48,
-                "end": 195.7,
-                "probability": 0.43065783381462097
-              },
-              {
-                "word": " scout",
-                "start": 195.7,
-                "end": 195.9,
-                "probability": 0.6660979986190796
-              },
-              {
-                "word": " one.",
-                "start": 195.9,
-                "end": 196.26,
-                "probability": 0.9428468346595764
-              }
-            ]
-          },
-          {
-            "id": 9,
-            "seek": 17998,
-            "start": 196.96,
-            "end": 201.68,
-            "text": " Then on the right there's a tall item titled implement workspace persistence and editor view.",
-            "tokens": [
-              51214,
-              1396,
-              322,
-              264,
-              558,
-              456,
-              311,
-              257,
-              6764,
-              3174,
-              19841,
-              4445,
-              32706,
-              37617,
-              293,
-              9839,
-              1910,
-              13,
-              51464
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.1300777651600002,
-            "compression_ratio": 1.6072874493927125,
-            "no_speech_prob": 0.623181164264679,
-            "words": [
-              {
-                "word": " Then",
-                "start": 196.96,
-                "end": 197.16,
-                "probability": 0.9673030972480774
-              },
-              {
-                "word": " on",
-                "start": 197.16,
-                "end": 197.34,
-                "probability": 0.9331590533256531
-              },
-              {
-                "word": " the",
-                "start": 197.34,
-                "end": 197.46,
-                "probability": 0.9981454610824585
-              },
-              {
-                "word": " right",
-                "start": 197.46,
-                "end": 197.58,
-                "probability": 0.9987793564796448
-              },
-              {
-                "word": " there's",
-                "start": 197.58,
-                "end": 197.88,
-                "probability": 0.6729278117418289
-              },
-              {
-                "word": " a",
-                "start": 197.88,
-                "end": 198.08,
-                "probability": 0.996724545955658
-              },
-              {
-                "word": " tall",
-                "start": 198.08,
-                "end": 198.28,
-                "probability": 0.9968756437301636
-              },
-              {
-                "word": " item",
-                "start": 198.28,
-                "end": 198.8,
-                "probability": 0.9503098130226135
-              },
-              {
-                "word": " titled",
-                "start": 198.8,
-                "end": 199.4,
-                "probability": 0.821394681930542
-              },
-              {
-                "word": " implement",
-                "start": 199.4,
-                "end": 199.94,
-                "probability": 0.33403250575065613
-              },
-              {
-                "word": " workspace",
-                "start": 199.94,
-                "end": 200.36,
-                "probability": 0.9645691514015198
-              },
-              {
-                "word": " persistence",
-                "start": 200.36,
-                "end": 200.9,
-                "probability": 0.9763802289962769
-              },
-              {
-                "word": " and",
-                "start": 200.9,
-                "end": 201.18,
-                "probability": 0.7870893478393555
-              },
-              {
-                "word": " editor",
-                "start": 201.18,
-                "end": 201.4,
-                "probability": 0.9477860331535339
-              },
-              {
-                "word": " view.",
-                "start": 201.4,
-                "end": 201.68,
-                "probability": 0.977484405040741
-              }
-            ]
-          },
-          {
-            "id": 10,
-            "seek": 17998,
-            "start": 202.42,
-            "end": 206.48,
-            "text": " There's also a smaller chrome window mixed in on the far right showing the CLI docs.",
-            "tokens": [
-              51464,
-              821,
-              311,
-              611,
-              257,
-              4356,
-              33120,
-              4910,
-              7467,
-              294,
-              322,
-              264,
-              1400,
-              558,
-              4099,
-              264,
-              12855,
-              40,
-              45623,
-              13,
-              51714
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.1300777651600002,
-            "compression_ratio": 1.6072874493927125,
-            "no_speech_prob": 0.623181164264679,
-            "words": [
-              {
-                "word": " There's",
-                "start": 202.42,
-                "end": 202.76,
-                "probability": 0.9946364164352417
-              },
-              {
-                "word": " also",
-                "start": 202.76,
-                "end": 202.92,
-                "probability": 0.9990507960319519
-              },
-              {
-                "word": " a",
-                "start": 202.92,
-                "end": 203.16,
-                "probability": 0.9984561204910278
-              },
-              {
-                "word": " smaller",
-                "start": 203.16,
-                "end": 203.38,
-                "probability": 0.9964349269866943
-              },
-              {
-                "word": " chrome",
-                "start": 203.38,
-                "end": 203.6,
-                "probability": 0.7006363868713379
-              },
-              {
-                "word": " window",
-                "start": 203.6,
-                "end": 203.92,
-                "probability": 0.9953681230545044
-              },
-              {
-                "word": " mixed",
-                "start": 203.92,
-                "end": 204.2,
-                "probability": 0.9835129380226135
-              },
-              {
-                "word": " in",
-                "start": 204.2,
-                "end": 204.42,
-                "probability": 0.9970391988754272
-              },
-              {
-                "word": " on",
-                "start": 204.42,
-                "end": 204.64,
-                "probability": 0.9960516095161438
-              },
-              {
-                "word": " the",
-                "start": 204.64,
-                "end": 204.74,
-                "probability": 0.9896657466888428
-              },
-              {
-                "word": " far",
-                "start": 204.74,
-                "end": 204.9,
-                "probability": 0.9979952573776245
-              },
-              {
-                "word": " right",
-                "start": 204.9,
-                "end": 205.16,
-                "probability": 0.9867219924926758
-              },
-              {
-                "word": " showing",
-                "start": 205.16,
-                "end": 205.46,
-                "probability": 0.875361442565918
-              },
-              {
-                "word": " the",
-                "start": 205.46,
-                "end": 205.78,
-                "probability": 0.9976598024368286
-              },
-              {
-                "word": " CLI",
-                "start": 205.78,
-                "end": 206.16,
-                "probability": 0.9712104499340057
-              },
-              {
-                "word": " docs.",
-                "start": 206.16,
-                "end": 206.48,
-                "probability": 0.8711469173431396
-              }
-            ]
-          },
-          {
-            "id": 11,
-            "seek": 20648,
-            "start": 206.48,
-            "end": 210.26,
-            "text": " The rest of your terminals are off-screen or in the hidden strip.",
-            "tokens": [
-              50364,
-              440,
-              1472,
-              295,
-              428,
-              38579,
-              366,
-              766,
-              12,
-              12439,
-              420,
-              294,
-              264,
-              7633,
-              12828,
-              13,
-              50564
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.1657059302696815,
-            "compression_ratio": 1.4277777777777778,
-            "no_speech_prob": 0.054683927446603775,
-            "words": [
-              {
-                "word": " The",
-                "start": 206.48,
-                "end": 207.48,
-                "probability": 0.03897041827440262
-              },
-              {
-                "word": " rest",
-                "start": 207.48,
-                "end": 207.78,
-                "probability": 0.9754303097724915
-              },
-              {
-                "word": " of",
-                "start": 207.78,
-                "end": 207.94,
-                "probability": 0.9578529596328735
-              },
-              {
-                "word": " your",
-                "start": 207.94,
-                "end": 208.14,
-                "probability": 0.9731546640396118
-              },
-              {
-                "word": " terminals",
-                "start": 208.14,
-                "end": 208.4,
-                "probability": 0.9699810147285461
-              },
-              {
-                "word": " are",
-                "start": 208.4,
-                "end": 208.68,
-                "probability": 0.982583224773407
-              },
-              {
-                "word": " off",
-                "start": 208.68,
-                "end": 208.96,
-                "probability": 0.8886147737503052
-              },
-              {
-                "word": "-screen",
-                "start": 208.96,
-                "end": 209.24,
-                "probability": 0.725096583366394
-              },
-              {
-                "word": " or",
-                "start": 209.24,
-                "end": 209.5,
-                "probability": 0.6170675158500671
-              },
-              {
-                "word": " in",
-                "start": 209.5,
-                "end": 209.64,
-                "probability": 0.9193578362464905
-              },
-              {
-                "word": " the",
-                "start": 209.64,
-                "end": 209.7,
-                "probability": 0.8563683032989502
-              },
-              {
-                "word": " hidden",
-                "start": 209.7,
-                "end": 209.92,
-                "probability": 0.9700824022293091
-              },
-              {
-                "word": " strip.",
-                "start": 209.92,
-                "end": 210.26,
-                "probability": 0.8099187612533569
-              }
-            ]
-          },
-          {
-            "id": 12,
-            "seek": 20648,
-            "start": 210.48,
-            "end": 213.18,
-            "text": " Want me to bring any specific ones forward or organize them?",
-            "tokens": [
-              50564,
-              11773,
-              385,
-              281,
-              1565,
-              604,
-              2685,
-              2306,
-              2128,
-              420,
-              13859,
-              552,
-              30,
-              50764
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.1657059302696815,
-            "compression_ratio": 1.4277777777777778,
-            "no_speech_prob": 0.054683927446603775,
-            "words": [
-              {
-                "word": " Want",
-                "start": 210.48,
-                "end": 210.62,
-                "probability": 0.8704203963279724
-              },
-              {
-                "word": " me",
-                "start": 210.62,
-                "end": 210.78,
-                "probability": 0.9938467144966125
-              },
-              {
-                "word": " to",
-                "start": 210.78,
-                "end": 210.9,
-                "probability": 0.9973829388618469
-              },
-              {
-                "word": " bring",
-                "start": 210.9,
-                "end": 211,
-                "probability": 0.994204580783844
-              },
-              {
-                "word": " any",
-                "start": 211,
-                "end": 211.28,
-                "probability": 0.8216234445571899
-              },
-              {
-                "word": " specific",
-                "start": 211.28,
-                "end": 211.68,
-                "probability": 0.9948899745941162
-              },
-              {
-                "word": " ones",
-                "start": 211.68,
-                "end": 211.98,
-                "probability": 0.9947404265403748
-              },
-              {
-                "word": " forward",
-                "start": 211.98,
-                "end": 212.2,
-                "probability": 0.978322446346283
-              },
-              {
-                "word": " or",
-                "start": 212.2,
-                "end": 212.48,
-                "probability": 0.9068428874015808
-              },
-              {
-                "word": " organize",
-                "start": 212.48,
-                "end": 212.78,
-                "probability": 0.9725849032402039
-              },
-              {
-                "word": " them?",
-                "start": 212.78,
-                "end": 213.18,
-                "probability": 0.9981570839881897
-              }
-            ]
-          },
-          {
-            "id": 13,
-            "seek": 20648,
-            "start": 215.28,
-            "end": 220.62,
-            "text": " Are you able to see the Z index on any of these?",
-            "tokens": [
-              50764,
-              2014,
-              291,
-              1075,
-              281,
-              536,
-              264,
-              1176,
-              8186,
-              322,
-              604,
-              295,
-              613,
-              30,
-              51064
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.1657059302696815,
-            "compression_ratio": 1.4277777777777778,
-            "no_speech_prob": 0.054683927446603775,
-            "words": [
-              {
-                "word": " Are",
-                "start": 215.28,
-                "end": 215.28,
-                "probability": 0.4279951751232147
-              },
-              {
-                "word": " you",
-                "start": 215.28,
-                "end": 215.5,
-                "probability": 0.9986581802368164
-              },
-              {
-                "word": " able",
-                "start": 215.5,
-                "end": 215.64,
-                "probability": 0.9947370886802673
-              },
-              {
-                "word": " to",
-                "start": 215.64,
-                "end": 216,
-                "probability": 0.9854018688201904
-              },
-              {
-                "word": " see",
-                "start": 216,
-                "end": 217.9,
-                "probability": 0.6565259099006653
-              },
-              {
-                "word": " the",
-                "start": 217.9,
-                "end": 218.12,
-                "probability": 0.9034842252731323
-              },
-              {
-                "word": " Z",
-                "start": 218.12,
-                "end": 218.32,
-                "probability": 0.8464996814727783
-              },
-              {
-                "word": " index",
-                "start": 218.32,
-                "end": 218.94,
-                "probability": 0.5119678378105164
-              },
-              {
-                "word": " on",
-                "start": 218.94,
-                "end": 219.48,
-                "probability": 0.9959055185317993
-              },
-              {
-                "word": " any",
-                "start": 219.48,
-                "end": 219.94,
-                "probability": 0.998102605342865
-              },
-              {
-                "word": " of",
-                "start": 219.94,
-                "end": 220.14,
-                "probability": 0.9995367527008057
-              },
-              {
-                "word": " these?",
-                "start": 220.14,
-                "end": 220.62,
-                "probability": 0.9990496039390564
-              }
-            ]
-          },
-          {
-            "id": 14,
-            "seek": 20648,
-            "start": 221.16,
-            "end": 225.92,
-            "text": " Because I think you mentioned some windows that are not absolutely the frontmost.",
-            "tokens": [
-              51064,
-              1436,
-              286,
-              519,
-              291,
-              2835,
-              512,
-              9309,
-              300,
-              366,
-              406,
-              3122,
-              264,
-              1868,
-              1761,
-              13,
-              51364
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.1657059302696815,
-            "compression_ratio": 1.4277777777777778,
-            "no_speech_prob": 0.054683927446603775,
-            "words": [
-              {
-                "word": " Because",
-                "start": 221.16,
-                "end": 221.34,
-                "probability": 0.779279351234436
-              },
-              {
-                "word": " I",
-                "start": 221.34,
-                "end": 221.42,
-                "probability": 0.980385959148407
-              },
-              {
-                "word": " think",
-                "start": 221.42,
-                "end": 221.6,
-                "probability": 0.9990869760513306
-              },
-              {
-                "word": " you",
-                "start": 221.6,
-                "end": 221.84,
-                "probability": 0.9968504309654236
-              },
-              {
-                "word": " mentioned",
-                "start": 221.84,
-                "end": 222.22,
-                "probability": 0.9564477205276489
-              },
-              {
-                "word": " some",
-                "start": 222.22,
-                "end": 222.52,
-                "probability": 0.9953545331954956
-              },
-              {
-                "word": " windows",
-                "start": 222.52,
-                "end": 222.86,
-                "probability": 0.9865714907646179
-              },
-              {
-                "word": " that",
-                "start": 222.86,
-                "end": 223.08,
-                "probability": 0.9964609742164612
-              },
-              {
-                "word": " are",
-                "start": 223.08,
-                "end": 223.28,
-                "probability": 0.9984014630317688
-              },
-              {
-                "word": " not",
-                "start": 223.28,
-                "end": 224.42,
-                "probability": 0.9955751895904541
-              },
-              {
-                "word": " absolutely",
-                "start": 224.42,
-                "end": 225.02,
-                "probability": 0.9713760018348694
-              },
-              {
-                "word": " the",
-                "start": 225.02,
-                "end": 225.3,
-                "probability": 0.9901388883590698
-              },
-              {
-                "word": " frontmost.",
-                "start": 225.3,
-                "end": 225.92,
-                "probability": 0.6891095638275146
-              }
-            ]
-          },
-          {
-            "id": 15,
-            "seek": 22592,
-            "start": 226.78,
-            "end": 227.3,
-            "text": " Did you?",
-            "tokens": [
-              50364,
-              2589,
-              291,
-              30,
-              50614
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.14566464119769157,
-            "compression_ratio": 1.5981735159817352,
-            "no_speech_prob": 0.6705601215362549,
-            "words": [
-              {
-                "word": " Did",
-                "start": 226.78,
-                "end": 227.3,
-                "probability": 0.0010168824810534716
-              },
-              {
-                "word": " you?",
-                "start": 227.3,
-                "end": 227.3,
-                "probability": 0.841067910194397
-              }
-            ]
-          },
-          {
-            "id": 16,
-            "seek": 22592,
-            "start": 230.76,
-            "end": 232.66,
-            "text": " Yes, I can see the Z index.",
-            "tokens": [
-              50614,
-              1079,
-              11,
-              286,
-              393,
-              536,
-              264,
-              1176,
-              8186,
-              13,
-              50714
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.14566464119769157,
-            "compression_ratio": 1.5981735159817352,
-            "no_speech_prob": 0.6705601215362549,
-            "words": [
-              {
-                "word": " Yes,",
-                "start": 230.76,
-                "end": 231.28,
-                "probability": 0.8268641829490662
-              },
-              {
-                "word": " I",
-                "start": 231.28,
-                "end": 231.42,
-                "probability": 0.9913408160209656
-              },
-              {
-                "word": " can",
-                "start": 231.42,
-                "end": 231.68,
-                "probability": 0.9910578727722168
-              },
-              {
-                "word": " see",
-                "start": 231.68,
-                "end": 231.82,
-                "probability": 0.9967136383056641
-              },
-              {
-                "word": " the",
-                "start": 231.82,
-                "end": 232.02,
-                "probability": 0.8813713788986206
-              },
-              {
-                "word": " Z",
-                "start": 232.02,
-                "end": 232.26,
-                "probability": 0.6009934544563293
-              },
-              {
-                "word": " index.",
-                "start": 232.26,
-                "end": 232.66,
-                "probability": 0.4905911386013031
-              }
-            ]
-          },
-          {
-            "id": 17,
-            "seek": 22592,
-            "start": 233.4,
-            "end": 237.78,
-            "text": " The frontmost window right now is the big item titled Iraq at pre-motion on the far left.",
-            "tokens": [
-              50714,
-              440,
-              1868,
-              1761,
-              4910,
-              558,
-              586,
-              307,
-              264,
-              955,
-              3174,
-              19841,
-              11818,
-              412,
-              659,
-              12,
-              44968,
-              322,
-              264,
-              1400,
-              1411,
-              13,
-              50964
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.14566464119769157,
-            "compression_ratio": 1.5981735159817352,
-            "no_speech_prob": 0.6705601215362549,
-            "words": [
-              {
-                "word": " The",
-                "start": 233.4,
-                "end": 233.56,
-                "probability": 0.9631872773170471
-              },
-              {
-                "word": " frontmost",
-                "start": 233.56,
-                "end": 233.88,
-                "probability": 0.6166145205497742
-              },
-              {
-                "word": " window",
-                "start": 233.88,
-                "end": 234.18,
-                "probability": 0.9877966046333313
-              },
-              {
-                "word": " right",
-                "start": 234.18,
-                "end": 234.46,
-                "probability": 0.9669801592826843
-              },
-              {
-                "word": " now",
-                "start": 234.46,
-                "end": 234.66,
-                "probability": 0.9969344139099121
-              },
-              {
-                "word": " is",
-                "start": 234.66,
-                "end": 234.82,
-                "probability": 0.9835594296455383
-              },
-              {
-                "word": " the",
-                "start": 234.82,
-                "end": 234.98,
-                "probability": 0.986049473285675
-              },
-              {
-                "word": " big",
-                "start": 234.98,
-                "end": 235.18,
-                "probability": 0.9748749732971191
-              },
-              {
-                "word": " item",
-                "start": 235.18,
-                "end": 235.42,
-                "probability": 0.7671669125556946
-              },
-              {
-                "word": " titled",
-                "start": 235.42,
-                "end": 235.84,
-                "probability": 0.7549247741699219
-              },
-              {
-                "word": " Iraq",
-                "start": 235.84,
-                "end": 236.28,
-                "probability": 0.2963410019874573
-              },
-              {
-                "word": " at",
-                "start": 236.28,
-                "end": 236.54,
-                "probability": 0.6567301750183105
-              },
-              {
-                "word": " pre",
-                "start": 236.54,
-                "end": 236.74,
-                "probability": 0.5468636751174927
-              },
-              {
-                "word": "-motion",
-                "start": 236.74,
-                "end": 236.94,
-                "probability": 0.9109639823436737
-              },
-              {
-                "word": " on",
-                "start": 236.94,
-                "end": 237.2,
-                "probability": 0.93235844373703
-              },
-              {
-                "word": " the",
-                "start": 237.2,
-                "end": 237.24,
-                "probability": 0.9726936221122742
-              },
-              {
-                "word": " far",
-                "start": 237.24,
-                "end": 237.4,
-                "probability": 0.9954919815063477
-              },
-              {
-                "word": " left.",
-                "start": 237.4,
-                "end": 237.78,
-                "probability": 0.9957486987113953
-              }
-            ]
-          },
-          {
-            "id": 18,
-            "seek": 22592,
-            "start": 238.26,
-            "end": 243.92,
-            "text": " Then chrome with the CLI docs, then the cloud item, then the open scout item, then the GitHub Chrome window,",
-            "tokens": [
-              50964,
-              1396,
-              33120,
-              365,
-              264,
-              12855,
-              40,
-              45623,
-              11,
-              550,
-              264,
-              4588,
-              3174,
-              11,
-              550,
-              264,
-              1269,
-              34392,
-              3174,
-              11,
-              550,
-              264,
-              23331,
-              15327,
-              4910,
-              11,
-              51264
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.14566464119769157,
-            "compression_ratio": 1.5981735159817352,
-            "no_speech_prob": 0.6705601215362549,
-            "words": [
-              {
-                "word": " Then",
-                "start": 238.26,
-                "end": 238.44,
-                "probability": 0.9371797442436218
-              },
-              {
-                "word": " chrome",
-                "start": 238.44,
-                "end": 238.7,
-                "probability": 0.10880958288908005
-              },
-              {
-                "word": " with",
-                "start": 238.7,
-                "end": 238.96,
-                "probability": 0.8775033950805664
-              },
-              {
-                "word": " the",
-                "start": 238.96,
-                "end": 239.12,
-                "probability": 0.950089693069458
-              },
-              {
-                "word": " CLI",
-                "start": 239.12,
-                "end": 239.44,
-                "probability": 0.9368031919002533
-              },
-              {
-                "word": " docs,",
-                "start": 239.44,
-                "end": 239.72,
-                "probability": 0.815028727054596
-              },
-              {
-                "word": " then",
-                "start": 240.1,
-                "end": 240.22,
-                "probability": 0.9734324812889099
-              },
-              {
-                "word": " the",
-                "start": 240.22,
-                "end": 240.38,
-                "probability": 0.9554330110549927
-              },
-              {
-                "word": " cloud",
-                "start": 240.38,
-                "end": 240.52,
-                "probability": 0.08555596321821213
-              },
-              {
-                "word": " item,",
-                "start": 240.52,
-                "end": 240.86,
-                "probability": 0.9004844427108765
-              },
-              {
-                "word": " then",
-                "start": 241.22,
-                "end": 241.4,
-                "probability": 0.9793956279754639
-              },
-              {
-                "word": " the",
-                "start": 241.4,
-                "end": 241.52,
-                "probability": 0.994382381439209
-              },
-              {
-                "word": " open",
-                "start": 241.52,
-                "end": 241.7,
-                "probability": 0.6623132824897766
-              },
-              {
-                "word": " scout",
-                "start": 241.7,
-                "end": 241.9,
-                "probability": 0.8724512457847595
-              },
-              {
-                "word": " item,",
-                "start": 241.9,
-                "end": 242.32,
-                "probability": 0.990160346031189
-              },
-              {
-                "word": " then",
-                "start": 242.72,
-                "end": 242.88,
-                "probability": 0.8904564380645752
-              },
-              {
-                "word": " the",
-                "start": 242.88,
-                "end": 242.98,
-                "probability": 0.9427589774131775
-              },
-              {
-                "word": " GitHub",
-                "start": 242.98,
-                "end": 243.22,
-                "probability": 0.7916024327278137
-              },
-              {
-                "word": " Chrome",
-                "start": 243.22,
-                "end": 243.5,
-                "probability": 0.7588245868682861
-              },
-              {
-                "word": " window,",
-                "start": 243.5,
-                "end": 243.92,
-                "probability": 0.9546568393707275
-              }
-            ]
-          },
-          {
-            "id": 19,
-            "seek": 22592,
-            "start": 244.22,
-            "end": 247.6,
-            "text": " and then the big implement workspace persistence item on the right.",
-            "tokens": [
-              51264,
-              293,
-              550,
-              264,
-              955,
-              4445,
-              32706,
-              37617,
-              3174,
-              322,
-              264,
-              558,
-              13,
-              51464
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.14566464119769157,
-            "compression_ratio": 1.5981735159817352,
-            "no_speech_prob": 0.6705601215362549,
-            "words": [
-              {
-                "word": " and",
-                "start": 244.22,
-                "end": 244.38,
-                "probability": 0.9855543375015259
-              },
-              {
-                "word": " then",
-                "start": 244.38,
-                "end": 244.54,
-                "probability": 0.9888575077056885
-              },
-              {
-                "word": " the",
-                "start": 244.54,
-                "end": 244.64,
-                "probability": 0.9904286861419678
-              },
-              {
-                "word": " big",
-                "start": 244.64,
-                "end": 244.8,
-                "probability": 0.9829570055007935
-              },
-              {
-                "word": " implement",
-                "start": 244.8,
-                "end": 245.14,
-                "probability": 0.9127734303474426
-              },
-              {
-                "word": " workspace",
-                "start": 245.14,
-                "end": 245.68,
-                "probability": 0.9666447639465332
-              },
-              {
-                "word": " persistence",
-                "start": 245.68,
-                "end": 246.24,
-                "probability": 0.8822678327560425
-              },
-              {
-                "word": " item",
-                "start": 246.24,
-                "end": 246.78,
-                "probability": 0.9950407147407532
-              },
-              {
-                "word": " on",
-                "start": 246.78,
-                "end": 247.2,
-                "probability": 0.9843838214874268
-              },
-              {
-                "word": " the",
-                "start": 247.2,
-                "end": 247.36,
-                "probability": 0.9969578981399536
-              },
-              {
-                "word": " right.",
-                "start": 247.36,
-                "end": 247.6,
-                "probability": 0.9989309906959534
-              }
-            ]
-          },
-          {
-            "id": 20,
-            "seek": 22592,
-            "start": 248.18,
-            "end": 250.24,
-            "text": " Everything else is behind those or off-screen.",
-            "tokens": [
-              51464,
-              5471,
-              1646,
-              307,
-              2261,
-              729,
-              420,
-              766,
-              12,
-              12439,
-              13,
-              51664
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.14566464119769157,
-            "compression_ratio": 1.5981735159817352,
-            "no_speech_prob": 0.6705601215362549,
-            "words": [
-              {
-                "word": " Everything",
-                "start": 248.18,
-                "end": 248.44,
-                "probability": 0.996479332447052
-              },
-              {
-                "word": " else",
-                "start": 248.44,
-                "end": 248.7,
-                "probability": 0.9965264201164246
-              },
-              {
-                "word": " is",
-                "start": 248.7,
-                "end": 248.92,
-                "probability": 0.9631641507148743
-              },
-              {
-                "word": " behind",
-                "start": 248.92,
-                "end": 249.08,
-                "probability": 0.9971936345100403
-              },
-              {
-                "word": " those",
-                "start": 249.08,
-                "end": 249.42,
-                "probability": 0.9710873365402222
-              },
-              {
-                "word": " or",
-                "start": 249.42,
-                "end": 249.7,
-                "probability": 0.575507640838623
-              },
-              {
-                "word": " off",
-                "start": 249.7,
-                "end": 249.94,
-                "probability": 0.9648285508155823
-              },
-              {
-                "word": "-screen.",
-                "start": 249.94,
-                "end": 250.24,
-                "probability": 0.6433416157960892
-              }
-            ]
-          },
-          {
-            "id": 21,
-            "seek": 25024,
-            "start": 251.5,
-            "end": 255.46,
-            "text": " You know, the chrome that you're mentioning, I don't see it.",
-            "tokens": [
-              50414,
-              509,
-              458,
-              11,
-              264,
-              33120,
-              300,
-              291,
-              434,
-              18315,
-              11,
-              286,
-              500,
-              380,
-              536,
-              309,
-              13,
-              50614
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.17362777888774872,
-            "compression_ratio": 1.3333333333333333,
-            "no_speech_prob": 0.09596072137355804,
-            "words": [
-              {
-                "word": " You",
-                "start": 251.5,
-                "end": 251.98,
-                "probability": 0.8666170835494995
-              },
-              {
-                "word": " know,",
-                "start": 251.98,
-                "end": 252.2,
-                "probability": 0.9949030876159668
-              },
-              {
-                "word": " the",
-                "start": 252.24,
-                "end": 252.72,
-                "probability": 0.9964391589164734
-              },
-              {
-                "word": " chrome",
-                "start": 252.72,
-                "end": 253.26,
-                "probability": 0.05722156539559364
-              },
-              {
-                "word": " that",
-                "start": 253.26,
-                "end": 253.44,
-                "probability": 0.9743705987930298
-              },
-              {
-                "word": " you're",
-                "start": 253.44,
-                "end": 253.72,
-                "probability": 0.9659897089004517
-              },
-              {
-                "word": " mentioning,",
-                "start": 253.72,
-                "end": 254.12,
-                "probability": 0.9936254024505615
-              },
-              {
-                "word": " I",
-                "start": 254.26,
-                "end": 254.42,
-                "probability": 0.9720293879508972
-              },
-              {
-                "word": " don't",
-                "start": 254.42,
-                "end": 254.68,
-                "probability": 0.9971641004085541
-              },
-              {
-                "word": " see",
-                "start": 254.68,
-                "end": 254.96,
-                "probability": 0.9986653327941895
-              },
-              {
-                "word": " it.",
-                "start": 254.96,
-                "end": 255.46,
-                "probability": 0.9965184926986694
-              }
-            ]
-          },
-          {
-            "id": 22,
-            "seek": 25024,
-            "start": 255.46,
-            "end": 257.7,
-            "text": " Could you bring it up for me?",
-            "tokens": [
-              50614,
-              7497,
-              291,
-              1565,
-              309,
-              493,
-              337,
-              385,
-              30,
-              50764
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.17362777888774872,
-            "compression_ratio": 1.3333333333333333,
-            "no_speech_prob": 0.09596072137355804,
-            "words": [
-              {
-                "word": " Could",
-                "start": 255.46,
-                "end": 255.88,
-                "probability": 0.9216219782829285
-              },
-              {
-                "word": " you",
-                "start": 255.88,
-                "end": 256.12,
-                "probability": 0.9980927109718323
-              },
-              {
-                "word": " bring",
-                "start": 256.12,
-                "end": 256.3,
-                "probability": 0.9977104663848877
-              },
-              {
-                "word": " it",
-                "start": 256.3,
-                "end": 256.46,
-                "probability": 0.997901201248169
-              },
-              {
-                "word": " up",
-                "start": 256.46,
-                "end": 256.56,
-                "probability": 0.997666597366333
-              },
-              {
-                "word": " for",
-                "start": 256.56,
-                "end": 256.74,
-                "probability": 0.9959312081336975
-              },
-              {
-                "word": " me?",
-                "start": 256.74,
-                "end": 257.7,
-                "probability": 0.9997076392173767
-              }
-            ]
-          },
-          {
-            "id": 23,
-            "seek": 25024,
-            "start": 267.94,
-            "end": 269.36,
-            "text": " Got it. Okay.",
-            "tokens": [
-              51214,
-              5803,
-              309,
-              13,
-              1033,
-              13,
-              51314
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.17362777888774872,
-            "compression_ratio": 1.3333333333333333,
-            "no_speech_prob": 0.09596072137355804,
-            "words": [
-              {
-                "word": " Got",
-                "start": 267.94,
-                "end": 268.26,
-                "probability": 0.8927256464958191
-              },
-              {
-                "word": " it.",
-                "start": 268.26,
-                "end": 268.58,
-                "probability": 0.9957602620124817
-              },
-              {
-                "word": " Okay.",
-                "start": 268.88,
-                "end": 269.36,
-                "probability": 0.8423363566398621
-              }
-            ]
-          },
-          {
-            "id": 24,
-            "seek": 25024,
-            "start": 269.86,
-            "end": 271.9,
-            "text": " Interesting, because it was behind stuff.",
-            "tokens": [
-              51314,
-              14711,
-              11,
-              570,
-              309,
-              390,
-              2261,
-              1507,
-              13,
-              51464
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.17362777888774872,
-            "compression_ratio": 1.3333333333333333,
-            "no_speech_prob": 0.09596072137355804,
-            "words": [
-              {
-                "word": " Interesting,",
-                "start": 269.86,
-                "end": 270.34,
-                "probability": 0.8318197131156921
-              },
-              {
-                "word": " because",
-                "start": 270.48,
-                "end": 270.58,
-                "probability": 0.6282777786254883
-              },
-              {
-                "word": " it",
-                "start": 270.58,
-                "end": 270.7,
-                "probability": 0.9960583448410034
-              },
-              {
-                "word": " was",
-                "start": 270.7,
-                "end": 270.94,
-                "probability": 0.9979853630065918
-              },
-              {
-                "word": " behind",
-                "start": 270.94,
-                "end": 271.42,
-                "probability": 0.9925537705421448
-              },
-              {
-                "word": " stuff.",
-                "start": 271.42,
-                "end": 271.9,
-                "probability": 0.9878861904144287
-              }
-            ]
-          },
-          {
-            "id": 25,
-            "seek": 25024,
-            "start": 272.16,
-            "end": 274.82,
-            "text": " Now it's in my view, I see what you're talking about.",
-            "tokens": [
-              51464,
-              823,
-              309,
-              311,
-              294,
-              452,
-              1910,
-              11,
-              286,
-              536,
-              437,
-              291,
-              434,
-              1417,
-              466,
-              13,
-              51614
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.17362777888774872,
-            "compression_ratio": 1.3333333333333333,
-            "no_speech_prob": 0.09596072137355804,
-            "words": [
-              {
-                "word": " Now",
-                "start": 272.16,
-                "end": 272.36,
-                "probability": 0.9746865034103394
-              },
-              {
-                "word": " it's",
-                "start": 272.36,
-                "end": 272.74,
-                "probability": 0.9003649652004242
-              },
-              {
-                "word": " in",
-                "start": 272.74,
-                "end": 272.92,
-                "probability": 0.9888090491294861
-              },
-              {
-                "word": " my",
-                "start": 272.92,
-                "end": 273.14,
-                "probability": 0.99425208568573
-              },
-              {
-                "word": " view,",
-                "start": 273.14,
-                "end": 273.32,
-                "probability": 0.9981440305709839
-              },
-              {
-                "word": " I",
-                "start": 273.32,
-                "end": 273.48,
-                "probability": 0.9877996444702148
-              },
-              {
-                "word": " see",
-                "start": 273.48,
-                "end": 273.64,
-                "probability": 0.9987391829490662
-              },
-              {
-                "word": " what",
-                "start": 273.64,
-                "end": 273.78,
-                "probability": 0.9957308173179626
-              },
-              {
-                "word": " you're",
-                "start": 273.78,
-                "end": 274.02,
-                "probability": 0.99395951628685
-              },
-              {
-                "word": " talking",
-                "start": 274.02,
-                "end": 274.3,
-                "probability": 0.9978175163269043
-              },
-              {
-                "word": " about.",
-                "start": 274.3,
-                "end": 274.82,
-                "probability": 0.9991355538368225
-              }
-            ]
-          },
-          {
-            "id": 26,
-            "seek": 27482,
-            "start": 275.66,
-            "end": 279.3,
-            "text": " Can you explain to me why you thought it was in the front?",
-            "tokens": [
-              50414,
-              1664,
-              291,
-              2903,
-              281,
-              385,
-              983,
-              291,
-              1194,
-              309,
-              390,
-              294,
-              264,
-              1868,
-              30,
-              50614
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.09455122128881589,
-            "compression_ratio": 1.680327868852459,
-            "no_speech_prob": 0.044935889542102814,
-            "words": [
-              {
-                "word": " Can",
-                "start": 275.66,
-                "end": 276.18,
-                "probability": 0.6527708172798157
-              },
-              {
-                "word": " you",
-                "start": 276.18,
-                "end": 276.44,
-                "probability": 0.9932804703712463
-              },
-              {
-                "word": " explain",
-                "start": 276.44,
-                "end": 276.6,
-                "probability": 0.9913021326065063
-              },
-              {
-                "word": " to",
-                "start": 276.6,
-                "end": 276.78,
-                "probability": 0.9933134913444519
-              },
-              {
-                "word": " me",
-                "start": 276.78,
-                "end": 276.98,
-                "probability": 0.9987202882766724
-              },
-              {
-                "word": " why",
-                "start": 276.98,
-                "end": 277.32,
-                "probability": 0.9459265470504761
-              },
-              {
-                "word": " you",
-                "start": 277.32,
-                "end": 277.78,
-                "probability": 0.9947316646575928
-              },
-              {
-                "word": " thought",
-                "start": 277.78,
-                "end": 278.06,
-                "probability": 0.48028045892715454
-              },
-              {
-                "word": " it",
-                "start": 278.06,
-                "end": 278.22,
-                "probability": 0.8836362361907959
-              },
-              {
-                "word": " was",
-                "start": 278.22,
-                "end": 278.36,
-                "probability": 0.9966399669647217
-              },
-              {
-                "word": " in",
-                "start": 278.36,
-                "end": 278.5,
-                "probability": 0.9812508821487427
-              },
-              {
-                "word": " the",
-                "start": 278.5,
-                "end": 278.64,
-                "probability": 0.9947770833969116
-              },
-              {
-                "word": " front?",
-                "start": 278.64,
-                "end": 279.3,
-                "probability": 0.9782024025917053
-              }
-            ]
-          },
-          {
-            "id": 27,
-            "seek": 27482,
-            "start": 279.78,
-            "end": 281.7,
-            "text": " Heard you.",
-            "tokens": [
-              50614,
-              634,
-              515,
-              291,
-              13,
-              50714
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.09455122128881589,
-            "compression_ratio": 1.680327868852459,
-            "no_speech_prob": 0.044935889542102814,
-            "words": [
-              {
-                "word": " Heard",
-                "start": 279.78,
-                "end": 280.3,
-                "probability": 0.5112367114052176
-              },
-              {
-                "word": " you.",
-                "start": 280.3,
-                "end": 281.7,
-                "probability": 0.9843649864196777
-              }
-            ]
-          },
-          {
-            "id": 28,
-            "seek": 27482,
-            "start": 284.04,
-            "end": 290.4,
-            "text": " Because in the snapshot, the CLI chrome window was listed second, right after the frontmost pre-motion item.",
-            "tokens": [
-              50814,
-              1436,
-              294,
-              264,
-              30163,
-              11,
-              264,
-              12855,
-              40,
-              33120,
-              4910,
-              390,
-              10052,
-              1150,
-              11,
-              558,
-              934,
-              264,
-              1868,
-              1761,
-              659,
-              12,
-              44968,
-              3174,
-              13,
-              51164
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.09455122128881589,
-            "compression_ratio": 1.680327868852459,
-            "no_speech_prob": 0.044935889542102814,
-            "words": [
-              {
-                "word": " Because",
-                "start": 284.04,
-                "end": 284.26,
-                "probability": 0.9033281803131104
-              },
-              {
-                "word": " in",
-                "start": 284.26,
-                "end": 284.48,
-                "probability": 0.9655314683914185
-              },
-              {
-                "word": " the",
-                "start": 284.48,
-                "end": 284.76,
-                "probability": 0.9283142685890198
-              },
-              {
-                "word": " snapshot,",
-                "start": 284.76,
-                "end": 285.28,
-                "probability": 0.9200361371040344
-              },
-              {
-                "word": " the",
-                "start": 285.66,
-                "end": 285.84,
-                "probability": 0.9821950793266296
-              },
-              {
-                "word": " CLI",
-                "start": 285.84,
-                "end": 286.3,
-                "probability": 0.9753419160842896
-              },
-              {
-                "word": " chrome",
-                "start": 286.3,
-                "end": 286.56,
-                "probability": 0.3281846046447754
-              },
-              {
-                "word": " window",
-                "start": 286.56,
-                "end": 286.98,
-                "probability": 0.9805457592010498
-              },
-              {
-                "word": " was",
-                "start": 286.98,
-                "end": 287.28,
-                "probability": 0.9640531539916992
-              },
-              {
-                "word": " listed",
-                "start": 287.28,
-                "end": 287.62,
-                "probability": 0.9886208176612854
-              },
-              {
-                "word": " second,",
-                "start": 287.62,
-                "end": 288.16,
-                "probability": 0.8239567279815674
-              },
-              {
-                "word": " right",
-                "start": 288.3,
-                "end": 288.56,
-                "probability": 0.9897865056991577
-              },
-              {
-                "word": " after",
-                "start": 288.56,
-                "end": 288.9,
-                "probability": 0.9944009184837341
-              },
-              {
-                "word": " the",
-                "start": 288.9,
-                "end": 289.12,
-                "probability": 0.9925131797790527
-              },
-              {
-                "word": " frontmost",
-                "start": 289.12,
-                "end": 289.52,
-                "probability": 0.6247260570526123
-              },
-              {
-                "word": " pre",
-                "start": 289.52,
-                "end": 289.76,
-                "probability": 0.9318035244941711
-              },
-              {
-                "word": "-motion",
-                "start": 289.76,
-                "end": 289.98,
-                "probability": 0.9671054780483246
-              },
-              {
-                "word": " item.",
-                "start": 289.98,
-                "end": 290.4,
-                "probability": 0.8727665543556213
-              }
-            ]
-          },
-          {
-            "id": 29,
-            "seek": 27482,
-            "start": 291.04,
-            "end": 296.64,
-            "text": " That put it ahead of the cloud terminal, the open scout terminal, and the GitHub chrome window in Z order.",
-            "tokens": [
-              51164,
-              663,
-              829,
-              309,
-              2286,
-              295,
-              264,
-              4588,
-              14709,
-              11,
-              264,
-              1269,
-              34392,
-              14709,
-              11,
-              293,
-              264,
-              23331,
-              33120,
-              4910,
-              294,
-              1176,
-              1668,
-              13,
-              51464
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.09455122128881589,
-            "compression_ratio": 1.680327868852459,
-            "no_speech_prob": 0.044935889542102814,
-            "words": [
-              {
-                "word": " That",
-                "start": 291.04,
-                "end": 291.26,
-                "probability": 0.9914167523384094
-              },
-              {
-                "word": " put",
-                "start": 291.26,
-                "end": 291.48,
-                "probability": 0.97789067029953
-              },
-              {
-                "word": " it",
-                "start": 291.48,
-                "end": 291.64,
-                "probability": 0.9865288734436035
-              },
-              {
-                "word": " ahead",
-                "start": 291.64,
-                "end": 291.86,
-                "probability": 0.9924693703651428
-              },
-              {
-                "word": " of",
-                "start": 291.86,
-                "end": 292.04,
-                "probability": 0.9814898371696472
-              },
-              {
-                "word": " the",
-                "start": 292.04,
-                "end": 292.22,
-                "probability": 0.988440990447998
-              },
-              {
-                "word": " cloud",
-                "start": 292.22,
-                "end": 292.4,
-                "probability": 0.099726602435112
-              },
-              {
-                "word": " terminal,",
-                "start": 292.4,
-                "end": 292.84,
-                "probability": 0.9972048401832581
-              },
-              {
-                "word": " the",
-                "start": 293.24,
-                "end": 293.36,
-                "probability": 0.9895651340484619
-              },
-              {
-                "word": " open",
-                "start": 293.36,
-                "end": 293.6,
-                "probability": 0.7313627600669861
-              },
-              {
-                "word": " scout",
-                "start": 293.6,
-                "end": 293.78,
-                "probability": 0.8145810961723328
-              },
-              {
-                "word": " terminal,",
-                "start": 293.78,
-                "end": 294.28,
-                "probability": 0.9963191747665405
-              },
-              {
-                "word": " and",
-                "start": 294.68,
-                "end": 294.86,
-                "probability": 0.994049072265625
-              },
-              {
-                "word": " the",
-                "start": 294.86,
-                "end": 294.96,
-                "probability": 0.9748544692993164
-              },
-              {
-                "word": " GitHub",
-                "start": 294.96,
-                "end": 295.3,
-                "probability": 0.32548651099205017
-              },
-              {
-                "word": " chrome",
-                "start": 295.3,
-                "end": 295.6,
-                "probability": 0.8201271891593933
-              },
-              {
-                "word": " window",
-                "start": 295.6,
-                "end": 295.96,
-                "probability": 0.9813319444656372
-              },
-              {
-                "word": " in",
-                "start": 295.96,
-                "end": 296.24,
-                "probability": 0.9472731947898865
-              },
-              {
-                "word": " Z",
-                "start": 296.24,
-                "end": 296.4,
-                "probability": 0.8097240924835205
-              },
-              {
-                "word": " order.",
-                "start": 296.4,
-                "end": 296.64,
-                "probability": 0.41944700479507446
-              }
-            ]
-          },
-          {
-            "id": 30,
-            "seek": 27482,
-            "start": 297.34,
-            "end": 302.84,
-            "text": " It must have been partially covered or behind another window on your screen even though it was higher in the stacking order.",
-            "tokens": [
-              51464,
-              467,
-              1633,
-              362,
-              668,
-              18886,
-              5343,
-              420,
-              2261,
-              1071,
-              4910,
-              322,
-              428,
-              2568,
-              754,
-              1673,
-              309,
-              390,
-              2946,
-              294,
-              264,
-              41376,
-              1668,
-              13,
-              51814
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.09455122128881589,
-            "compression_ratio": 1.680327868852459,
-            "no_speech_prob": 0.044935889542102814,
-            "words": [
-              {
-                "word": " It",
-                "start": 297.34,
-                "end": 297.5,
-                "probability": 0.992980420589447
-              },
-              {
-                "word": " must",
-                "start": 297.5,
-                "end": 297.72,
-                "probability": 0.9963274598121643
-              },
-              {
-                "word": " have",
-                "start": 297.72,
-                "end": 297.88,
-                "probability": 0.8205618858337402
-              },
-              {
-                "word": " been",
-                "start": 297.88,
-                "end": 298.1,
-                "probability": 0.9866429567337036
-              },
-              {
-                "word": " partially",
-                "start": 298.1,
-                "end": 298.4,
-                "probability": 0.9990565180778503
-              },
-              {
-                "word": " covered",
-                "start": 298.4,
-                "end": 298.82,
-                "probability": 0.9923878908157349
-              },
-              {
-                "word": " or",
-                "start": 298.82,
-                "end": 299.34,
-                "probability": 0.6528045535087585
-              },
-              {
-                "word": " behind",
-                "start": 299.34,
-                "end": 299.7,
-                "probability": 0.996503472328186
-              },
-              {
-                "word": " another",
-                "start": 299.7,
-                "end": 300.12,
-                "probability": 0.9937060475349426
-              },
-              {
-                "word": " window",
-                "start": 300.12,
-                "end": 300.36,
-                "probability": 0.9962001442909241
-              },
-              {
-                "word": " on",
-                "start": 300.36,
-                "end": 300.56,
-                "probability": 0.9939388036727905
-              },
-              {
-                "word": " your",
-                "start": 300.56,
-                "end": 300.8,
-                "probability": 0.9775790572166443
-              },
-              {
-                "word": " screen",
-                "start": 300.8,
-                "end": 301.08,
-                "probability": 0.99826979637146
-              },
-              {
-                "word": " even",
-                "start": 301.08,
-                "end": 301.32,
-                "probability": 0.44172433018684387
-              },
-              {
-                "word": " though",
-                "start": 301.32,
-                "end": 301.52,
-                "probability": 0.9869664907455444
-              },
-              {
-                "word": " it",
-                "start": 301.52,
-                "end": 301.52,
-                "probability": 0.9946562051773071
-              },
-              {
-                "word": " was",
-                "start": 301.52,
-                "end": 301.78,
-                "probability": 0.9924508929252625
-              },
-              {
-                "word": " higher",
-                "start": 301.78,
-                "end": 301.98,
-                "probability": 0.9598170518875122
-              },
-              {
-                "word": " in",
-                "start": 301.98,
-                "end": 302.2,
-                "probability": 0.9441713094711304
-              },
-              {
-                "word": " the",
-                "start": 302.2,
-                "end": 302.36,
-                "probability": 0.9653591513633728
-              },
-              {
-                "word": " stacking",
-                "start": 302.36,
-                "end": 302.54,
-                "probability": 0.9161125421524048
-              },
-              {
-                "word": " order.",
-                "start": 302.54,
-                "end": 302.84,
-                "probability": 0.9913300275802612
-              }
-            ]
-          },
-          {
-            "id": 31,
-            "seek": 30482,
-            "start": 307.53999999999996,
-            "end": 307.6,
-            "text": " Thank you.",
-            "tokens": [
-              50364,
-              1044,
-              291,
-              13,
-              50464
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.65260382493337,
-            "compression_ratio": 0.5555555555555556,
-            "no_speech_prob": 0.9499005675315857,
-            "words": [
-              {
-                "word": " Thank",
-                "start": 307.53999999999996,
-                "end": 307.58,
-                "probability": 0.013264646753668785
-              },
-              {
-                "word": " you.",
-                "start": 307.58,
-                "end": 307.6,
-                "probability": 0.9780554175376892
-              }
-            ]
-          }
-        ],
-        "language": "en"
-      },
       "videoUrl": "demos/lattices-voice-2026-03-22.mp4"
     },
     {
@@ -8286,433 +4499,6 @@
       "composition": null,
       "reelCandidate": false,
       "stage": "source",
-      "transcript": {
-        "text": " can you find the window the chrome window with management craft on it can you make it fill the right half of my screen can you make it fill the right half of my screen the management craft chrome window all right show me all the terminal windows",
-        "segments": [
-          {
-            "id": 0,
-            "seek": 3000,
-            "start": 50.76,
-            "end": 57.36,
-            "text": " can you find the window the chrome window with management craft on it",
-            "tokens": [
-              50364,
-              393,
-              291,
-              915,
-              264,
-              4910,
-              264,
-              33120,
-              4910,
-              365,
-              4592,
-              8448,
-              322,
-              309,
-              51794
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.4732065796852112,
-            "compression_ratio": 1.1129032258064515,
-            "no_speech_prob": 0.09780974686145782,
-            "words": [
-              {
-                "word": " can",
-                "start": 50.76,
-                "end": 51.56,
-                "probability": 0.06053506210446358
-              },
-              {
-                "word": " you",
-                "start": 51.56,
-                "end": 51.76,
-                "probability": 0.9951925277709961
-              },
-              {
-                "word": " find",
-                "start": 51.76,
-                "end": 51.98,
-                "probability": 0.9962779879570007
-              },
-              {
-                "word": " the",
-                "start": 51.98,
-                "end": 52.24,
-                "probability": 0.9923060536384583
-              },
-              {
-                "word": " window",
-                "start": 52.24,
-                "end": 52.82,
-                "probability": 0.9009026288986206
-              },
-              {
-                "word": " the",
-                "start": 52.82,
-                "end": 54.34,
-                "probability": 0.786706268787384
-              },
-              {
-                "word": " chrome",
-                "start": 54.34,
-                "end": 54.64,
-                "probability": 0.7044743895530701
-              },
-              {
-                "word": " window",
-                "start": 54.64,
-                "end": 55.08,
-                "probability": 0.996416449546814
-              },
-              {
-                "word": " with",
-                "start": 55.08,
-                "end": 55.46,
-                "probability": 0.9979254007339478
-              },
-              {
-                "word": " management",
-                "start": 55.46,
-                "end": 56.02,
-                "probability": 0.9740236401557922
-              },
-              {
-                "word": " craft",
-                "start": 56.02,
-                "end": 56.42,
-                "probability": 0.864162802696228
-              },
-              {
-                "word": " on",
-                "start": 56.42,
-                "end": 56.62,
-                "probability": 0.9916803240776062
-              },
-              {
-                "word": " it",
-                "start": 56.62,
-                "end": 57.36,
-                "probability": 0.9937897324562073
-              }
-            ]
-          },
-          {
-            "id": 1,
-            "seek": 6000,
-            "start": 72.68,
-            "end": 76.5,
-            "text": " can you make it fill the right half of my screen",
-            "tokens": [
-              50364,
-              393,
-              291,
-              652,
-              309,
-              2836,
-              264,
-              558,
-              1922,
-              295,
-              452,
-              2568,
-              51168
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.43324047724405923,
-            "compression_ratio": 0.9056603773584906,
-            "no_speech_prob": 0.03976043313741684,
-            "words": [
-              {
-                "word": " can",
-                "start": 72.68,
-                "end": 73.28,
-                "probability": 0.0673174113035202
-              },
-              {
-                "word": " you",
-                "start": 73.28,
-                "end": 73.48,
-                "probability": 0.9619420766830444
-              },
-              {
-                "word": " make",
-                "start": 73.48,
-                "end": 73.76,
-                "probability": 0.9729058146476746
-              },
-              {
-                "word": " it",
-                "start": 73.76,
-                "end": 74.22,
-                "probability": 0.979373574256897
-              },
-              {
-                "word": " fill",
-                "start": 74.22,
-                "end": 74.62,
-                "probability": 0.9125155210494995
-              },
-              {
-                "word": " the",
-                "start": 74.62,
-                "end": 75,
-                "probability": 0.9826177954673767
-              },
-              {
-                "word": " right",
-                "start": 75,
-                "end": 75.3,
-                "probability": 0.9910460114479065
-              },
-              {
-                "word": " half",
-                "start": 75.3,
-                "end": 75.6,
-                "probability": 0.9858783483505249
-              },
-              {
-                "word": " of",
-                "start": 75.6,
-                "end": 75.76,
-                "probability": 0.9609255194664001
-              },
-              {
-                "word": " my",
-                "start": 75.76,
-                "end": 75.92,
-                "probability": 0.996640682220459
-              },
-              {
-                "word": " screen",
-                "start": 75.92,
-                "end": 76.5,
-                "probability": 0.9959129691123962
-              }
-            ]
-          },
-          {
-            "id": 2,
-            "seek": 7650,
-            "start": 86.06,
-            "end": 90.14,
-            "text": " can you make it fill the right half of my screen the management craft chrome window",
-            "tokens": [
-              50364,
-              393,
-              291,
-              652,
-              309,
-              2836,
-              264,
-              558,
-              1922,
-              295,
-              452,
-              2568,
-              264,
-              4592,
-              8448,
-              33120,
-              4910,
-              51046
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.2912899017333984,
-            "compression_ratio": 1.1369863013698631,
-            "no_speech_prob": 0.05428457632660866,
-            "words": [
-              {
-                "word": " can",
-                "start": 86.06,
-                "end": 86.5,
-                "probability": 0.0460665263235569
-              },
-              {
-                "word": " you",
-                "start": 86.5,
-                "end": 86.64,
-                "probability": 0.9946902990341187
-              },
-              {
-                "word": " make",
-                "start": 86.64,
-                "end": 86.78,
-                "probability": 0.9953033924102783
-              },
-              {
-                "word": " it",
-                "start": 86.78,
-                "end": 87,
-                "probability": 0.9948252439498901
-              },
-              {
-                "word": " fill",
-                "start": 87,
-                "end": 87.16,
-                "probability": 0.95730060338974
-              },
-              {
-                "word": " the",
-                "start": 87.16,
-                "end": 87.38,
-                "probability": 0.992179274559021
-              },
-              {
-                "word": " right",
-                "start": 87.38,
-                "end": 87.54,
-                "probability": 0.9951116442680359
-              },
-              {
-                "word": " half",
-                "start": 87.54,
-                "end": 87.78,
-                "probability": 0.9914370179176331
-              },
-              {
-                "word": " of",
-                "start": 87.78,
-                "end": 87.94,
-                "probability": 0.9880950450897217
-              },
-              {
-                "word": " my",
-                "start": 87.94,
-                "end": 88.14,
-                "probability": 0.997700035572052
-              },
-              {
-                "word": " screen",
-                "start": 88.14,
-                "end": 88.42,
-                "probability": 0.9962280988693237
-              },
-              {
-                "word": " the",
-                "start": 88.42,
-                "end": 88.62,
-                "probability": 0.7928595542907715
-              },
-              {
-                "word": " management",
-                "start": 88.62,
-                "end": 89.08,
-                "probability": 0.9536932706832886
-              },
-              {
-                "word": " craft",
-                "start": 89.08,
-                "end": 89.54,
-                "probability": 0.8076537251472473
-              },
-              {
-                "word": " chrome",
-                "start": 89.54,
-                "end": 89.84,
-                "probability": 0.24884438514709473
-              },
-              {
-                "word": " window",
-                "start": 89.84,
-                "end": 90.14,
-                "probability": 0.9712669253349304
-              }
-            ]
-          },
-          {
-            "id": 3,
-            "seek": 9014,
-            "start": 112.79999999999998,
-            "end": 115.6,
-            "text": " all right",
-            "tokens": [
-              50364,
-              439,
-              558,
-              51622
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.8476524353027344,
-            "compression_ratio": 0.5294117647058824,
-            "no_speech_prob": 0.5357165932655334,
-            "words": [
-              {
-                "word": " all",
-                "start": 112.79999999999998,
-                "end": 114.19999999999999,
-                "probability": 0.008278559893369675
-              },
-              {
-                "word": " right",
-                "start": 114.19999999999999,
-                "end": 115.6,
-                "probability": 0.8818879127502441
-              }
-            ]
-          },
-          {
-            "id": 4,
-            "seek": 11560,
-            "start": 119.32000000000001,
-            "end": 121.32,
-            "text": " show me all the terminal windows",
-            "tokens": [
-              50364,
-              855,
-              385,
-              439,
-              264,
-              14709,
-              9309,
-              50638
-            ],
-            "temperature": 0,
-            "avg_logprob": -0.470483938852946,
-            "compression_ratio": 0.8,
-            "no_speech_prob": 0.04490698128938675,
-            "words": [
-              {
-                "word": " show",
-                "start": 119.32000000000001,
-                "end": 119.84,
-                "probability": 0.05727527290582657
-              },
-              {
-                "word": " me",
-                "start": 119.84,
-                "end": 120.06,
-                "probability": 0.9954929351806641
-              },
-              {
-                "word": " all",
-                "start": 120.06,
-                "end": 120.28,
-                "probability": 0.9909353852272034
-              },
-              {
-                "word": " the",
-                "start": 120.28,
-                "end": 120.48,
-                "probability": 0.991411566734314
-              },
-              {
-                "word": " terminal",
-                "start": 120.48,
-                "end": 120.78,
-                "probability": 0.9787225127220154
-              },
-              {
-                "word": " windows",
-                "start": 120.78,
-                "end": 121.32,
-                "probability": 0.9679636359214783
-              }
-            ]
-          }
-        ],
-        "language": "en"
-      },
       "videoUrl": "demos/lattices-demo-2026-03-22.mp4"
     },
     {
@@ -9305,7 +5091,6 @@
       "composition": null,
       "reelCandidate": false,
       "stage": "source",
-      "srt": "1\n00:00:48,899 --> 00:00:49,880\n[SPEAKER_01] Welcome to HUD.\n\n2\n00:00:50,219 --> 00:00:53,259\n[SPEAKER_01] I'm here to help you navigate and create in your spatial space.\n\n3\n00:00:54,000 --> 00:00:55,020\n[SPEAKER_00] Ooh, alright.\n\n4\n00:00:55,460 --> 00:00:56,820\n[SPEAKER_00] Where can I navigate to?\n\n5\n00:00:58,679 --> 00:01:04,980\n[SPEAKER_01] You can switch between Dev, Design, Ops, and Studio, or filter views like terminals or visuals.\n\n6\n00:01:06,640 --> 00:01:06,959\n[SPEAKER_00] Cool.\n\n7\n00:01:07,359 --> 00:01:10,400\n[SPEAKER_00] Why don't we get started with Visual Studio?\n\n8\n00:01:12,980 --> 00:01:14,620\n[SPEAKER_01] Switching to Studio Context.\n\n9\n00:01:14,959 --> 00:01:15,159\n[SPEAKER_01] Done.\n\n10\n00:01:16,120 --> 00:01:16,760\n[SPEAKER_00] Amazing.\n\n11\n00:01:17,060 --> 00:01:17,859\n[SPEAKER_00] What am I looking at?\n\n12\n00:01:21,859 --> 00:01:26,180\n[SPEAKER_01] You're currently in the Studio Context with the UI preview and diff viewer open.\n\n13\n00:01:26,900 --> 00:01:29,120\n[SPEAKER_00] Can I zoom into the diff viewer?\n\n14\n00:01:31,540 --> 00:01:32,939\n[SPEAKER_01] Zooming in on the diff viewer.\n\n15\n00:01:33,780 --> 00:01:34,340\n[SPEAKER_00] Nice.\n\n16\n00:01:36,340 --> 00:01:39,879\n[SPEAKER_01] I can focus on a specific window or create new ones if you like.\n\n17\n00:01:40,879 --> 00:01:42,459\n[SPEAKER_00] What kind of windows can you create?\n\n18\n00:01:44,500 --> 00:01:53,299\n[SPEAKER_01] You can create code, terminal, docs, database, architecture, git, pipelines, logs, UI, tasks, chat, and dither windows.\n\n19\n00:01:54,319 --> 00:01:56,620\n[SPEAKER_00] Ooh, what's this dither window?\n\n20\n00:01:59,520 --> 00:02:02,799\n[SPEAKER_01] It's a creative tool for pixel art and applying retro effects.\n\n21\n00:02:03,200 --> 00:02:04,260\n[SPEAKER_01] I can open it for you?\n\n22\n00:02:04,640 --> 00:02:05,340\n[SPEAKER_00] Yes, please.\n\n23\n00:02:08,360 --> 00:02:09,639\n[SPEAKER_01] Opening Dither Tool.\n\n24\n00:02:22,720 --> 00:02:23,599\n[SPEAKER_00] Very cool.\n\n25\n00:02:26,160 --> 00:02:29,860\n[SPEAKER_01] I can adjust the settings like pixel size or palette for you.\n\n26\n00:02:30,719 --> 00:02:31,639\n[SPEAKER_00] I got it.\n\n27\n00:02:31,639 --> 00:02:34,479\n[SPEAKER_00] No problem.\n\n28\n00:02:34,479 --> 00:02:34,680\n[SPEAKER_00] No problem.\n\n",
       "videoUrl": "demos/CleanShot 2026-02-15 at 11.17.35.mp4"
     },
     {

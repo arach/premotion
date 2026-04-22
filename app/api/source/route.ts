@@ -3,7 +3,7 @@ import { join, relative } from 'node:path';
 import { readFile, writeFile } from 'node:fs/promises';
 
 const ROOT = process.cwd();
-const ALLOWED_DIRS = ['src', 'lib', 'catalog'];
+const ALLOWED_DIRS = ['src', 'lib', 'catalog', '.compositions'];
 
 function validatePath(filePath: string): { resolved: string; rel: string } | NextResponse {
   const resolved = join(ROOT, filePath);
