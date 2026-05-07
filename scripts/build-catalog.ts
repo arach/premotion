@@ -6,19 +6,23 @@
  */
 
 import { readdir, stat } from "node:fs/promises";
-import { join, basename, extname, relative } from "node:path";
+import { fileURLToPath } from "node:url";
+import { join, basename, dirname, extname, relative } from "node:path";
 
-const ROOT = join(import.meta.dir, "..");
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLIC = join(ROOT, "public");
 const TRANSCRIPTS = join(PUBLIC, "transcripts");
 const OUTPUT = join(PUBLIC, "catalog-data.json");
 
-const VIDEO_EXTS = new Set([".mp4", ".mov", ".webm", ".mkv"]);
+const VIDEO_EXTS = new Set([".mp4", ".mov", ".webm", ".mkv", ".gif"]);
+const AUDIO_EXTS = new Set([".mp3", ".wav", ".aac", ".m4a", ".flac", ".ogg"]);
+const TRACKS = join(PUBLIC, "tracks");
 
 type VideoStage = "source" | "wip" | "final";
 
 const STAGE_ROOTS: { stage: VideoStage; dir: string }[] = [
   { stage: "source", dir: join(PUBLIC, "demos") },
+  { stage: "source", dir: join(PUBLIC, "inbox") },
   { stage: "wip", dir: join(PUBLIC, "wip") },
   { stage: "final", dir: join(PUBLIC, "out") },
 ];
@@ -58,6 +62,9 @@ interface FfprobeResult {
   resolution: string;
   fps: number;
   codec: string;
+  sampleRate?: number;
+  channels?: number;
+  bitrate?: number;
 }
 
 async function ffprobe(filepath: string): Promise<FfprobeResult> {
@@ -78,6 +85,7 @@ async function ffprobe(filepath: string): Promise<FfprobeResult> {
   try {
     const data = JSON.parse(text);
     const videoStream = data.streams?.find((s: any) => s.codec_type === "video");
+    const audioStream = data.streams?.find((s: any) => s.codec_type === "audio");
     const format = data.format || {};
 
     let duration = 0;
@@ -104,8 +112,15 @@ async function ffprobe(filepath: string): Promise<FfprobeResult> {
       fps = Math.round(parseInt(videoStream.nb_frames) / duration);
     }
 
-    const codec = videoStream?.codec_name || "unknown";
-    return { duration: Math.round(duration * 100) / 100, resolution, fps, codec };
+    const codec = videoStream?.codec_name || audioStream?.codec_name || "unknown";
+    const sampleRate = audioStream?.sample_rate ? parseInt(audioStream.sample_rate) : undefined;
+    const channels = audioStream?.channels ? parseInt(audioStream.channels) : undefined;
+    const bitrate = audioStream?.bit_rate
+      ? parseInt(audioStream.bit_rate)
+      : format.bit_rate
+        ? parseInt(format.bit_rate)
+        : undefined;
+    return { duration: Math.round(duration * 100) / 100, resolution, fps, codec, sampleRate, channels, bitrate };
   } catch {
     return { duration: 0, resolution: "unknown", fps: 0, codec: "unknown" };
   }
@@ -166,11 +181,133 @@ async function scanAllVideos(): Promise<VideoFile[]> {
 
 // ── scan storyboards ────────────────────────────────────────────────────────
 
+// ── scan audio assets ───────────────────────────────────────────────────────
+
+interface AudioAsset {
+  id: string;
+  filename: string;
+  sourcePath: string | null;
+  path: string;
+  capturedAt: string;
+  duration: number;
+  codec: string;
+  sampleRate: number | null;
+  channels: number | null;
+  bitrate: number | null;
+  sizeMB: number;
+  app: string;
+  generated: boolean;
+  provider?: string;
+  model?: string;
+  prompt?: string;
+  lyrics?: string;
+  compositionId?: string;
+}
+
+interface AudioFile {
+  filename: string;
+  absolutePath: string;
+  relativePath: string;
+}
+
+async function walkAudio(dir: string): Promise<AudioFile[]> {
+  const results: AudioFile[] = [];
+  let entries: string[];
+  try {
+    entries = await readdir(dir);
+  } catch {
+    return results;
+  }
+
+  for (const entry of entries) {
+    if (entry.startsWith(".")) continue;
+    const fullPath = join(dir, entry);
+    const s = await stat(fullPath);
+    if (s.isDirectory()) {
+      results.push(...await walkAudio(fullPath));
+      continue;
+    }
+
+    const ext = extname(entry).toLowerCase();
+    if (!AUDIO_EXTS.has(ext)) continue;
+    results.push({
+      filename: entry,
+      absolutePath: fullPath,
+      relativePath: relative(PUBLIC, fullPath),
+    });
+  }
+
+  return results;
+}
+
+async function loadTrackSidecar(audioPath: string): Promise<Record<string, any>> {
+  const sidecarPath = audioPath.replace(/\.[^.]+$/, ".json");
+  try {
+    return await Bun.file(sidecarPath).json();
+  } catch {
+    return {};
+  }
+}
+
+async function scanAudioAssets(): Promise<AudioAsset[]> {
+  const files = await walkAudio(TRACKS);
+  log(`Scanning music: ${TRACKS}`);
+  log(`  → ${files.length} audio files`);
+
+  const assets = await Promise.all(files.map(async (file) => {
+    const [probe, fileStat, sidecar] = await Promise.all([
+      ffprobe(file.absolutePath),
+      stat(file.absolutePath),
+      loadTrackSidecar(file.absolutePath),
+    ]);
+
+    const generated = file.relativePath.split(/[\\/]/).includes("generated") || sidecar.generated === true;
+    return {
+      id: sidecar.id || slugify(file.relativePath),
+      filename: file.filename,
+      sourcePath: null,
+      path: file.relativePath,
+      capturedAt: fileStat.mtime.toISOString(),
+      duration: probe.duration,
+      codec: probe.codec,
+      sampleRate: probe.sampleRate ?? null,
+      channels: probe.channels ?? null,
+      bitrate: probe.bitrate ?? null,
+      sizeMB: Math.round((fileStat.size / (1024 * 1024)) * 100) / 100,
+      app: sidecar.app || inferApp(file.filename),
+      generated,
+      provider: sidecar.provider,
+      model: sidecar.model,
+      prompt: sidecar.prompt,
+      lyrics: sidecar.lyrics,
+      instrumental: sidecar.instrumental,
+      songTitle: sidecar.songTitle || sidecar.lyricsGeneration?.song_title,
+      styleTags: sidecar.styleTags || sidecar.lyricsGeneration?.style_tags,
+      lyricsGeneration: sidecar.lyricsGeneration,
+      compositionId: sidecar.compositionId,
+      parentTrackId: sidecar.parentTrackId,
+      revisionOf: sidecar.revisionOf,
+      feedback: sidecar.feedback,
+      request: sidecar.request,
+      result: sidecar.result,
+      sidecar,
+    };
+  }));
+
+  return assets.sort((a, b) => {
+    const diff = new Date(b.capturedAt).getTime() - new Date(a.capturedAt).getTime();
+    if (diff !== 0) return diff;
+    return a.filename.localeCompare(b.filename);
+  });
+}
+
 interface Storyboard {
   dirName: string;
   dirPath: string;
   edl: any | null;
   edlSource: string | null;
+  visionTags: any[] | null;
+  frameOverlays: Record<string, any[]> | null;
   frameCount: number;
   frames: string[];
 }
@@ -194,6 +331,8 @@ async function scanStoryboards(): Promise<Storyboard[]> {
 
       let edl: any = null;
       let edlSource: string | null = null;
+      let visionTags: any[] | null = null;
+      let frameOverlays: Record<string, any[]> | null = null;
       const edlPath = join(dirPath, "edl.json");
       try {
         const edlFile = Bun.file(edlPath);
@@ -202,13 +341,29 @@ async function scanStoryboards(): Promise<Storyboard[]> {
           edlSource = edl.source || null;
         }
       } catch {}
+      try {
+        const tagsFile = Bun.file(join(dirPath, ".cache-layer3-tags.json"));
+        if (await tagsFile.exists()) {
+          const tags = await tagsFile.json();
+          if (Array.isArray(tags)) visionTags = tags;
+        }
+      } catch {}
+      try {
+        const overlaysFile = Bun.file(join(dirPath, "frame-overlays.json"));
+        if (await overlaysFile.exists()) {
+          const overlays = await overlaysFile.json();
+          if (overlays && typeof overlays === "object" && !Array.isArray(overlays)) {
+            frameOverlays = overlays;
+          }
+        }
+      } catch {}
 
       const files = await readdir(dirPath);
       const frames = files
         .filter((f) => /^frame_\d+\.jpg$/i.test(f))
         .sort();
 
-      storyboards.push({ dirName: entry, dirPath, edl, edlSource, frameCount: frames.length, frames });
+      storyboards.push({ dirName: entry, dirPath, edl, edlSource, visionTags, frameOverlays, frameCount: frames.length, frames });
     }
   }
 
@@ -289,10 +444,11 @@ async function buildCatalog() {
   const startTime = Date.now();
   log("Building catalog...");
 
-  const [videoFiles, storyboards, transcripts] = await Promise.all([
+  const [videoFiles, storyboards, transcripts, audioAssets] = await Promise.all([
     scanAllVideos(),
     scanStoryboards(),
     loadTranscripts(),
+    scanAudioAssets(),
   ]);
 
   const matchedStoryboards = new Set<string>();
@@ -362,6 +518,8 @@ async function buildCatalog() {
           video.frameCount = sb.frameCount;
           video.frames = sb.frames;
           video.edl = sb.edl;
+          if (sb.visionTags?.length) video.visionTags = sb.visionTags;
+          if (sb.frameOverlays) video.frameOverlays = sb.frameOverlays;
         }
         if (transcript?.json) video.transcript = transcript.json;
         if (transcript?.srt) video.srt = transcript.srt;
@@ -399,8 +557,10 @@ async function buildCatalog() {
     meta: {
       generatedAt: new Date().toISOString(),
       videoCount: videos.length,
+      audioCount: audioAssets.length,
     },
     videos,
+    audioAssets,
     orphanStoryboards,
   };
 
@@ -409,6 +569,7 @@ async function buildCatalog() {
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   log(`\nDone in ${elapsed}s`);
   log(`  Videos: ${videos.length} (source: ${stageCounts.source}, wip: ${stageCounts.wip}, final: ${stageCounts.final})`);
+  log(`  Audio: ${audioAssets.length}`);
   log(`  With storyboards: ${matchedStoryboards.size}`);
   log(`  Orphan storyboards: ${orphanStoryboards.length}`);
   log(`  Output: ${OUTPUT}`);

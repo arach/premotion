@@ -82,6 +82,7 @@ export interface CatalogContextValue {
   snippetCategoryCounts: Record<string, number>;
 
   // Actions
+  refreshCatalog: () => Promise<void>;
   deleteVideo: (id: string) => Promise<void>;
 
   // View state
@@ -242,27 +243,29 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   );
   const [loading, setLoading] = useState(true);
 
+  const refreshCatalog = useCallback(async () => {
+    const cacheBust = Date.now();
+    const [c, s] = await Promise.all([
+      fetch(`/catalog-data.json?t=${cacheBust}`, { cache: 'no-store' }).then(r => r.json()),
+      fetch(`/curated-snippets.json?t=${cacheBust}`, { cache: 'no-store' }).then(r => r.json()),
+    ]);
+    setData(c);
+    setSnippetsData(s);
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      fetch('/catalog-data.json').then(r => r.json()),
-      fetch('/curated-snippets.json').then(r => r.json()),
-    ])
-      .then(([c, s]) => {
-        if (cancelled) return;
-        setData(c);
-        setSnippetsData(s);
-        setLoading(false);
-      })
-      .catch(err => {
-        if (cancelled) return;
-        console.error('Failed to load catalog', err);
-        setLoading(false);
-      });
+    setLoading(true);
+    refreshCatalog().catch(err => {
+      if (cancelled) return;
+      console.error('Failed to load catalog', err);
+      setLoading(false);
+    });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshCatalog]);
 
   // --- Derived ---
   const snippets = snippetsData?.snippets ?? [];
@@ -469,6 +472,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       appBreakdown,
       counts,
       snippetCategoryCounts,
+      refreshCatalog,
       deleteVideo,
       view,
       setView,
@@ -512,6 +516,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       appBreakdown,
       counts,
       snippetCategoryCounts,
+      refreshCatalog,
       deleteVideo,
       view,
       setView,

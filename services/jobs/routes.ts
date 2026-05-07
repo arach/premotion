@@ -18,6 +18,10 @@ function generateJobId(): string {
   return `job_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function isValidCompositionId(compositionId: string): boolean {
+  return /^[A-Za-z0-9\-\u4E00-\u9FFF]+$/u.test(compositionId);
+}
+
 function jobToResponse(job: JobRecord) {
   return {
     compositionId: job.compositionId,
@@ -105,11 +109,15 @@ export async function handleRequest(req: Request): Promise<Response> {
 async function createJob(compositionId: string, body: CreateJobRequest): Promise<Response> {
   const { kind = 'generate', prompt, inputs, params, idempotencyKey } = body;
 
+  if (!isValidCompositionId(compositionId)) {
+    return json({ error: 'compositionId can only contain letters, numbers, CJK characters, and hyphens' }, 400);
+  }
+
   if (!prompt) {
     return json({ error: 'prompt is required' }, 400);
   }
 
-  const validKinds = ['generate', 'prepare', 'render'];
+  const validKinds = ['generate', 'revise', 'revise-brief', 'revise-render', 'prepare', 'render'];
   if (!validKinds.includes(kind)) {
     return json({ error: `kind must be one of: ${validKinds.join(', ')}` }, 400);
   }

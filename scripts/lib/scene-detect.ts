@@ -6,24 +6,24 @@ export function detectSceneBreaks(meta: VideoMeta, outDir: string): SceneBreak[]
 	log("\nLayer 1: Scene detection...");
 
 	const thresholds = [0.08, 0.04, 0.02];
-	let breaks: { time: number; score: number }[] = [];
+	let breaks: { time: number; score: number; kind: "scene-break" }[] = [];
 
 	for (const threshold of thresholds) {
 		const raw = run(
 			`ffmpeg -i "${meta.path}" -vf "select='gt(scene,${threshold})',showinfo" -f null - 2>&1`
 		);
 
-		const parsed: { time: number; score: number }[] = [];
+		const parsed: { time: number; score: number; kind: "scene-break" }[] = [];
 		for (const match of raw.matchAll(/pts_time:([\d.]+)/g)) {
 			const time = parseFloat(match[1]);
 			const idx = raw.indexOf(match[0]);
 			const nearby = raw.substring(Math.max(0, idx - 200), idx + 200);
 			const scoreMatch = nearby.match(/scene_score=([\d.]+)/);
 			const score = scoreMatch ? parseFloat(scoreMatch[1]) : threshold;
-			parsed.push({ time, score });
+			parsed.push({ time, score, kind: "scene-break" });
 		}
 
-		const deduped: { time: number; score: number }[] = [];
+		const deduped: { time: number; score: number; kind: "scene-break" }[] = [];
 		for (const b of parsed) {
 			if (deduped.length === 0 || b.time - deduped[deduped.length - 1].time >= 1.0) {
 				deduped.push(b);
@@ -41,12 +41,14 @@ export function detectSceneBreaks(meta: VideoMeta, outDir: string): SceneBreak[]
 		log(`  → threshold ${threshold}: found ${breaks.length} (${breaks.length < 5 ? "too few" : "too many"}, trying next)`);
 	}
 
-	const anchors: { time: number; score: number }[] = [{ time: 0, score: 1.0 }];
+	const anchors: { time: number; score: number; kind: "start" | "coverage-anchor" }[] = [
+		{ time: 0, score: 1.0, kind: "start" },
+	];
 
 	for (let t = 15; t < meta.duration - 5; t += 15) {
 		const nearbyBreak = breaks.find(b => Math.abs(b.time - t) < 5);
 		if (!nearbyBreak) {
-			anchors.push({ time: t, score: 0.01 });
+			anchors.push({ time: t, score: 0.01, kind: "coverage-anchor" });
 		}
 	}
 
@@ -73,6 +75,7 @@ export function detectSceneBreaks(meta: VideoMeta, outDir: string): SceneBreak[]
 		result.push({
 			time: b.time,
 			score: b.score,
+			kind: b.kind,
 			frameFile,
 			frameIndex: i + 1,
 		});

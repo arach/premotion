@@ -6,6 +6,10 @@ export type {
 	SceneBreak,
 	DiffSegment,
 	FrameTag,
+	MoondreamMouseObservation,
+	MoondreamVideoFrameObservation,
+	AskMoondreamOnVideoFramesOptions,
+	MoondreamVideoFrameObservations,
 	EditDecisionList,
 	EditorialResult,
 	VisionProvider,
@@ -14,7 +18,7 @@ export type {
 export { getVideoMeta } from "./video-meta.ts";
 export { detectSceneBreaks } from "./scene-detect.ts";
 export { computeDiffSegments } from "./pixel-diff.ts";
-export { tagFrames, createAnthropicVision } from "./vision.ts";
+export { tagFrames, createAnthropicVision, createMiniMaxMcpVision, askMoondreamOnVideoFrames } from "./vision.ts";
 export { editorialPass } from "./editorial.ts";
 export { cacheGet, cacheSet } from "./cache.ts";
 export { run, log, formatTime } from "./utils.ts";
@@ -32,6 +36,7 @@ export async function analyzeVideo(inputPath: string, options?: {
 	vision?: VisionProvider;
 	outDir?: string;
 	skipVision?: boolean;
+	analyzeAllFrames?: boolean;
 }): Promise<EditDecisionList> {
 	const meta = getVideoMeta(inputPath);
 	const id = basename(inputPath, ".mp4")
@@ -72,7 +77,9 @@ export async function analyzeVideo(inputPath: string, options?: {
 		}));
 	} else {
 		const provider = options?.vision || createAnthropicVision();
-		tags = await tagFrames(breaks, segments, outDir, provider);
+		tags = await tagFrames(breaks, segments, outDir, provider, {
+			analyzeAllFrames: options?.analyzeAllFrames,
+		});
 		cacheSet(outDir, "layer3-tags", tags);
 	}
 
@@ -87,6 +94,10 @@ export async function analyzeVideo(inputPath: string, options?: {
 	const scenes = tags.map((t, i) => {
 		const nextTime = i < tags!.length - 1 ? tags![i + 1].time : meta.duration;
 		const seg = segments!.find(s => t.time >= s.start && t.time < s.end);
+		const frameBreak = breaks!.find(b => b.frameFile === t.frameFile || Math.abs(b.time - t.time) < 0.01);
+		const frameKind =
+			frameBreak?.kind ||
+			(i === 0 ? "start" : frameBreak?.score === 0.01 ? "coverage-anchor" : "scene-break");
 		return {
 			index: i + 1,
 			start: t.time,
@@ -95,6 +106,11 @@ export async function analyzeVideo(inputPath: string, options?: {
 			tags: t.tags,
 			contentType: t.contentType,
 			activity: seg?.classification || "unknown",
+			frameFile: t.frameFile,
+			frameKind,
+			score: frameBreak?.score,
+			motionArea: seg?.motionArea,
+			quadrants: seg?.quadrants,
 		};
 	});
 

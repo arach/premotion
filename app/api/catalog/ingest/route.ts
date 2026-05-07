@@ -1,11 +1,25 @@
 import { NextResponse } from 'next/server';
 import { join, basename } from 'node:path';
 import { copyFile, writeFile, stat, mkdir } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 
-const INBOX = join(process.cwd(), 'public', 'inbox');
+const execFileAsync = promisify(execFile);
+const DEMOS = join(process.cwd(), 'public', 'demos');
+
+async function rebuildCatalog() {
+  try {
+    await execFileAsync('bun', ['run', 'scripts/build-catalog.ts'], {
+      cwd: process.cwd(),
+      timeout: 60_000,
+    });
+  } catch (err) {
+    console.warn('[catalog] Rebuild after ingest failed:', err);
+  }
+}
 
 export async function POST(req: Request) {
-  await mkdir(INBOX, { recursive: true });
+  await mkdir(DEMOS, { recursive: true });
 
   const contentType = req.headers.get('content-type') ?? '';
 
@@ -29,11 +43,18 @@ export async function POST(req: Request) {
     getBytes = async () => new Uint8Array(await file.arrayBuffer());
   }
 
-  const dest = join(INBOX, filename);
+  const dest = join(DEMOS, filename);
   try {
     await stat(dest);
-    return NextResponse.json({ error: `${filename} already in inbox` }, { status: 409 });
-  } catch {}
+    return NextResponse.json({
+      ok: true,
+      filename,
+      path: `demos/${filename}`,
+      existing: true,
+    });
+  } catch {
+    // File does not exist yet.
+  }
 
   if (sourcePath) {
     await copyFile(sourcePath, dest);
@@ -42,9 +63,12 @@ export async function POST(req: Request) {
   }
 
   const info = await stat(dest);
+  await rebuildCatalog();
+
   return NextResponse.json({
     ok: true,
     filename,
+    path: `demos/${filename}`,
     sizeMB: Math.round((info.size / (1024 * 1024)) * 100) / 100,
   });
 }

@@ -1,9 +1,11 @@
 import { execSync } from "child_process";
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, rmSync } from "fs";
 import { basename, join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import {
 	analyzeVideo,
+	createAnthropicVision,
+	createMiniMaxMcpVision,
 	log,
 	formatTime,
 } from "./lib/index.ts";
@@ -22,7 +24,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const PUBLIC_DIR = join(__dirname, "..", "public/demos");
 
-const inputPath = process.argv[2];
+const args = process.argv.slice(2);
+const force = args.includes("--force");
+const analyzeAllFrames = args.includes("--all-frames");
+const inputPath = args.find(arg => !arg.startsWith("--"));
 
 if (!inputPath) {
 	log("Usage: bun run analyze <video-file>");
@@ -51,11 +56,58 @@ const id = basename(resolved, ".mp4")
 	.substring(0, 40);
 const outDir = join(PUBLIC_DIR, `storyboard-${id}`);
 
+function loadProviderConfig() {
+	const configPath = resolve(import.meta.dirname || ".", "../.data/provider.json");
+	if (!existsSync(configPath)) return null;
+	try {
+		const config = JSON.parse(readFileSync(configPath, "utf-8"));
+		if (!config.apiKey || !config.model || config.format !== "anthropic") return null;
+		return config as { apiKey: string; baseUrl?: string; model: string; name?: string };
+	} catch {
+		return null;
+	}
+}
+
 log(`\n╔══════════════════════════════════════════╗`);
 log(`║  PREMOTION — Video Analyzer              ║`);
 log(`╚══════════════════════════════════════════╝`);
 
-const edl = await analyzeVideo(resolved, { outDir });
+if (force && existsSync(outDir)) {
+	log(`\nRemoving existing storyboard: ${outDir}`);
+	rmSync(outDir, { recursive: true, force: true });
+}
+
+const providerConfig = loadProviderConfig();
+const isMiniMax = providerConfig
+	? (providerConfig.name || "").toLowerCase().includes("minimax") ||
+		(providerConfig.baseUrl || "").toLowerCase().includes("minimax") ||
+		providerConfig.model.toLowerCase().includes("minimax")
+	: false;
+const vision = providerConfig
+	? isMiniMax
+		? createMiniMaxMcpVision({ apiKey: providerConfig.apiKey })
+		: createAnthropicVision({
+			apiKey: providerConfig.apiKey,
+			baseURL: providerConfig.baseUrl,
+			model: providerConfig.model,
+			provider: providerConfig.name || "Custom",
+		})
+	: undefined;
+
+if (providerConfig) {
+	log(`\nUsing vision provider: ${isMiniMax ? "MiniMax MCP understand_image" : providerConfig.name || "Custom"} (${providerConfig.model})`);
+}
+
+let edl;
+try {
+	edl = await analyzeVideo(resolved, {
+		outDir,
+		vision,
+		analyzeAllFrames: analyzeAllFrames || !!providerConfig,
+	});
+} finally {
+	await (vision as any)?.close?.();
+}
 
 log(`\n── Results ──────────────────────────────`);
 log(`  Scenes:      ${edl.scenes.length}`);

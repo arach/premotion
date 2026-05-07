@@ -3,9 +3,9 @@ import { unlink } from 'node:fs/promises';
 import { join, resolve, relative } from 'node:path';
 
 const PUBLIC = join(process.cwd(), 'public');
-const OUT = join(process.cwd(), 'out');
+const LEGACY_OUT = join(process.cwd(), 'out');
 
-const ALLOWED_ROOTS = [PUBLIC, OUT];
+const ALLOWED_ROOTS = [PUBLIC, LEGACY_OUT];
 
 export async function POST(req: Request) {
   const { videoUrl } = await req.json();
@@ -13,10 +13,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing videoUrl' }, { status: 400 });
   }
 
-  // videoUrl is relative — could be "demos/foo.mp4" (under public) or "../out/foo.mp4"
+  // videoUrl is relative to public; "../out" is kept for older root-level renders.
   let absPath: string;
-  if (videoUrl.startsWith('../out/') || videoUrl.startsWith('out/')) {
-    absPath = resolve(OUT, videoUrl.replace(/^(\.\.\/)?out\//, ''));
+  if (videoUrl.startsWith('../out/')) {
+    absPath = resolve(LEGACY_OUT, videoUrl.replace(/^\.\.\/out\//, ''));
   } else {
     absPath = resolve(PUBLIC, videoUrl);
   }

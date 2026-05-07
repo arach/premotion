@@ -28,6 +28,12 @@ export interface Composing {
   comment: string;
 }
 
+type TimestampedReviewNote = ReviewNote & { time: number };
+
+function hasTime(note: ReviewNote): note is TimestampedReviewNote {
+  return note.time != null;
+}
+
 export function useReview(video: Video | null, active: boolean) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -133,6 +139,7 @@ export function useReview(video: Video | null, active: boolean) {
   }, [composing]);
 
   const editNote = useCallback((n: ReviewNote) => {
+    if (n.time == null) return;
     videoRef.current?.pause();
     seek(n.time);
     setComposing({ editId: n.id, time: n.time, rect: n.rect, kind: n.kind, comment: n.comment });
@@ -174,7 +181,22 @@ export function useReview(video: Video | null, active: boolean) {
     setDrawing(null);
   };
 
-  const sortedNotes = useMemo(() => [...notes].sort((a, b) => a.time - b.time), [notes]);
+  const addGeneralNote = useCallback((comment: string) => {
+    const trimmed = comment.trim();
+    if (!trimmed) return;
+    setNotes(prev => [...prev, {
+      id: createNoteId(),
+      time: null,
+      kind: 'feedback',
+      comment: trimmed,
+      createdAt: new Date().toISOString(),
+    }]);
+  }, []);
+
+  const sortedNotes = useMemo(
+    () => notes.filter(hasTime).sort((a, b) => a.time - b.time),
+    [notes],
+  );
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   const visibleNoteRects = useMemo(
@@ -214,5 +236,6 @@ export function useReview(video: Video | null, active: boolean) {
     setComposing, editNote, deleteNote,
     onCanvasPointerDown, onCanvasPointerMove, onCanvasPointerUp,
     handleCopy, handleDownload,
+    addGeneralNote,
   };
 }

@@ -1,4 +1,5 @@
 import { Composition, Still, Folder, Img, staticFile } from "remotion";
+import { GENERATED_COMPOSITIONS } from "./_generated-compositions";
 import { VideoMontage } from "./VideoMontage";
 import { FullVideo } from "./FullVideo";
 import { TerminalIntro } from "./intros/TerminalIntro";
@@ -31,6 +32,7 @@ import { LatticesVoiceDemo, calculateVoiceDemoFrames } from "./projects/lattices
 import { LatticesMenuBarDemo, calculateMenuBarDemoFrames } from "./projects/lattices-highlight/LatticesMenuBarDemo";
 import { LatticesVoiceCommandsDemo, calculateVoiceCommandsDemoFrames } from "./projects/lattices-highlight/LatticesVoiceCommandsDemo";
 import { LatticesVoiceSessionB, calculateVoiceSessionBFrames } from "./projects/lattices-highlight/LatticesVoiceSessionB";
+import { LatticesDictationGestureDemo, calculateDictationGestureFrames } from "./projects/lattices-highlight/LatticesDictationGestureDemo";
 
 // Video settings
 const FPS = 30;
@@ -709,6 +711,15 @@ export const RemotionRoot: React.FC = () => {
             iconSrc: "lattices-icon.png",
           }}
         />
+        {/* Lattices Dictation Gesture Demo v9 — premium 20s, nicer voice */}
+        <Composition
+          id="LatticesDictationGestureDemo"
+          component={LatticesDictationGestureDemo}
+          durationInFrames={calculateDictationGestureFrames()}
+          fps={FPS}
+          width={1280}
+          height={720}
+        />
         {/* Lattices Voice Session B — agent coordination update */}
         <Composition
           id="LatticesVoiceSessionB"
@@ -955,6 +966,20 @@ export const RemotionRoot: React.FC = () => {
             style: "cyberpunk" as const,
           }}
         />
+      </Folder>
+
+      <Folder name="Generated">
+        {GENERATED_COMPOSITIONS.map(({ meta }) => (
+          <Composition
+            key={meta.id}
+            id={meta.id}
+            component={meta.component}
+            width={meta.width}
+            height={meta.height}
+            fps={meta.fps}
+            durationInFrames={meta.durationInFrames}
+          />
+        ))}
       </Folder>
     </>
   );

@@ -29,6 +29,13 @@ public/*.wav
 public/*.mp4
 public/demos/
 public/out
+public/catalog-data.json
+public/inbox/
+public/tracks/generated/
+public/*.gif
+public/*.webm
+public/*.mov
+public/*.mkv
 
 # Transcripts
 public/transcripts/
@@ -49,3 +56,7 @@ public/hostai-*
 .queue/
 .openscout/
 static/
+.compositions/
+src/_generated-compositions.ts
+# OpenScout local state
+.openscout/project.json

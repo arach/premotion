@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Clock, CheckCircle2, Loader2, FileVideo, MessageSquare, Zap, XCircle, RefreshCw, FolderOpen, ChevronRight, Play, FileCode } from 'lucide-react';
+import { ArrowLeft, Clock, CheckCircle2, Loader2, FileVideo, MessageSquare, Zap, XCircle, RefreshCw, FolderOpen, ChevronRight, Play, FileCode, Braces, Database, Images, ExternalLink, RotateCcw, X } from 'lucide-react';
 import { useCatalog } from '../Provider';
+import type { Video } from '@/lib/types';
 
 interface ActivityEntry {
   stage: string;
@@ -30,6 +31,23 @@ interface CompositionJob {
   updatedAt: string;
 }
 
+interface JsonModalState {
+  title: string;
+  data: unknown;
+}
+
+interface SourceAssetMatch {
+  src: string;
+  video: Video | null;
+}
+
+interface RevisionBriefView {
+  intent: string;
+  plannedChanges: string[];
+  questions: string[];
+  sourceCompositionId?: string;
+}
+
 // ── Helpers ────────────────────────────────────────────────────
 
 function relativeTime(dateStr: string): string {
@@ -49,26 +67,108 @@ function formatDuration(sec: number): string {
   return s > 0 ? `${m}m ${s}s` : `${m}m`;
 }
 
+function metaNumber(meta: Record<string, unknown> | undefined, key: string): number | null {
+  const value = meta?.[key];
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function metaString(meta: Record<string, unknown> | undefined, key: string): string | null {
+  const value = meta?.[key];
+  return typeof value === 'string' && value.length > 0 ? value : null;
+}
+
+function sourcePath(source: string | { src: string; [key: string]: unknown }): string {
+  return typeof source === 'string' ? source : source.src;
+}
+
+function basename(path: string): string {
+  return path.split('/').pop() || path;
+}
+
+function slugifyPath(path: string): string {
+  return basename(path)
+    .replace(/\.[^.]+$/, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function matchSourceAssets(
+  clips: (string | { src: string; [key: string]: unknown })[] | undefined,
+  videos: Video[],
+): SourceAssetMatch[] {
+  return (clips ?? []).map((clip) => {
+    const src = sourcePath(clip).replace(/^\/+/, '');
+    const file = basename(src);
+    const sourceSlug = slugifyPath(src);
+    const video = videos.find((v) => (
+      v.demosPath === src ||
+      v.videoUrl === src ||
+      v.filename === file ||
+      slugifyPath(v.filename) === sourceSlug ||
+      slugifyPath(v.demosPath ?? '') === sourceSlug ||
+      slugifyPath(v.videoUrl ?? '') === sourceSlug
+    )) ?? null;
+
+    return { src, video };
+  });
+}
+
+function compactJson(data: unknown): string {
+  try {
+    return JSON.stringify(data, null, 2);
+  } catch {
+    return String(data);
+  }
+}
+
+async function retryJobRequest(jobId: string): Promise<void> {
+  const res = await fetch(`/api/jobs/${jobId}/retry`, { method: 'POST' });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Retry failed (${res.status})`);
+  }
+}
+
 // ── Queue list ─────────────────────────────────────────────────
 
 export function QueueView() {
-  const { setView } = useCatalog();
+  const { setView, refreshCatalog } = useCatalog();
   const [jobs, setJobs] = useState<CompositionJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<CompositionJob | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const completedSeenRef = useRef<Set<string>>(new Set());
+  const seededRef = useRef(false);
 
   const refresh = useCallback(async () => {
     try {
       const res = await fetch(`/api/jobs`);
       if (!res.ok) { setLoading(false); return; }
-      const data = await res.json();
-      setJobs(Array.isArray(data) ? data : []);
+      const data = (await res.json()) as CompositionJob[];
+      const list = Array.isArray(data) ? data : [];
+      setJobs(list);
+
+      const seen = completedSeenRef.current;
+      let sawNewCompletion = false;
+      for (const job of list) {
+        if (job.status === 'completed' && !seen.has(job.jobId)) {
+          seen.add(job.jobId);
+          if (seededRef.current) sawNewCompletion = true;
+        }
+      }
+      seededRef.current = true;
+      if (sawNewCompletion) refreshCatalog();
     } catch {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [refreshCatalog]);
+
+  const handleRetry = useCallback(async (jobId: string) => {
+    await retryJobRequest(jobId);
+    await refresh();
+  }, [refresh]);
 
   useEffect(() => {
     refresh();
@@ -84,7 +184,7 @@ export function QueueView() {
   }, [jobs, selected?.jobId]);
 
   if (selected) {
-    return <JobDetail job={selected} onBack={() => setSelected(null)} />;
+    return <JobDetail job={selected} onBack={() => setSelected(null)} onRetry={handleRetry} />;
   }
 
   const running = jobs.filter(j => j.status === 'running').length;
@@ -148,7 +248,11 @@ export function QueueView() {
           <div className="flex flex-col gap-1.5 p-4">
             {jobs.map(job => {
               const jobMeta = job.result?.metadata as Record<string, unknown> | undefined;
-              const title = (jobMeta?.title as string) || job.params?.name || job.compositionId;
+              const title = metaString(jobMeta, 'title') || job.params?.name || job.compositionId;
+              const durationSec = metaNumber(jobMeta, 'durationSec');
+              const clipCount = metaNumber(jobMeta, 'clipCount');
+              const width = metaNumber(jobMeta, 'width');
+              const height = metaNumber(jobMeta, 'height');
               const isRunning = job.status === 'running';
               const isFailed = job.status === 'failed';
               const isCompleted = job.status === 'completed';
@@ -194,19 +298,19 @@ export function QueueView() {
 
                     {isCompleted && jobMeta && (
                       <div className="flex items-center gap-1.5 mt-2">
-                        {jobMeta.durationSec && (
+                        {durationSec != null && (
                           <span className="px-1.5 py-0.5 rounded bg-emerald-400/[0.08] text-[9px] font-mono text-emerald-400/80 font-medium">
-                            {formatDuration(jobMeta.durationSec as number)}
+                            {formatDuration(durationSec)}
                           </span>
                         )}
-                        {jobMeta.clipCount != null && (
+                        {clipCount != null && (
                           <span className="px-1.5 py-0.5 rounded bg-white/[0.06] text-[9px] font-mono text-white/50">
-                            {jobMeta.clipCount as number} clips
+                            {clipCount} clips
                           </span>
                         )}
-                        {jobMeta.width && (
+                        {width != null && height != null && (
                           <span className="px-1.5 py-0.5 rounded bg-white/[0.06] text-[9px] font-mono text-white/50">
-                            {jobMeta.width as number}×{jobMeta.height as number}
+                            {width}×{height}
                           </span>
                         )}
                       </div>
@@ -245,21 +349,149 @@ export function QueueView() {
 
 // ── Job detail ─────────────────────────────────────────────────
 
-function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void }) {
+function JobDetail({
+  job,
+  onBack,
+  onRetry,
+}: {
+  job: CompositionJob;
+  onBack: () => void;
+  onRetry: (jobId: string) => Promise<void> | void;
+}) {
   const { openFile, openVideo, setView, data } = useCatalog();
+  const [jsonModal, setJsonModal] = useState<JsonModalState | null>(null);
+  const [retrying, setRetrying] = useState(false);
+  const [retryError, setRetryError] = useState<string | null>(null);
+  const [brief, setBrief] = useState<RevisionBriefView | null>(null);
+  const [briefLoading, setBriefLoading] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
+  const [regenError, setRegenError] = useState<string | null>(null);
   const meta = job.result?.metadata as Record<string, unknown> | undefined;
-  const title = (meta?.title as string) || job.params?.name || job.compositionId;
+  const title = metaString(meta, 'title') || job.params?.name || job.compositionId;
+  const description = metaString(meta, 'description');
+  const durationSec = metaNumber(meta, 'durationSec');
+  const width = metaNumber(meta, 'width');
+  const height = metaNumber(meta, 'height');
+  const fps = metaNumber(meta, 'fps');
+  const clipCount = metaNumber(meta, 'clipCount');
+  const audioTrackCount = metaNumber(meta, 'audioTrackCount') ?? 0;
+  const introStyle = metaString(meta, 'introStyle');
+  const compositionDirMeta = metaString(meta, 'compositionDir');
 
   const totalElapsed = job.activity && job.activity.length >= 2
     ? ((new Date(job.activity[job.activity.length - 1].timestamp).getTime() - new Date(job.activity[0].timestamp).getTime()) / 1000)
     : null;
 
-  const compositionDir = (meta?.compositionDir as string) || `.compositions/${job.compositionId}`;
+  const compositionDir = compositionDirMeta || `.compositions/${job.compositionId}`;
   const tsxPath = `${compositionDir}/Composition.tsx`;
-  const videoPath = meta?.videoPath as string | undefined;
+  const planPath = `${compositionDir}/composition.json`;
+  const videoPath = metaString(meta, 'videoPath');
   const catalogVideo = videoPath && data?.videos
     ? data.videos.find(v => v.demosPath === videoPath || v.filename === `${job.compositionId}.mp4`)
     : null;
+  const sourceAssets = matchSourceAssets(job.inputs?.clips, data?.videos ?? []);
+  const isBriefJob = job.kind === 'revise-brief';
+  const briefPath = metaString(meta, 'briefPath') || `${compositionDir}/revision-brief.json`;
+  const sourceCompositionId = metaString(meta, 'sourceCompositionId') || brief?.sourceCompositionId;
+
+  const openJson = (title: string, data: unknown) => setJsonModal({ title, data });
+  const openJsonFile = async (path: string, title: string) => {
+    try {
+      const res = await fetch(`/api/source?path=${encodeURIComponent(path)}`);
+      if (!res.ok) throw new Error(`Could not read ${path}`);
+      const body = await res.json();
+      const content = body.content ?? '';
+      try {
+        setJsonModal({ title, data: JSON.parse(content) });
+      } catch {
+        setJsonModal({ title, data: { path, content } });
+      }
+    } catch (err) {
+      setJsonModal({ title: 'Read failed', data: { path, error: err instanceof Error ? err.message : String(err) } });
+    }
+  };
+
+  useEffect(() => {
+    if (!isBriefJob || job.status !== 'completed') return;
+    let cancelled = false;
+    setBriefLoading(true);
+    fetch(`/api/source?path=${encodeURIComponent(briefPath)}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(body => {
+        if (cancelled || !body?.content) return;
+        try {
+          const parsed = JSON.parse(body.content);
+          setBrief({
+            intent: typeof parsed.intent === 'string' ? parsed.intent : '',
+            plannedChanges: Array.isArray(parsed.plannedChanges) ? parsed.plannedChanges : [],
+            questions: Array.isArray(parsed.questions) ? parsed.questions : [],
+            sourceCompositionId: typeof parsed.sourceCompositionId === 'string' ? parsed.sourceCompositionId : undefined,
+          });
+        } catch (err) {
+          console.error('Failed to parse revision brief:', err);
+        }
+      })
+      .catch(err => console.error('Failed to load revision brief:', err))
+      .finally(() => { if (!cancelled) setBriefLoading(false); });
+    return () => { cancelled = true; };
+  }, [isBriefJob, job.status, briefPath]);
+
+  const submitRegenerate = useCallback(async () => {
+    if (!brief || !sourceCompositionId) return;
+    setRegenerating(true);
+    setRegenError(null);
+    try {
+      const sourcePath = `.compositions/${sourceCompositionId}/Composition.tsx`;
+      const sourceRes = await fetch(`/api/source?path=${encodeURIComponent(sourcePath)}`);
+      if (!sourceRes.ok) throw new Error(`Could not read original TSX (${sourceRes.status})`);
+      const { content: originalSource } = await sourceRes.json();
+
+      let clips: string[] = [];
+      let audio: string[] = [];
+      let aspectRatio: string | undefined;
+      try {
+        const planRes = await fetch(`/api/source?path=${encodeURIComponent(`.compositions/${sourceCompositionId}/composition.json`)}`);
+        if (planRes.ok) {
+          const { content: planJson } = await planRes.json();
+          const plan = JSON.parse(planJson);
+          if (Array.isArray(plan.clips)) clips = plan.clips.map((c: { src?: string }) => c.src).filter(Boolean);
+          if (Array.isArray(plan.audioTracks)) audio = plan.audioTracks.map((a: { src?: string }) => a.src).filter(Boolean);
+          if (typeof plan.width === 'number' && typeof plan.height === 'number') {
+            if (plan.width === plan.height) aspectRatio = '1:1';
+            else if (plan.height > plan.width) aspectRatio = '9:16';
+            else aspectRatio = '16:9';
+          }
+        }
+      } catch (err) {
+        console.warn('Could not preload original plan; LLM will derive clips from TSX', err);
+      }
+
+      const renderId = `${sourceCompositionId}-rev-${Date.now().toString(36)}`;
+      const res = await fetch(`/api/compositions/${encodeURIComponent(renderId)}/jobs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: 'revise-render',
+          prompt: `Apply the confirmed revision brief to "${sourceCompositionId}".`,
+          inputs: {
+            sourceCompositionId,
+            originalSource,
+            brief,
+            clips,
+            audio,
+          },
+          params: aspectRatio ? { aspectRatio } : undefined,
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `Regenerate failed (${res.status})`);
+      onBack();
+    } catch (err) {
+      setRegenError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRegenerating(false);
+    }
+  }, [brief, sourceCompositionId, onBack]);
 
   return (
     <div className="flex flex-col h-full">
@@ -311,32 +543,114 @@ function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void })
             </div>
           )}
 
+          {isBriefJob && job.status === 'completed' && (
+            <div className="px-4 py-4 bg-cyan-400/[0.04] border border-cyan-400/[0.18] rounded">
+              <div className="flex items-baseline justify-between mb-3">
+                <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-cyan-300/80">
+                  Revision Brief
+                </span>
+                {sourceCompositionId && (
+                  <span className="text-[10px] font-mono text-white/35 truncate max-w-[60%]" title={sourceCompositionId}>
+                    of {sourceCompositionId}
+                  </span>
+                )}
+              </div>
+
+              {briefLoading && (
+                <div className="text-[11px] font-mono text-white/40 flex items-center gap-2">
+                  <Loader2 size={11} className="animate-spin" />
+                  Loading brief…
+                </div>
+              )}
+
+              {!briefLoading && !brief && (
+                <div className="text-[11px] font-mono text-red-400/70">
+                  Brief artifact missing at {briefPath}
+                </div>
+              )}
+
+              {brief && (
+                <>
+                  {brief.intent && (
+                    <div className="text-[12.5px] text-white/75 leading-relaxed mb-4 select-text border-l-2 border-cyan-400/30 pl-3">
+                      {brief.intent}
+                    </div>
+                  )}
+
+                  {brief.plannedChanges.length > 0 && (
+                    <div className="mb-4">
+                      <div className="text-[10px] font-mono uppercase tracking-[0.15em] text-white/35 mb-2">
+                        Planned changes
+                      </div>
+                      <ul className="flex flex-col gap-1.5">
+                        {brief.plannedChanges.map((change, i) => (
+                          <li key={i} className="text-[12px] text-white/65 leading-snug pl-3 relative select-text before:content-['-'] before:absolute before:left-0 before:text-white/25">
+                            {change}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {brief.questions.length > 0 && (
+                    <div className="mb-4 px-3 py-2.5 bg-amber-400/[0.06] border border-amber-400/25 rounded">
+                      <div className="text-[10px] font-mono uppercase tracking-[0.15em] text-amber-300/80 mb-1.5">
+                        Needs clarification ({brief.questions.length})
+                      </div>
+                      <ul className="flex flex-col gap-1">
+                        {brief.questions.map((question, i) => (
+                          <li key={i} className="text-[11.5px] text-amber-100/85 leading-snug select-text">
+                            {question}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 pt-3 border-t border-cyan-400/[0.12]">
+                    <button
+                      onClick={submitRegenerate}
+                      disabled={regenerating}
+                      className="flex items-center gap-2 px-3 py-2 rounded bg-cyan-400/[0.12] hover:bg-cyan-400/[0.2] border border-cyan-400/30 hover:border-cyan-400/50 transition-all text-[11px] font-mono font-medium text-cyan-300 hover:text-cyan-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {regenerating ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
+                      {regenerating ? 'Queuing render…' : 'Regenerate composition'}
+                    </button>
+                    {regenError && (
+                      <span className="text-[10px] font-mono text-red-400/70">{regenError}</span>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
           {/* ── Completed: summary + video link ──────────── */}
-          {job.status === 'completed' && meta && (
+          {job.status === 'completed' && meta && !isBriefJob && (
             <div className="px-4 py-4 bg-emerald-400/[0.04] border border-emerald-400/[0.15] rounded">
-              {meta.description && (
+              {description && (
                 <div className="text-[12px] text-white/65 leading-relaxed mb-3 select-text">
-                  {meta.description as string}
+                  {description}
                 </div>
               )}
               <div className="flex flex-wrap gap-1.5 mb-4">
-                {meta.durationSec && (
-                  <Tag color="emerald">{formatDuration(meta.durationSec as number)}</Tag>
+                {durationSec != null && (
+                  <Tag color="emerald">{formatDuration(durationSec)}</Tag>
                 )}
-                {meta.width && (
-                  <Tag>{meta.width as number}×{meta.height as number}</Tag>
+                {width != null && height != null && (
+                  <Tag>{width}×{height}</Tag>
                 )}
-                {meta.fps && (
-                  <Tag>{meta.fps as number}fps</Tag>
+                {fps != null && (
+                  <Tag>{fps}fps</Tag>
                 )}
-                {meta.clipCount != null && (
-                  <Tag>{meta.clipCount as number} clip{(meta.clipCount as number) !== 1 ? 's' : ''}</Tag>
+                {clipCount != null && (
+                  <Tag>{clipCount} clip{clipCount !== 1 ? 's' : ''}</Tag>
                 )}
-                {(meta.audioTrackCount as number) > 0 && (
-                  <Tag>{meta.audioTrackCount as number} audio</Tag>
+                {audioTrackCount > 0 && (
+                  <Tag>{audioTrackCount} audio</Tag>
                 )}
-                {meta.introStyle && meta.introStyle !== 'none' && (
-                  <Tag color="cyan">{meta.introStyle as string} intro</Tag>
+                {introStyle && introStyle !== 'none' && (
+                  <Tag color="cyan">{introStyle} intro</Tag>
                 )}
               </div>
               <div className="flex items-center gap-2 pt-3 border-t border-emerald-400/[0.1]">
@@ -387,11 +701,65 @@ function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void })
             </Section>
           )}
 
+          {/* ── One-place source analysis + structured data ── */}
+          <Section icon={<Database size={10} />} label="Job Data">
+            <div className="grid grid-cols-2 gap-2">
+              <JsonChip label="Job JSON" onClick={() => openJson('Job JSON', job)} />
+              <JsonChip label="Inputs" onClick={() => openJson('Inputs JSON', job.inputs ?? {})} />
+              <JsonChip label="Params" onClick={() => openJson('Params JSON', job.params ?? {})} />
+              <JsonChip label="Activity" onClick={() => openJson('Activity JSON', job.activity ?? [])} />
+              {job.result && <JsonChip label="Result" onClick={() => openJson('Result JSON', job.result)} />}
+              {meta && <JsonChip label="Metadata" onClick={() => openJson('Result Metadata JSON', meta)} />}
+              {job.result?.outputUrls?.some(url => url.endsWith('/composition.json') || url.endsWith('composition.json')) && (
+                <JsonChip label="Plan JSON" onClick={() => openJsonFile(planPath, 'Composition Plan JSON')} />
+              )}
+            </div>
+          </Section>
+
+          {sourceAssets.length > 0 && (
+            <Section icon={<Images size={10} />} label={`Processed Source${sourceAssets.length !== 1 ? 's' : ''}`}>
+              <div className="flex flex-col gap-2">
+                {sourceAssets.map((asset, i) => (
+                  <SourceAnalysisCard
+                    key={`${asset.src}-${i}`}
+                    match={asset}
+                    onOpenAsset={(video) => { openVideo(video.id); setView(null); }}
+                    onOpenJson={(label, value) => openJson(label, value)}
+                  />
+                ))}
+              </div>
+            </Section>
+          )}
+
           {/* ── Error ─────────────────────────────────────── */}
           {job.status === 'failed' && job.error && (
             <Section icon={<XCircle size={10} />} label="Error" color="red">
               <div className="px-3 py-2.5 bg-red-400/[0.05] border border-red-400/15 rounded text-[12px] font-mono text-red-300/80 select-text leading-relaxed">
                 {job.error.message}
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  disabled={retrying}
+                  onClick={async () => {
+                    setRetrying(true);
+                    setRetryError(null);
+                    try {
+                      await onRetry(job.jobId);
+                      onBack();
+                    } catch (err) {
+                      setRetryError(err instanceof Error ? err.message : String(err));
+                    } finally {
+                      setRetrying(false);
+                    }
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 rounded bg-red-400/[0.08] hover:bg-red-400/[0.16] border border-red-400/30 hover:border-red-400/50 transition-all text-[11px] font-mono font-medium text-red-300 hover:text-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {retrying ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />}
+                  {retrying ? 'Queuing retry…' : 'Retry'}
+                </button>
+                {retryError && (
+                  <span className="text-[10px] font-mono text-red-400/70">{retryError}</span>
+                )}
               </div>
             </Section>
           )}
@@ -423,7 +791,11 @@ function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void })
                     return (
                       <div key={i} className="relative pl-6 pt-4">
                         <div className="absolute left-0 top-[20px] w-[10px] h-[10px] rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)] ring-2 ring-emerald-400/20" />
-                        <div className="px-4 py-3 bg-emerald-400/[0.08] border border-emerald-400/25 rounded flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={() => openJson(`Activity Event ${i + 1}`, entry)}
+                          className="w-full px-4 py-3 bg-emerald-400/[0.08] border border-emerald-400/25 rounded flex items-center justify-between text-left hover:bg-emerald-400/[0.12] transition-colors"
+                        >
                           <div className="flex items-center gap-2.5">
                             <CheckCircle2 size={14} className="text-emerald-400" />
                             <span className="text-[12px] font-mono text-emerald-300 font-medium">{entry.message}</span>
@@ -431,7 +803,7 @@ function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void })
                           <span className="text-[9px] font-mono text-emerald-400/60 tabular-nums">
                             {new Date(entry.timestamp).toLocaleTimeString()}
                           </span>
-                        </div>
+                        </button>
                       </div>
                     );
                   }
@@ -440,12 +812,16 @@ function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void })
                     return (
                       <div key={i} className="relative pl-6 pt-4">
                         <div className="absolute left-0 top-[20px] w-[10px] h-[10px] rounded-full bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.5)] ring-2 ring-red-400/20" />
-                        <div className="px-4 py-3 bg-red-400/[0.08] border border-red-400/25 rounded">
+                        <button
+                          type="button"
+                          onClick={() => openJson(`Activity Event ${i + 1}`, entry)}
+                          className="w-full px-4 py-3 bg-red-400/[0.08] border border-red-400/25 rounded text-left hover:bg-red-400/[0.12] transition-colors"
+                        >
                           <div className="flex items-center gap-2.5">
                             <XCircle size={14} className="text-red-400 shrink-0" />
                             <span className="text-[12px] font-mono text-red-300 select-text">{entry.message}</span>
                           </div>
-                        </div>
+                        </button>
                       </div>
                     );
                   }
@@ -454,7 +830,11 @@ function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void })
                     return (
                       <div key={i} className="relative pl-6 py-3">
                         <div className="absolute left-[1px] top-[18px] w-[8px] h-[8px] rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.3)] ring-[1.5px] ring-cyan-400/25" />
-                        <div className="px-4 py-3.5 bg-cyan-400/[0.06] border border-cyan-400/20 rounded">
+                        <button
+                          type="button"
+                          onClick={() => openJson(`Activity Event ${i + 1}`, entry)}
+                          className="w-full px-4 py-3.5 bg-cyan-400/[0.06] border border-cyan-400/20 rounded text-left hover:bg-cyan-400/[0.1] transition-colors"
+                        >
                           <div className="flex items-center gap-2.5 mb-2">
                             <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-cyan-400">Plan</span>
                             <span className="text-[9px] font-mono text-white/40 tabular-nums">{new Date(entry.timestamp).toLocaleTimeString()}</span>
@@ -468,7 +848,7 @@ function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void })
                               {entry.detail}
                             </div>
                           )}
-                        </div>
+                        </button>
                       </div>
                     );
                   }
@@ -491,7 +871,11 @@ function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void })
                     <div key={i} className={`flex gap-4 pl-6 relative py-3 ${!isLast ? 'border-b border-white/[0.06]' : ''}`}>
                       <div className={`absolute left-[1px] top-[16px] w-[8px] h-[8px] rounded-full ${dotColor} ring-[1.5px]`} />
 
-                      <div className={`flex-1 min-w-0 ${isLlm ? 'bg-violet-400/[0.04] -mx-2 px-3 py-2 rounded' : ''}`}>
+                      <button
+                        type="button"
+                        onClick={() => openJson(`Activity Event ${i + 1}`, entry)}
+                        className={`flex-1 min-w-0 text-left hover:bg-white/[0.04] transition-colors ${isLlm ? 'bg-violet-400/[0.04] -mx-2 px-3 py-2 rounded' : '-mx-2 px-2 py-1.5 rounded'}`}
+                      >
                         <div className="flex items-center gap-2.5 mb-1">
                           <span className={`text-[10px] font-mono font-bold uppercase tracking-widest ${labelCls}`}>
                             {labelText}
@@ -513,7 +897,7 @@ function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void })
                             {entry.detail}
                           </div>
                         )}
-                      </div>
+                      </button>
                     </div>
                   );
                 })}
@@ -549,16 +933,197 @@ function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void })
               <MetaRow label="Kind" value={job.kind} />
               <MetaRow label="Created" value={new Date(job.createdAt).toLocaleString()} />
               {job.heartbeatAt && <MetaRow label="Heartbeat" value={new Date(job.heartbeatAt).toLocaleString()} />}
-              {meta?.compositionDir && <MetaRow label="Directory" value={meta.compositionDir as string} />}
+              {compositionDirMeta && <MetaRow label="Directory" value={compositionDirMeta} />}
             </div>
           </div>
         </div>
       </div>
+      {jsonModal && (
+        <JsonModal
+          title={jsonModal.title}
+          data={jsonModal.data}
+          onClose={() => setJsonModal(null)}
+        />
+      )}
     </div>
   );
 }
 
 // ── Shared components ──────────────────────────────────────────
+
+function JsonChip({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-2 px-3 py-2 rounded bg-white/[0.025] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.12] transition-colors text-[10px] font-mono text-white/55 hover:text-white/80"
+    >
+      <Braces size={11} className="text-cyan-400/55" />
+      {label}
+    </button>
+  );
+}
+
+function SourceAnalysisCard({
+  match,
+  onOpenAsset,
+  onOpenJson,
+}: {
+  match: SourceAssetMatch;
+  onOpenAsset: (video: Video) => void;
+  onOpenJson: (label: string, value: unknown) => void;
+}) {
+  const { src, video } = match;
+  const frames = video?.frames ?? [];
+  const scenes = video?.scenes ?? [];
+  const hasFrames = !!video?.storyboardDir && frames.length > 0;
+  const analyzed = video?.analysisStatus === 'complete' || video?.analysisStatus === 'analyzed' || video?.analysisStatus === 'frames-only';
+  const status = video ? video.analysisStatus : 'missing';
+  const stats = video?.edl?.stats;
+
+  const statusClass = analyzed
+    ? 'bg-emerald-400/[0.1] text-emerald-300/80 border-emerald-400/25'
+    : video
+      ? 'bg-amber-400/[0.08] text-amber-300/75 border-amber-400/20'
+      : 'bg-red-400/[0.08] text-red-300/75 border-red-400/20';
+
+  return (
+    <div className="rounded border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+      <div className="px-3 py-2.5 flex items-start gap-3 border-b border-white/[0.05]">
+        <FileVideo size={13} className="text-white/35 mt-0.5 shrink-0" />
+        <div className="flex-1 min-w-0">
+          <div className="text-[11px] font-mono text-white/65 truncate select-text">{src}</div>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            <span className={`px-1.5 py-0.5 rounded border text-[9px] font-mono uppercase tracking-wider ${statusClass}`}>
+              {status}
+            </span>
+            {video && <span className="text-[9px] font-mono text-white/35">{formatDuration(Math.round(video.duration))}</span>}
+            {video && <span className="text-[9px] font-mono text-white/35">{video.resolution}</span>}
+            {hasFrames && <span className="text-[9px] font-mono text-white/35">{frames.length} frames</span>}
+            {scenes.length > 0 && <span className="text-[9px] font-mono text-white/35">{scenes.length} scenes</span>}
+          </div>
+        </div>
+      </div>
+
+      {hasFrames ? (
+        <div className="p-3">
+          <div className="grid grid-cols-4 gap-1.5 mb-3">
+            {frames.slice(0, 8).map((frame, i) => (
+              <button
+                key={frame}
+                type="button"
+                onClick={() => video && onOpenAsset(video)}
+                className="relative aspect-video overflow-hidden rounded-sm border border-white/[0.06] bg-black hover:border-cyan-400/35 transition-colors"
+                title={scenes[i]?.description ?? frame}
+              >
+                <img
+                  src={`/demos/${video!.storyboardDir}/${frame}`}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+                <span className="absolute left-1 bottom-1 rounded bg-black/70 px-1 py-px text-[8px] font-mono text-white/60">
+                  {i + 1}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {stats && (
+            <div className="grid grid-cols-3 gap-1.5 mb-3">
+              <MiniStat label="Active" value={formatDuration(stats.activeTime)} />
+              <MiniStat label="Idle" value={formatDuration(stats.idleTime)} />
+              <MiniStat label="Dead" value={String(video?.edl?.deadTime?.length ?? 0)} />
+            </div>
+          )}
+
+          {scenes.length > 0 && (
+            <div className="max-h-36 overflow-y-auto frame-scrollbar rounded bg-black/20 border border-white/[0.04]">
+              {scenes.slice(0, 8).map((scene, i) => (
+                <div key={i} className="px-2.5 py-1.5 border-b border-white/[0.04] last:border-b-0 flex gap-2">
+                  <span className="w-10 shrink-0 text-[9px] font-mono text-white/25 tabular-nums">
+                    {Math.round(scene.start ?? scene.time ?? 0)}s
+                  </span>
+                  <span className="text-[10px] text-white/50 leading-snug">{scene.description}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="px-3 py-3 text-[11px] text-white/42 leading-relaxed">
+          {video
+            ? 'This source is in the catalog, but it does not have extracted storyboard frames yet.'
+            : 'This source path is not currently matched to a catalog asset.'}
+        </div>
+      )}
+
+      <div className="px-3 py-2 border-t border-white/[0.05] flex flex-wrap gap-1.5">
+        {video && (
+          <button
+            type="button"
+            onClick={() => onOpenAsset(video)}
+            className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] text-[10px] font-mono text-white/55 hover:text-white/80 transition-colors"
+          >
+            <ExternalLink size={10} />
+            Open Asset
+          </button>
+        )}
+        {video && (
+          <button
+            type="button"
+            onClick={() => onOpenJson('Source Asset JSON', video)}
+            className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] text-[10px] font-mono text-white/55 hover:text-white/80 transition-colors"
+          >
+            <Braces size={10} />
+            Asset JSON
+          </button>
+        )}
+        {video?.edl && (
+          <button
+            type="button"
+            onClick={() => onOpenJson('Source EDL JSON', video.edl)}
+            className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] text-[10px] font-mono text-white/55 hover:text-white/80 transition-colors"
+          >
+            <Braces size={10} />
+            EDL JSON
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded bg-white/[0.025] border border-white/[0.05] px-2 py-1.5">
+      <div className="text-[8px] font-mono uppercase tracking-wider text-white/25">{label}</div>
+      <div className="text-[11px] font-mono text-white/65">{value}</div>
+    </div>
+  );
+}
+
+function JsonModal({ title, data, onClose }: { title: string; data: unknown; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
+      <div className="w-full max-w-4xl max-h-[82vh] rounded border border-white/[0.12] bg-[#0b0b0b] shadow-2xl overflow-hidden">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.08]">
+          <Braces size={14} className="text-cyan-400/70" />
+          <div className="flex-1 min-w-0 text-[12px] font-mono uppercase tracking-wider text-white/70 truncate">{title}</div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded text-white/35 hover:text-white/70 hover:bg-white/[0.06] transition-colors"
+          >
+            <X size={14} />
+          </button>
+        </div>
+        <pre className="max-h-[72vh] overflow-auto frame-scrollbar p-4 text-[11px] leading-relaxed font-mono text-white/65 whitespace-pre-wrap">
+          {compactJson(data)}
+        </pre>
+      </div>
+    </div>
+  );
+}
 
 function Section({ icon, label, color, children }: {
   icon: React.ReactNode;

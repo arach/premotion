@@ -1,11 +1,13 @@
 import { getDb, updateJobStatus, updateJobAgent, completeJob, failJob, appendActivity } from './db';
 import type { JobKind } from './types';
 import { readProviderConfig, type ProviderConfig } from '@/lib/provider';
+import { analyzeVideo, createAnthropicVision, createMiniMaxMcpVision } from '../../scripts/lib/index';
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join, resolve, sep } from 'node:path';
 import { execSync } from 'node:child_process';
+import { Buffer } from 'node:buffer';
 
 // ── Types for the composition plan produced by the LLM ──────────
 
@@ -54,6 +56,25 @@ interface AudioTrackPlan {
   role: 'music' | 'voiceover' | 'sfx';
 }
 
+interface SoundtrackRequest {
+  enabled?: boolean;
+  prompt?: string;
+  lyrics?: string;
+  lyricsResult?: Record<string, any>;
+  instrumental?: boolean;
+  showLyricCaptions?: boolean;
+  model?: string;
+  volume?: number;
+  startAt?: number;
+  fadeIn?: number;
+  fadeOut?: number;
+}
+
+interface BrandPlan {
+  name?: string;
+  iconSrc?: string;
+}
+
 interface CompositionPlan {
   /** Human-readable title */
   title: string;
@@ -86,6 +107,40 @@ interface CompositionPlan {
   subtitle: string;
   /** Tagline for outro */
   tagline: string;
+  /** Optional brand identity for generated intro/outro cards */
+  brand?: BrandPlan;
+}
+
+interface GeneratedSoundtrack {
+  path: string;
+  prompt: string;
+  lyrics: string;
+  model: string;
+  volume: number;
+}
+
+interface InputAnalysisSummary {
+  src: string;
+  status: 'complete' | 'missing' | 'failed' | 'skipped';
+  storyboardDir?: string;
+  edlPath?: string;
+  frameCount?: number;
+  sceneCount?: number;
+  durationSec?: number;
+  activeTime?: number;
+  idleTime?: number;
+  transitionTime?: number;
+  deadTimeCount?: number;
+  error?: string;
+  scenes?: Array<{
+    start: number;
+    end?: number;
+    activity?: string;
+    description: string;
+    frameFile?: string;
+    motionArea?: string;
+    quadrants?: Record<'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight', number>;
+  }>;
 }
 
 // ── LLM client ──────────────────────────────────────────────────
@@ -155,6 +210,277 @@ async function callOpenAI(
   };
 }
 
+// ── Optional MiniMax Music soundtrack ───────────────────────────
+
+const DEFAULT_SOUNDTRACK_PROMPT =
+  'Japanese hip hop instrumental, modern Tokyo night drive, tight drums, warm bass, shamisen-inspired plucks, subtle cyber UI energy, confident product demo soundtrack';
+
+const DEFAULT_SOUNDTRACK_LYRICS = `[Intro]
+Mouse up, words wake
+
+[Hook]
+Te no naka de flow, click kara go
+Kotoba ga hashiru, screen ni glow
+Review, confirm, then enter the zone
+Mouse dake de send, Lattices control`;
+
+function getMiniMaxApiKey(config: ProviderConfig): string {
+  const looksLikeMiniMax =
+    config.name.toLowerCase().includes('minimax') ||
+    config.baseUrl.toLowerCase().includes('minimax') ||
+    config.model.toLowerCase().includes('minimax');
+
+  if (looksLikeMiniMax && config.apiKey) return config.apiKey;
+  return process.env.MINIMAX_API_KEY ?? '';
+}
+
+function normalizeSoundtrackRequest(params: Record<string, unknown> | null): SoundtrackRequest {
+  const raw = params?.soundtrack;
+  if (!raw || typeof raw !== 'object') return {};
+  return raw as SoundtrackRequest;
+}
+
+function sanitizeMiniMaxResponse(data: any): Record<string, unknown> {
+  const audioHex = data?.data?.audio;
+  const clean = {
+    ...data,
+    data: {
+      ...(data?.data ?? {}),
+      audio: undefined,
+      audioBytes: typeof audioHex === 'string' ? Math.floor(audioHex.length / 2) : undefined,
+    },
+  };
+  return JSON.parse(JSON.stringify(clean));
+}
+
+async function generateMiniMaxSoundtrack(
+  compositionId: string,
+  request: SoundtrackRequest,
+  providerConfig: ProviderConfig,
+): Promise<GeneratedSoundtrack> {
+  const apiKey = getMiniMaxApiKey(providerConfig);
+  if (!apiKey) {
+    throw new Error('MiniMax music requested, but no MiniMax API key is configured');
+  }
+
+  const model = request.model || 'music-2.6';
+  const instrumental = request.instrumental ?? false;
+  const prompt = (request.prompt || DEFAULT_SOUNDTRACK_PROMPT).slice(0, 2000);
+  const lyrics = instrumental ? '' : (request.lyrics || DEFAULT_SOUNDTRACK_LYRICS).slice(0, 3500);
+
+  const body: Record<string, unknown> = {
+    model,
+    prompt,
+    stream: false,
+    output_format: 'hex',
+    is_instrumental: instrumental,
+    audio_setting: {
+      sample_rate: 44100,
+      bitrate: 256000,
+      format: 'mp3',
+    },
+  };
+
+  if (!instrumental) {
+    body.lyrics = lyrics;
+  }
+
+  const res = await fetch('https://api.minimax.io/v1/music_generation', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json() as any;
+  const statusCode = data?.base_resp?.status_code;
+  if (!res.ok || statusCode !== 0) {
+    const statusMsg = data?.base_resp?.status_msg || res.statusText;
+    throw new Error(`MiniMax music generation failed: ${statusMsg}`);
+  }
+
+  const audioHex = data?.data?.audio;
+  if (!audioHex || typeof audioHex !== 'string') {
+    throw new Error(`MiniMax music generation returned no audio`);
+  }
+
+  const outputDir = join(process.cwd(), 'public', 'tracks', 'generated');
+  mkdirSync(outputDir, { recursive: true });
+  const filename = `${compositionId}-${Date.now().toString(36)}.mp3`;
+  const outputPath = join(outputDir, filename);
+  writeFileSync(outputPath, Buffer.from(audioHex, 'hex'));
+  writeFileSync(
+    outputPath.replace(/\.[^.]+$/, '.json'),
+    JSON.stringify({
+      id: filename.replace(/\.[^.]+$/, ''),
+      generated: true,
+      provider: 'MiniMax',
+      model,
+      compositionId,
+      prompt,
+      lyrics,
+      instrumental,
+      songTitle: request.lyricsResult?.song_title,
+      styleTags: request.lyricsResult?.style_tags,
+      lyricsGeneration: request.lyricsResult,
+      createdAt: new Date().toISOString(),
+      request: {
+        ...body,
+        authorization: 'Bearer [redacted]',
+      },
+      result: sanitizeMiniMaxResponse(data),
+    }, null, 2),
+  );
+
+  return {
+    path: `tracks/generated/${filename}`,
+    prompt,
+    lyrics,
+    model,
+    volume: request.volume ?? 0.22,
+  };
+}
+
+function lyricCaptionOverlays(lyrics: string, durationSec: number): TextOverlayPlan[] {
+  const lines = lyrics
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line && !/^\[[^\]]+\]$/i.test(line))
+    .slice(0, 4);
+
+  if (lines.length === 0) return [];
+
+  const start = Math.max(4, Math.min(10, durationSec * 0.25));
+  const spacing = Math.max(3, Math.min(5, (durationSec - start - 5) / Math.max(1, lines.length)));
+
+  return lines.map((line, index) => ({
+    text: line,
+    startAt: start + index * spacing,
+    duration: Math.min(3.2, spacing),
+    position: index % 2 === 0 ? 'top-center' : 'bottom-center',
+    style: 'caption',
+  }));
+}
+
+// ── Input video analysis ───────────────────────────────────────
+
+function sanitizeAnalysisId(inputPath: string): string {
+  return basename(inputPath)
+    .replace(/\.[^.]+$/, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-zA-Z0-9-_.]/g, '')
+    .toLowerCase()
+    .substring(0, 40);
+}
+
+function resolvePublicClip(src: string): string | null {
+  const publicDir = resolve(process.cwd(), 'public');
+  const normalized = src.replace(/^\/+/, '');
+  const absPath = resolve(publicDir, normalized);
+  if (absPath !== publicDir && !absPath.startsWith(`${publicDir}${sep}`)) return null;
+  return absPath;
+}
+
+async function analyzeInputClip(src: string): Promise<InputAnalysisSummary> {
+  const inputPath = resolvePublicClip(src);
+  if (!inputPath || !existsSync(inputPath)) {
+    return { src, status: 'missing', error: 'Source clip is not present under public/' };
+  }
+
+  const id = sanitizeAnalysisId(inputPath);
+  const outDir = join(process.cwd(), 'public', 'demos', `storyboard-${id}`);
+  const providerConfig = readProviderConfig();
+  const canUseAnthropicVision =
+    providerConfig.format === 'anthropic' &&
+    !!providerConfig.apiKey &&
+    !!providerConfig.model;
+  const looksLikeMiniMax =
+    providerConfig.name.toLowerCase().includes('minimax') ||
+    providerConfig.baseUrl.toLowerCase().includes('minimax') ||
+    providerConfig.model.toLowerCase().includes('minimax');
+  const vision = canUseAnthropicVision
+    ? looksLikeMiniMax
+      ? createMiniMaxMcpVision({ apiKey: getMiniMaxApiKey(providerConfig) || providerConfig.apiKey })
+      : createAnthropicVision({
+      apiKey: providerConfig.apiKey,
+      baseURL: providerConfig.baseUrl,
+      model: providerConfig.model,
+      provider: providerConfig.name || 'Vision',
+    })
+    : undefined;
+  let edl;
+  try {
+    edl = await analyzeVideo(inputPath, {
+      outDir,
+      skipVision: !vision,
+      vision,
+      analyzeAllFrames: !!vision,
+    });
+  } finally {
+    await (vision as any)?.close?.();
+  }
+
+  return {
+    src,
+    status: 'complete',
+    storyboardDir: edl.storyboardDir,
+    edlPath: `public/demos/${edl.storyboardDir}/edl.json`,
+    frameCount: edl.stats.totalSceneBreaks,
+    sceneCount: edl.scenes.length,
+    durationSec: edl.duration,
+    activeTime: edl.stats.activeTime,
+    idleTime: edl.stats.idleTime,
+    transitionTime: edl.stats.transitionTime,
+    deadTimeCount: edl.deadTime?.length ?? 0,
+    scenes: edl.scenes.slice(0, 12).map((scene) => ({
+      start: scene.start ?? 0,
+      end: scene.end,
+      activity: scene.activity,
+      description: scene.description,
+      frameFile: scene.frameFile,
+      motionArea: scene.motionArea,
+      quadrants: scene.quadrants,
+    })),
+  };
+}
+
+async function analyzeInputClips(clips: string[], jobId: string): Promise<InputAnalysisSummary[]> {
+  const analyses: InputAnalysisSummary[] = [];
+
+  for (const src of clips) {
+    try {
+      const result = await analyzeInputClip(src);
+      analyses.push(result);
+
+      if (result.status === 'complete') {
+        appendActivity(jobId, {
+          stage: 'analysis',
+          message: `Analyzed ${basename(src)} — ${result.frameCount ?? 0} frames, ${result.sceneCount ?? 0} scenes`,
+          detail: result.edlPath,
+        });
+      } else {
+        appendActivity(jobId, {
+          stage: 'analysis',
+          message: `Skipped analysis for ${basename(src)} — ${result.status}`,
+          detail: result.error,
+        });
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      analyses.push({ src, status: 'failed', error: message });
+      appendActivity(jobId, {
+        stage: 'analysis',
+        message: `Analysis failed for ${basename(src)}`,
+        detail: message,
+      });
+    }
+  }
+
+  return analyses;
+}
+
 // ── System prompt for the composition planner ───────────────────
 
 const SYSTEM_PROMPT = `You are a video composition planner for Remotion (React-based video framework).
@@ -203,6 +529,10 @@ interface CompositionPlan {
   }>;
   subtitle: string;
   tagline: string;
+  brand?: {
+    name?: string;         // product/brand name, e.g. "Lattices"
+    iconSrc?: string;      // path relative to public/, e.g. "brand/lattices-logo.png"
+  };
 }
 \`\`\`
 
@@ -218,13 +548,43 @@ interface CompositionPlan {
 8. If the user asks for a "highlight reel" or "montage", pick the most visually interesting segments and keep each clip 5-10 seconds.
 9. If the user asks for a "demo video", keep clips longer (15-60s) with minimal cuts.
 10. Always include a brief description of your editing rationale in the description field.
+11. When a brand input provides iconSrc, copy it into plan.brand.iconSrc and use that brand name in title/subtitle/tagline. Do not use Talkie assets unless the brief is explicitly about Talkie.
+12. If the brief mentions a gesture, cursor path, or a screen quadrant, treat that as the primary subject. Use the processed input video analysis motionArea/quadrants to choose start times and zoom origins. For quadrant emphasis, center the zoom on the visible UI element inside that quadrant, not the mathematical corner of the whole frame. For bottom-right gesture emphasis, prefer zoom origins around originX 0.74-0.88 and originY 0.66-0.86, with a scale around 1.35-1.7 unless the shot remains legible at higher scale. Avoid blank screen areas, browser chrome, and the recording pill unless the brief explicitly asks for those controls.
 
 ## Revision jobs
 
-When the job kind is "revise", you'll receive the current Composition.tsx source and timestamped review notes.
+When the job kind is "revise" or "revise-render", you'll receive the current Composition.tsx source and review notes or a confirmed revision brief.
 Your job is to produce a new composition plan that addresses the feedback while preserving the parts that work.
 Parse the existing TSX to understand the current clip selection, timing, and structure — then apply the reviewer's notes.
 Common feedback types: FEEDBACK (general notes), ZOOM (add/adjust zoom on a region).
+
+Respond with ONLY the JSON object, no markdown fences, no explanation.`;
+
+// ── System prompt for the brief synthesizer (revise-brief) ─────
+
+const BRIEF_SYSTEM_PROMPT = `You are reviewing a video composition with a human collaborator.
+
+You'll receive the current Composition.tsx source plus timestamped or general review notes. Your job is to synthesize what the human wants, like you would in a chat session before making changes.
+
+## What you output
+
+A single JSON object matching this TypeScript interface:
+
+\`\`\`typescript
+interface RevisionBrief {
+  intent: string;             // one short paragraph: what the user wants overall, in your own words
+  plannedChanges: string[];   // scannable bullets of what you'd do, natural language
+  questions: string[];        // ambiguities you'd ask before regenerating; empty if none
+}
+\`\`\`
+
+## Tone
+
+Write like a collaborator, not a planner. \`intent\` should sound like "You want me to ___ because ___." \`plannedChanges\` should be human-readable ("tighten the second clip from 6s to ~4s", "zoom into the search bar around 0:08"), not a spec. Use timestamps and clip labels from the source TSX so the human can verify you parsed it right.
+
+## When to ask questions
+
+If a note is ambiguous, references something not visible in the TSX, or could mean two different things, put it in \`questions\` instead of guessing. A non-empty \`questions\` list will pause the workflow until the reviewer resolves it.
 
 Respond with ONLY the JSON object, no markdown fences, no explanation.`;
 
@@ -235,6 +595,7 @@ function buildUserMessage(ctx: {
   inputs: Record<string, unknown> | null;
   params: Record<string, unknown> | null;
   kind: JobKind;
+  inputAnalyses?: InputAnalysisSummary[];
 }): string {
   const parts: string[] = [];
 
@@ -251,23 +612,62 @@ function buildUserMessage(ctx: {
       parts.push(`\n## Available Audio\n${audio.map(a => `- ${a}`).join('\n')}`);
     }
 
-    if (ctx.kind === 'revise') {
+    if (ctx.kind === 'revise' || ctx.kind === 'revise-render') {
       const originalSource = ctx.inputs.originalSource as string | undefined;
       const reviewNotes = ctx.inputs.reviewNotes as string | undefined;
+      const brief = ctx.inputs.brief as { intent?: string; plannedChanges?: string[] } | undefined;
       if (originalSource) {
         parts.push(`\n## Current Composition Source (TSX)\nRevise this composition based on the feedback below. Keep the same clips and structure unless the feedback says otherwise.\n\n\`\`\`tsx\n${originalSource}\n\`\`\``);
       }
-      if (reviewNotes) {
+      if (brief && (brief.intent || (brief.plannedChanges && brief.plannedChanges.length > 0))) {
+        const lines: string[] = [];
+        if (brief.intent) lines.push(brief.intent.trim());
+        if (brief.plannedChanges && brief.plannedChanges.length > 0) {
+          lines.push('');
+          lines.push('Planned changes (already confirmed by the reviewer):');
+          for (const change of brief.plannedChanges) lines.push(`- ${change}`);
+        }
+        parts.push(`\n## Revision Brief\n${lines.join('\n')}`);
+      } else if (reviewNotes) {
         parts.push(`\n## Review Feedback\n${reviewNotes}`);
       }
     }
 
-    const skipKeys = new Set(['clips', 'audio', 'originalSource', 'reviewNotes']);
+    const skipKeys = new Set(['clips', 'audio', 'originalSource', 'reviewNotes', 'brief']);
     const otherKeys = Object.keys(ctx.inputs).filter(k => !skipKeys.has(k));
     if (otherKeys.length > 0) {
       parts.push(`\n## Additional Inputs`);
       for (const key of otherKeys) {
         parts.push(`- ${key}: ${JSON.stringify(ctx.inputs[key])}`);
+      }
+    }
+  }
+
+  const completedAnalyses = (ctx.inputAnalyses ?? []).filter(a => a.status === 'complete');
+  if (completedAnalyses.length > 0) {
+    parts.push(`\n## Processed Input Video Analysis`);
+    for (const analysis of completedAnalyses) {
+      const stats = [
+        `${analysis.frameCount ?? 0} storyboard frames`,
+        `${analysis.sceneCount ?? 0} scenes`,
+        `${analysis.activeTime ?? 0}s active`,
+        `${analysis.idleTime ?? 0}s idle`,
+        `${analysis.deadTimeCount ?? 0} dead-time spans`,
+      ].join(', ');
+
+      parts.push(`\n### ${analysis.src}\n- ${stats}\n- storyboard: ${analysis.storyboardDir}\n- edl: ${analysis.edlPath}`);
+
+      if (analysis.scenes?.length) {
+        parts.push(`- scene timeline:`);
+        for (const scene of analysis.scenes) {
+          const end = scene.end != null ? `-${Math.round(scene.end)}s` : '';
+          const motion = scene.motionArea ? `, motion=${scene.motionArea}` : '';
+          const frame = scene.frameFile ? `, frame=${scene.frameFile}` : '';
+          const quadrants = scene.quadrants
+            ? `, quadrants TL=${formatMotionValue(scene.quadrants.topLeft)} TR=${formatMotionValue(scene.quadrants.topRight)} BL=${formatMotionValue(scene.quadrants.bottomLeft)} BR=${formatMotionValue(scene.quadrants.bottomRight)}`
+            : '';
+          parts.push(`  - ${Math.round(scene.start)}s${end} [${scene.activity ?? 'unknown'}${motion}${frame}${quadrants}] ${scene.description}`);
+        }
       }
     }
   }
@@ -282,9 +682,13 @@ function buildUserMessage(ctx: {
   return parts.join('\n');
 }
 
+function formatMotionValue(value: number | undefined): string {
+  return typeof value === 'number' && Number.isFinite(value) ? value.toFixed(5) : 'n/a';
+}
+
 // ── Parse + validate the LLM response ───────────────────────────
 
-function parsePlan(raw: string): CompositionPlan {
+function parsePlan(raw: string, opts: { fallbackTitle?: string } = {}): CompositionPlan {
   // Strip markdown fences if the model wraps them
   let cleaned = raw.trim();
   if (cleaned.startsWith('```')) {
@@ -293,15 +697,27 @@ function parsePlan(raw: string): CompositionPlan {
 
   const plan = JSON.parse(cleaned) as CompositionPlan;
 
-  // Validate required fields
+  // Validate required fields. Be lenient on cosmetic fields so a model that
+  // returns a structurally usable plan does not fail just because it omitted
+  // a title or description.
   if (!plan.title || typeof plan.title !== 'string') {
-    throw new Error('Plan missing title');
+    plan.title = opts.fallbackTitle || 'Untitled composition';
+  }
+  if (typeof plan.description !== 'string') {
+    plan.description = '';
   }
   if (!plan.clips || !Array.isArray(plan.clips)) {
     throw new Error('Plan missing clips array');
   }
   if (typeof plan.durationSec !== 'number' || plan.durationSec <= 0) {
-    throw new Error('Plan has invalid durationSec');
+    const sumFromClips = plan.clips.reduce((acc, clip) => (
+      acc + (typeof clip.duration === 'number' ? clip.duration : 0)
+    ), 0);
+    if (sumFromClips > 0) {
+      plan.durationSec = sumFromClips;
+    } else {
+      throw new Error('Plan has invalid durationSec and no clip durations to derive from');
+    }
   }
 
   // Apply defaults
@@ -317,6 +733,7 @@ function parsePlan(raw: string): CompositionPlan {
   plan.audioTracks ??= [];
   plan.subtitle ??= '';
   plan.tagline ??= '';
+  plan.brand ??= {};
 
   // Validate clips
   for (const clip of plan.clips) {
@@ -380,8 +797,11 @@ function generateCompositionTsx(plan: CompositionPlan, compositionId: string): s
   const intro = introImportMap[plan.introStyle] ?? introImportMap.tactical;
   const hasIntro = plan.introStyle !== 'none' && plan.introDurationSec > 0;
   const hasOutro = plan.outroDurationSec > 0;
+  const brandName = plan.brand?.name || plan.title;
+  const brandIconSrc = plan.brand?.iconSrc || "talkie-icon-1024.png";
 
-  return `// Auto-generated composition for ${compositionId}
+  return `// @ts-nocheck
+// Auto-generated composition for ${compositionId}
 // ${plan.description}
 // Generated: ${new Date().toISOString()}
 
@@ -429,16 +849,20 @@ const ClipSegment: React.FC<{
   const frame = useCurrentFrame();
 
   // Fade in/out for transitions
-  const fadeIn = interpolate(frame, [0, TRANSITION_FRAMES], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const fadeOut = interpolate(
-    frame,
-    [clipDurationFrames - TRANSITION_FRAMES, clipDurationFrames],
-    [1, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-  );
+  const fadeIn = TRANSITION_FRAMES > 0
+    ? interpolate(frame, [0, TRANSITION_FRAMES], [0, 1], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    })
+    : 1;
+  const fadeOut = TRANSITION_FRAMES > 0
+    ? interpolate(
+      frame,
+      [clipDurationFrames - TRANSITION_FRAMES, clipDurationFrames],
+      [1, 0],
+      { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+    )
+    : 1;
   const opacity = fadeIn * fadeOut;
 
   // Zoom
@@ -446,15 +870,24 @@ const ClipSegment: React.FC<{
   let originX = 50;
   let originY = 50;
   if (clip.zoom) {
-    const zoomStartFrame = clip.zoom.startAtSec * fps;
-    scale = interpolate(
-      frame,
-      [zoomStartFrame, clipDurationFrames],
-      [1, clip.zoom.scale],
-      { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+    const zoomStartFrame = Math.min(
+      Math.max(0, clip.zoom.startAtSec * fps),
+      Math.max(0, clipDurationFrames - 1)
     );
-    originX = clip.zoom.originX;
-    originY = clip.zoom.originY;
+    const zoomEndFrame = Math.min(
+      zoomStartFrame + 0.7 * fps,
+      Math.max(0, clipDurationFrames - 1)
+    );
+    scale = zoomEndFrame > zoomStartFrame
+      ? interpolate(
+        frame,
+        [zoomStartFrame, zoomEndFrame],
+        [1, clip.zoom.scale],
+        { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+      )
+      : clip.zoom.scale;
+    originX = clip.zoom.originX <= 1 ? clip.zoom.originX * 100 : clip.zoom.originX;
+    originY = clip.zoom.originY <= 1 ? clip.zoom.originY * 100 : clip.zoom.originY;
   }
 
   return (
@@ -584,8 +1017,9 @@ export const ${componentName}: React.FC = () => {
 ${hasIntro ? `      {/* Intro */}
       <Sequence name="Intro" from={0} durationInFrames={INTRO_FRAMES}>
         <${intro.component}
-          title={${JSON.stringify(plan.title)}}
+          title={${JSON.stringify(brandName)}}
           subtitle={${JSON.stringify(plan.subtitle)}}
+          iconSrc={${JSON.stringify(brandIconSrc)}}
         />
       </Sequence>
 ` : ''}
@@ -611,8 +1045,9 @@ ${hasIntro ? `      {/* Intro */}
 ${hasOutro ? `      {/* Outro */}
       <Sequence name="Outro" from={outroStart} durationInFrames={OUTRO_FRAMES}>
         <TacticalOutro
-          title={${JSON.stringify(plan.title)}}
+          title={${JSON.stringify(brandName)}}
           tagline={${JSON.stringify(plan.tagline)}}
+          iconSrc={${JSON.stringify(brandIconSrc)}}
         />
       </Sequence>
 ` : ''}
@@ -659,9 +1094,10 @@ registerRoot(Root);
 
 function renderComposition(compositionId: string, outDir: string): string {
   const entryPoint = join(outDir, 'render-entry.tsx');
-  const outputPath = join(process.cwd(), 'out', `${compositionId}.mp4`);
+  const publicOutDir = join(process.cwd(), 'public', 'out');
+  const outputPath = join(publicOutDir, `${compositionId}.mp4`);
 
-  mkdirSync(join(process.cwd(), 'out'), { recursive: true });
+  mkdirSync(publicOutDir, { recursive: true });
 
   const cmd = `npx remotion render "${entryPoint}" "${compositionId}" "${outputPath}" --log=error`;
   console.log(`[worker] Rendering: ${cmd}`);
@@ -767,6 +1203,13 @@ async function processJob(ctx: {
   };
 
   try {
+    // Stage 1 of the two-stage revise flow: synthesize a human-readable
+    // brief and stop before rendering, so the reviewer can confirm intent.
+    if (kind === 'revise-brief') {
+      await runBrief({ jobId, compositionId, inputs, updateState });
+      return;
+    }
+
     // ── Stage 1: Collect inputs ─────────────────────────────
     updateState('collecting inputs', 5, `Reading ${kind} job for ${compositionId}`);
 
@@ -774,19 +1217,42 @@ async function processJob(ctx: {
     const audio = (inputs?.audio as string[] | undefined) ?? [];
     const aspectRatio = (params?.aspectRatio as string | undefined) ?? '16:9';
     const durationSec = (params?.durationSec as number | undefined);
+    const soundtrack = normalizeSoundtrackRequest(params);
+    const shouldAnalyzeInputs = params?.analyzeInputs !== false;
 
     appendActivity(jobId, {
       stage: 'inputs',
-      message: `${clips.length} clip${clips.length !== 1 ? 's' : ''}, ${audio.length} audio, aspect ${aspectRatio}`,
+      message: `${clips.length} clip${clips.length !== 1 ? 's' : ''}, ${audio.length} audio, aspect ${aspectRatio}${soundtrack.enabled ? ', soundtrack requested' : ''}`,
       detail: clips.join(', '),
     });
 
     console.log(`[worker] Job ${jobId}: ${clips.length} clips, ${audio.length} audio, aspect=${aspectRatio}`);
 
+    let inputAnalyses: InputAnalysisSummary[] = [];
+    if (clips.length > 0 && shouldAnalyzeInputs) {
+      updateState('analyzing inputs', 10, `Extracting storyboard frames from ${clips.length} clip${clips.length !== 1 ? 's' : ''}`);
+      appendActivity(jobId, {
+        stage: 'analysis',
+        message: `Running FFmpeg storyboard analysis for ${clips.length} input clip${clips.length !== 1 ? 's' : ''}`,
+      });
+
+      inputAnalyses = await analyzeInputClips(clips, jobId);
+
+      if (inputAnalyses.some(a => a.status === 'complete')) {
+        rebuildCatalog();
+      }
+    } else if (clips.length > 0) {
+      inputAnalyses = clips.map(src => ({ src, status: 'skipped' as const, error: 'Input analysis disabled for this job' }));
+      appendActivity(jobId, {
+        stage: 'analysis',
+        message: 'Input video analysis skipped by job parameters',
+      });
+    }
+
     // ── Stage 2: Call LLM to plan the composition ───────────
     updateState('planning composition', 15, `Sending prompt to LLM with ${clips.length} clips`);
 
-    const userMessage = buildUserMessage({ prompt, inputs, params, kind });
+    const userMessage = buildUserMessage({ prompt, inputs, params, kind, inputAnalyses });
     const providerConfig = readProviderConfig();
 
     appendActivity(jobId, {
@@ -816,7 +1282,7 @@ async function processJob(ctx: {
     // ── Stage 3: Parse and validate the plan ────────────────
     let plan: CompositionPlan;
     try {
-      plan = parsePlan(llmResult.text);
+      plan = parsePlan(llmResult.text, { fallbackTitle: compositionId });
     } catch (parseErr: any) {
       console.error(`[worker] Job ${jobId}: plan parse failed:`, parseErr.message);
       appendActivity(jobId, { stage: 'error', message: `Plan parse failed: ${parseErr.message}` });
@@ -833,6 +1299,45 @@ async function processJob(ctx: {
 
     if (durationSec && durationSec > 0) {
       plan.durationSec = durationSec;
+    }
+
+    const suppliedAudio = new Set(audio);
+    const plannerAudioCount = plan.audioTracks.length;
+    plan.audioTracks = plan.audioTracks.filter(track => suppliedAudio.has(track.src));
+    if (plannerAudioCount !== plan.audioTracks.length) {
+      appendActivity(jobId, {
+        stage: 'plan',
+        message: `Removed ${plannerAudioCount - plan.audioTracks.length} planner audio track(s) that were not supplied assets`,
+      });
+    }
+
+    if (soundtrack.enabled) {
+      updateState('generating soundtrack', 50, 'Generating MiniMax Music 2.6 soundtrack');
+      appendActivity(jobId, {
+        stage: 'music',
+        message: `Generating ${soundtrack.instrumental ? 'instrumental' : 'vocal'} soundtrack with ${soundtrack.model || 'music-2.6'}`,
+        detail: soundtrack.prompt || DEFAULT_SOUNDTRACK_PROMPT,
+      });
+
+      const generated = await generateMiniMaxSoundtrack(compositionId, soundtrack, providerConfig);
+      plan.audioTracks.push({
+        src: generated.path,
+        volume: generated.volume,
+        startAt: soundtrack.startAt ?? 0,
+        fadeIn: soundtrack.fadeIn ?? 1,
+        fadeOut: soundtrack.fadeOut ?? 2,
+        role: 'music',
+      });
+
+      if ((soundtrack.showLyricCaptions ?? true) && generated.lyrics) {
+        plan.textOverlays.push(...lyricCaptionOverlays(generated.lyrics, plan.durationSec));
+      }
+
+      appendActivity(jobId, {
+        stage: 'music',
+        message: `Soundtrack generated to ${generated.path}`,
+        detail: generated.lyrics || generated.prompt,
+      });
     }
 
     appendActivity(jobId, {
@@ -939,6 +1444,7 @@ async function processJob(ctx: {
         introStyle: plan.introStyle,
         compositionDir: `.compositions/${compositionId}`,
         videoPath: `out/${compositionId}.mp4`,
+        inputAnalyses,
       },
     });
 
@@ -948,4 +1454,136 @@ async function processJob(ctx: {
     failJob(jobId, { message: err.message || String(err) });
     throw err;
   }
+}
+
+// ── Brief synthesis (revise-brief) ──────────────────────────────
+
+interface RevisionBrief {
+  sourceCompositionId: string;
+  generatedAt: string;
+  generatedBy: { provider: string; model: string };
+  intent: string;
+  plannedChanges: string[];
+  questions: string[];
+}
+
+function parseBrief(raw: string): Pick<RevisionBrief, 'intent' | 'plannedChanges' | 'questions'> {
+  const text = raw
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
+  const obj = JSON.parse(text);
+  return {
+    intent: typeof obj.intent === 'string' ? obj.intent : '',
+    plannedChanges: Array.isArray(obj.plannedChanges)
+      ? obj.plannedChanges.filter((change: unknown): change is string => typeof change === 'string')
+      : [],
+    questions: Array.isArray(obj.questions)
+      ? obj.questions.filter((question: unknown): question is string => typeof question === 'string')
+      : [],
+  };
+}
+
+async function runBrief(ctx: {
+  jobId: string;
+  compositionId: string;
+  inputs: Record<string, unknown> | null;
+  updateState: (agentState: string, progress: number, lastMessage?: string) => void;
+}) {
+  const { jobId, compositionId, inputs, updateState } = ctx;
+  const sourceCompositionId = (inputs?.sourceCompositionId as string | undefined) ?? compositionId;
+  const originalSource = (inputs?.originalSource as string | undefined) ?? '';
+  const reviewNotes = (inputs?.reviewNotes as string | undefined) ?? '';
+
+  if (!originalSource || !reviewNotes) {
+    throw new Error('Brief requires both originalSource and reviewNotes inputs');
+  }
+
+  updateState('reading source + notes', 10, `Synthesizing brief for ${sourceCompositionId}`);
+  appendActivity(jobId, {
+    stage: 'inputs',
+    message: `Reading TSX (${originalSource.length} chars) + ${reviewNotes.split('\n').length} note lines`,
+  });
+
+  const providerConfig = readProviderConfig();
+  updateState('interpreting feedback', 30, `Calling ${providerConfig.name || providerConfig.model} for brief`);
+  appendActivity(jobId, {
+    stage: 'llm',
+    message: `Calling ${providerConfig.name || providerConfig.model} (${providerConfig.format}) to interpret review notes`,
+  });
+
+  const userMessage = [
+    `## Source Composition (${sourceCompositionId})`,
+    '',
+    '```tsx',
+    originalSource,
+    '```',
+    '',
+    '## Review Notes',
+    reviewNotes,
+  ].join('\n');
+
+  const llmResult = await callLLM({
+    system: BRIEF_SYSTEM_PROMPT,
+    userMessage,
+    maxTokens: 2048,
+  });
+
+  if (!llmResult.text) throw new Error('LLM returned no text content');
+  appendActivity(jobId, {
+    stage: 'llm',
+    message: `LLM responded (${llmResult.text.length} chars, ${llmResult.inputTokens} in / ${llmResult.outputTokens} out tokens)`,
+  });
+
+  updateState('parsing brief', 70, 'Parsing revision brief JSON');
+  let parsed: Pick<RevisionBrief, 'intent' | 'plannedChanges' | 'questions'>;
+  try {
+    parsed = parseBrief(llmResult.text);
+  } catch (parseErr: any) {
+    appendActivity(jobId, { stage: 'error', message: `Brief parse failed: ${parseErr.message}` });
+    throw new Error(`Failed to parse revision brief: ${parseErr.message}`);
+  }
+
+  const brief: RevisionBrief = {
+    sourceCompositionId,
+    generatedAt: new Date().toISOString(),
+    generatedBy: { provider: providerConfig.format, model: providerConfig.model },
+    intent: parsed.intent,
+    plannedChanges: parsed.plannedChanges,
+    questions: parsed.questions,
+  };
+
+  const outDir = join(process.cwd(), '.compositions', compositionId);
+  mkdirSync(outDir, { recursive: true });
+  const briefPath = join(outDir, 'revision-brief.json');
+  writeFileSync(briefPath, JSON.stringify(brief, null, 2));
+
+  appendActivity(jobId, {
+    stage: 'plan',
+    message: `Brief ready — ${brief.plannedChanges.length} planned change${brief.plannedChanges.length === 1 ? '' : 's'}${brief.questions.length > 0 ? `, ${brief.questions.length} question${brief.questions.length === 1 ? '' : 's'} blocking` : ''}`,
+    detail: brief.intent,
+  });
+
+  appendActivity(jobId, {
+    stage: 'done',
+    message: brief.questions.length > 0
+      ? `Brief written — awaiting answers to ${brief.questions.length} question${brief.questions.length === 1 ? '' : 's'} before regen`
+      : 'Brief written — ready to regenerate',
+    detail: `.compositions/${compositionId}/revision-brief.json`,
+  });
+
+  completeJob(jobId, {
+    outputUrls: [`.compositions/${compositionId}/revision-brief.json`],
+    metadata: {
+      kind: 'revise-brief',
+      sourceCompositionId,
+      briefPath: `.compositions/${compositionId}/revision-brief.json`,
+      intent: brief.intent,
+      plannedChangeCount: brief.plannedChanges.length,
+      questionCount: brief.questions.length,
+      readyToRegen: brief.questions.length === 0,
+      compositionDir: `.compositions/${compositionId}`,
+    },
+  });
 }

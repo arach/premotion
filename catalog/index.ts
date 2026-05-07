@@ -1,6 +1,6 @@
 import { createElement } from 'react';
 import { Film } from 'lucide-react';
-import type { HudsonApp } from '@hudsonos/sdk';
+import type { HudsonApp } from 'hudsonkit';
 import { CatalogProvider } from './Provider';
 import { CatalogContent } from './slots/Content';
 import { CatalogLeftPanel } from './slots/LeftPanel';

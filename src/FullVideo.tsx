@@ -45,7 +45,7 @@ export const FullVideo: React.FC<FullVideoProps> = ({
       <Audio
         src={staticFile("kugelsicher-by-tremoxbeatz-302838.mp3")}
         // Skip first 15 seconds of song to get past the buildup
-        startFrom={15 * fps}
+        trimBefore={15 * fps}
         volume={(f) => {
           // Fade out at the very end
           const fadeOut = interpolate(

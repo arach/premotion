@@ -22,8 +22,8 @@ export function CatalogContent() {
     );
   }
 
-  if (view === 'new') {
-    return <NewComposition />;
+  if (view === 'new' || view === 'new-music') {
+    return <NewComposition initialMode={view === 'new-music' ? 'music' : undefined} />;
   }
 
   if (view === 'queue') {

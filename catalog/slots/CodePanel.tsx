@@ -1,12 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type KeyboardEvent } from 'react';
 import { ArrowLeft, Check, FileCode2, Save } from 'lucide-react';
-import { CodeEditor } from '@hudsonos/sdk/controls';
-import type { CodeLanguage } from '@hudsonos/sdk/controls';
 import { useCatalog } from '../Provider';
 
-function langFromPath(path: string): CodeLanguage {
+function langFromPath(path: string): string {
   if (path.endsWith('.tsx') || path.endsWith('.ts')) return 'typescript';
   if (path.endsWith('.js') || path.endsWith('.jsx')) return 'javascript';
   if (path.endsWith('.json')) return 'json';
@@ -65,6 +63,13 @@ export function CodePanel() {
     }
   }, [viewingFile]);
 
+  const handleEditorKeyDown = useCallback((event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+      event.preventDefault();
+      void save(code);
+    }
+  }, [code, save]);
+
   if (!viewingFile) return null;
 
   return (
@@ -110,14 +115,13 @@ export function CodePanel() {
             Loading…
           </div>
         ) : (
-          <CodeEditor
-            code={code}
-            language={langFromPath(viewingFile)}
-            filename={undefined}
-            onSave={save}
-            onChange={setCode}
-            showLineNumbers
-            className="h-full border-0 rounded-none"
+          <textarea
+            value={code}
+            onChange={event => setCode(event.target.value)}
+            onKeyDown={handleEditorKeyDown}
+            data-language={langFromPath(viewingFile)}
+            spellCheck={false}
+            className="h-full w-full resize-none border-0 bg-[#0d0d0d] px-4 py-3 font-mono text-[12px] leading-relaxed text-white/75 outline-none caret-cyan-300 selection:bg-cyan-400/20"
           />
         )}
       </div>

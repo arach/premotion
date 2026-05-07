@@ -55,7 +55,7 @@ export function CatalogLeftPanel() {
           className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-sm text-[11px] font-mono uppercase tracking-wider transition-all border ${
             dragOver
               ? 'bg-cyan-400/[0.2] border-cyan-400/50 text-cyan-200 scale-[1.02]'
-              : view === 'new'
+                : view === 'new' || view === 'new-music'
                 ? 'bg-cyan-400/[0.15] border-cyan-400/40 text-cyan-200'
                 : 'bg-cyan-400/[0.08] border-cyan-400/20 text-cyan-300/90 hover:bg-cyan-400/[0.12] hover:text-cyan-200'
           }`}
@@ -274,4 +274,3 @@ function inferCodePath(compositionId: string): string | null {
   if (lower.includes('montage')) return 'src/VideoMontage.tsx';
   return 'src/Root.tsx';
 }
-

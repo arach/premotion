@@ -7,7 +7,7 @@ const { fontFamily } = loadFont("normal", {
 });
 
 interface QuoteVideoProps {
-  audioFile: string;
+  audioFile?: string;
   handle?: string;
 }
 

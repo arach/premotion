@@ -1,7 +1,17 @@
 import { useCurrentFrame, useVideoConfig, interpolate, staticFile, Img, spring } from "remotion";
 
+interface MinimalIntroProps {
+  title?: string;
+  subtitle?: string;
+  iconSrc?: string;
+}
+
 // Clean minimal intro with elegant fade
-export const MinimalIntro: React.FC = () => {
+export const MinimalIntro: React.FC<MinimalIntroProps> = ({
+  title = "arach",
+  subtitle = "presents",
+  iconSrc = "arach-circle.png",
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -62,7 +72,7 @@ export const MinimalIntro: React.FC = () => {
         }}
       >
         <Img
-          src={staticFile("arach-circle.png")}
+          src={staticFile(iconSrc)}
           style={{
             width: 180,
             height: 180,
@@ -88,7 +98,7 @@ export const MinimalIntro: React.FC = () => {
             letterSpacing: "0.15em",
           }}
         >
-          arach
+          {title}
         </div>
         <div
           style={{
@@ -98,9 +108,10 @@ export const MinimalIntro: React.FC = () => {
             letterSpacing: "0.3em",
             marginTop: 15,
             textTransform: "uppercase",
+            maxWidth: 760,
           }}
         >
-          presents
+          {subtitle}
         </div>
       </div>
     </div>

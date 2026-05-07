@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Auto-generated composition for product-demo
 // A professional 60-second product walkthrough showcasing the HUD interface and capture features. Three main feature clips (HUD, Capture Overview, Full Demo) are sequenced with smooth fade transitions, each labeled with scene titles. The minimal intro establishes the product context, and a subtle outro closes the demo.
 // Generated: 2026-04-21T17:12:16.803Z

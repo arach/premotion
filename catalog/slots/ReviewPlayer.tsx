@@ -69,6 +69,12 @@ interface Composing {
   comment: string;
 }
 
+type TimestampedReviewNote = ReviewNote & { time: number };
+
+function hasTime(note: ReviewNote): note is TimestampedReviewNote {
+  return note.time != null;
+}
+
 export function ReviewPlayer() {
   const { selectedVideo, reviewOpen, closeReview } = useCatalog();
   const video = selectedVideo;
@@ -227,6 +233,7 @@ export function ReviewPlayer() {
 
   const editNote = useCallback(
     (n: ReviewNote) => {
+      if (n.time == null) return;
       videoRef.current?.pause();
       seek(n.time);
       setComposing({
@@ -341,7 +348,7 @@ export function ReviewPlayer() {
   ]);
 
   const sortedNotes = useMemo(
-    () => [...notes].sort((a, b) => a.time - b.time),
+    () => notes.filter(hasTime).sort((a, b) => a.time - b.time),
     [notes],
   );
 

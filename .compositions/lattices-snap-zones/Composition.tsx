@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Auto-generated composition for lattices-snap-zones
 // Highlight reel showcasing the snap zone functionality in Lattices. Features two key segments from the source footage: the initial snap zone demo (4-20s) and a secondary demonstration (30-40s). Tactical intro establishes the product identity, with subtle zoom effects drawing attention to the snap zone actions panel during key moments. Clean monospace captions reinforce the technical aesthetic.
 // Generated: 2026-04-22T00:16:30.297Z

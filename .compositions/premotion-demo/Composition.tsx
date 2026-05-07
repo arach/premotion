@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Auto-generated composition for premotion-demo
 // Professional demo montage showcasing two screen recordings with a tactical intro. Clips are arranged to create a cohesive flow, using subtle zooms to highlight key content areas. Clean cuts between clips maintain momentum while text overlays provide scene context.
 // Generated: 2026-04-21T17:26:31.850Z

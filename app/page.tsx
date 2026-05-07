@@ -1,13 +1,13 @@
 'use client';
 
 import { Suspense } from 'react';
-import { AppShell } from '@hudsonos/sdk/app-shell';
+import { AppShell } from 'hudsonkit/app-shell';
 import { catalogApp } from '@/catalog';
 
 export default function Page() {
   return (
     <Suspense fallback={null}>
-      <AppShell app={catalogApp} assistant={false} />
+      <AppShell app={catalogApp} assistant={false} defaultTheme="dark" />
     </Suspense>
   );
 }

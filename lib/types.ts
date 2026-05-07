@@ -4,6 +4,12 @@ export interface VisionTag {
   tags: string[];
   description: string;
   contentType: string;
+  provider?: string;
+  model?: string;
+  prompt?: string;
+  rawText?: string;
+  rawResponse?: unknown;
+  error?: string;
 }
 
 export interface Scene {
@@ -15,6 +21,11 @@ export interface Scene {
   tags?: string[];
   contentType?: string;
   activity?: string;
+  frameFile?: string;
+  frameKind?: string;
+  score?: number;
+  motionArea?: string;
+  quadrants?: Record<"topLeft" | "topRight" | "bottomLeft" | "bottomRight", number>;
 }
 
 export interface EdlStats {
@@ -37,6 +48,22 @@ export interface Highlight {
   time: number;
   reason: string;
   frameFile?: string;
+}
+
+export interface FrameOverlayRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface FrameOverlay {
+  provider: string;
+  label: string;
+  rect: FrameOverlayRect;
+  confidence?: string;
+  note?: string;
+  source?: string;
 }
 
 export interface DeadTime {
@@ -97,6 +124,7 @@ export interface Video {
   note?: string;
   edl?: Edl;
   visionTags?: VisionTag[];
+  frameOverlays?: Record<string, FrameOverlay[]>;
   frameCount?: number;
   frames?: string[];
   transcript?: Transcript;
@@ -116,7 +144,7 @@ export interface ReviewRect {
 
 export interface ReviewNote {
   id: string;
-  time: number;
+  time: number | null;
   endTime?: number;
   kind: ReviewNoteKind;
   rect?: ReviewRect;
@@ -130,6 +158,37 @@ export interface OrphanStoryboard {
   frames: string[];
   edl: Edl | null;
   visionTags: VisionTag[] | null;
+}
+
+export interface AudioAsset {
+  id: string;
+  filename: string;
+  sourcePath: string | null;
+  path: string;
+  capturedAt: string;
+  duration: number;
+  codec: string;
+  sampleRate: number | null;
+  channels: number | null;
+  bitrate: number | null;
+  sizeMB: number;
+  app: string;
+  generated: boolean;
+  provider?: string;
+  model?: string;
+  prompt?: string;
+  lyrics?: string;
+  instrumental?: boolean;
+  songTitle?: string;
+  styleTags?: string;
+  lyricsGeneration?: Record<string, unknown>;
+  compositionId?: string;
+  parentTrackId?: string;
+  revisionOf?: string;
+  feedback?: string;
+  request?: Record<string, unknown>;
+  result?: Record<string, unknown>;
+  sidecar?: Record<string, unknown>;
 }
 
 export type SnippetCategory = "capture" | "read" | "listen" | "explore";
@@ -152,8 +211,9 @@ export interface CuratedSnippetsData {
 }
 
 export interface CatalogData {
-  meta: { generatedAt: string; videoCount: number };
+  meta: { generatedAt: string; videoCount: number; audioCount?: number };
   videos: Video[];
+  audioAssets?: AudioAsset[];
   orphanStoryboards?: OrphanStoryboard[];
   curatedSnippets?: CuratedSnippetsData;
 }

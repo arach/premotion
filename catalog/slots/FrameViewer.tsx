@@ -8,10 +8,10 @@ import {
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Braces, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCatalog } from '../Provider';
 import { formatDuration, formatTime } from '@/lib/types';
-import type { VisionTag } from '@/lib/types';
+import type { FrameOverlay, VisionTag } from '@/lib/types';
 
 export function FrameViewer() {
   const { selectedVideo, frameIndex, openFrame, closeFrame } = useCatalog();
@@ -39,7 +39,9 @@ export function FrameViewer() {
 
   const currentFrame = frames[safeIndex];
   const tag = currentFrame ? tagMap[currentFrame] : undefined;
-  const frameTime = tag?.time ?? null;
+  const frameOverlays = currentFrame ? video?.frameOverlays?.[currentFrame] ?? [] : [];
+  const sceneForIndex = scenes[safeIndex];
+  const frameTime = tag?.time ?? sceneForIndex?.start ?? sceneForIndex?.time ?? null;
   const src =
     video?.storyboardDir && currentFrame
       ? `/demos/${video.storyboardDir}/${currentFrame}`
@@ -52,9 +54,9 @@ export function FrameViewer() {
         const start = s.start ?? s.time ?? 0;
         const end = s.end ?? Infinity;
         return frameTime >= start && frameTime < end;
-      }) ?? null
+      }) ?? sceneForIndex ?? null
     );
-  }, [scenes, frameTime]);
+  }, [scenes, frameTime, sceneForIndex]);
 
   const currentTranscript = useMemo(() => {
     if (frameTime == null || !video?.transcript?.segments) return [];
@@ -173,14 +175,17 @@ export function FrameViewer() {
 
           <div className="relative flex items-center justify-center w-full h-full p-6">
             {!imgError ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={currentFrame}
-                src={src}
-                alt={currentFrame}
-                onError={() => setImgError(true)}
-                className="max-w-full max-h-full object-contain rounded-sm shadow-2xl"
-              />
+              <div className="relative inline-block max-w-full max-h-full">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  key={currentFrame}
+                  src={src}
+                  alt={currentFrame}
+                  onError={() => setImgError(true)}
+                  className="block max-w-full max-h-[calc(100vh-160px)] object-contain rounded-sm shadow-2xl"
+                />
+                <FrameOverlayBoxes overlays={frameOverlays} />
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center gap-2 w-[min(720px,80%)] aspect-video rounded-sm border border-dashed border-white/[0.08] bg-white/[0.015]">
                 <div className="text-[11px] font-mono uppercase tracking-wider text-white/30">
@@ -213,6 +218,16 @@ export function FrameViewer() {
             </PanelSection>
           )}
 
+          {frameOverlays.length > 0 && (
+            <PanelSection label="Provider Zones">
+              <div className="flex flex-col gap-2">
+                {frameOverlays.map((overlay, index) => (
+                  <FrameOverlayLegend key={`${overlay.provider}-${overlay.label}-${index}`} overlay={overlay} />
+                ))}
+              </div>
+            </PanelSection>
+          )}
+
           {tag?.contentType && (
             <PanelSection label="Content Type">
               <span className="inline-block text-[10px] font-mono uppercase tracking-wider text-cyan-300/80 bg-cyan-400/10 border border-cyan-400/15 px-2 py-0.5 rounded-sm">
@@ -233,6 +248,26 @@ export function FrameViewer() {
                   </span>
                 ))}
               </div>
+            </PanelSection>
+          )}
+
+          {tag && (
+            <PanelSection label={`${tag.provider || 'Vision'} Raw Response`}>
+              <details className="rounded-sm border border-white/[0.06] bg-white/[0.02]">
+                <summary className="flex cursor-pointer items-center gap-1.5 px-2 py-1.5 text-[10px] font-mono uppercase tracking-wider text-white/45 hover:text-white/70">
+                  <Braces size={11} />
+                  JSON
+                </summary>
+                <pre className="max-h-64 overflow-auto border-t border-white/[0.05] p-2 text-[10px] leading-relaxed text-white/55">
+                  {JSON.stringify({
+                    frameFile: currentFrame,
+                    time: frameTime,
+                    parsed: tag,
+                    rawResponse: tag.rawResponse ?? null,
+                    rawText: tag.rawText ?? null,
+                  }, null, 2)}
+                </pre>
+              </details>
             </PanelSection>
           )}
 
@@ -364,7 +399,7 @@ export function FrameViewer() {
                       ? `/demos/${video.storyboardDir}/${f}`
                       : ''
                   }
-                  label={String(i + 1)}
+                  label={formatTime(tagMap[f]?.time ?? scenes[i]?.start ?? scenes[i]?.time ?? null)}
                 />
               </button>
             );
@@ -412,4 +447,66 @@ function ThumbImage({ src, label }: { src: string; label: string }) {
       className="w-full h-full object-cover"
     />
   );
+}
+
+function FrameOverlayBoxes({ overlays }: { overlays: FrameOverlay[] }) {
+  if (overlays.length === 0) return null;
+  return (
+    <div className="pointer-events-none absolute inset-0">
+      {overlays.map((overlay, index) => {
+        const color = overlayColor(overlay.provider);
+        return (
+          <div
+            key={`${overlay.provider}-${overlay.label}-${index}`}
+            className="absolute rounded-sm border-2 shadow-[0_0_0_1px_rgba(0,0,0,0.75),0_0_18px_rgba(0,0,0,0.5)]"
+            style={{
+              left: `${overlay.rect.x * 100}%`,
+              top: `${overlay.rect.y * 100}%`,
+              width: `${overlay.rect.w * 100}%`,
+              height: `${overlay.rect.h * 100}%`,
+              minWidth: 10,
+              minHeight: 10,
+              borderColor: color,
+              backgroundColor: `${color}22`,
+            }}
+          >
+            <div
+              className="absolute left-0 top-0 -translate-y-full rounded-t-sm px-1 py-0.5 text-[9px] font-mono uppercase tracking-wider text-black"
+              style={{ backgroundColor: color }}
+            >
+              {overlay.provider}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function FrameOverlayLegend({ overlay }: { overlay: FrameOverlay }) {
+  const color = overlayColor(overlay.provider);
+  return (
+    <div className="rounded-sm border border-white/[0.06] bg-white/[0.02] p-2">
+      <div className="mb-1 flex items-center gap-2">
+        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+        <span className="text-[10px] font-mono uppercase tracking-wider text-white/65">
+          {overlay.provider}
+        </span>
+        {overlay.confidence && (
+          <span className="ml-auto text-[9px] font-mono uppercase tracking-wider text-white/30">
+            {overlay.confidence}
+          </span>
+        )}
+      </div>
+      <div className="text-[11px] font-mono text-white/55">{overlay.label}</div>
+      {overlay.note && <div className="mt-1 text-[10px] leading-relaxed text-white/35">{overlay.note}</div>}
+    </div>
+  );
+}
+
+function overlayColor(provider: string): string {
+  const normalized = provider.toLowerCase();
+  if (normalized.includes('moon')) return '#22d3ee';
+  if (normalized.includes('mini')) return '#f59e0b';
+  return '#a78bfa';
 }
