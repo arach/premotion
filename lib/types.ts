@@ -116,7 +116,8 @@ export interface ReviewRect {
 
 export interface ReviewNote {
   id: string;
-  time: number;
+  // Null = general comment, not tied to a moment in the video.
+  time: number | null;
   endTime?: number;
   kind: ReviewNoteKind;
   rect?: ReviewRect;

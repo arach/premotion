@@ -228,6 +228,34 @@ Common feedback types: FEEDBACK (general notes), ZOOM (add/adjust zoom on a regi
 
 Respond with ONLY the JSON object, no markdown fences, no explanation.`;
 
+// ── System prompt for the brief synthesizer (revise-brief) ─────
+
+const BRIEF_SYSTEM_PROMPT = `You are reviewing a video composition with a human collaborator.
+
+You'll receive the current Composition.tsx source plus timestamped review notes (with optional rect coordinates for zoom regions). Your job is to synthesize what the human wants — like you would in a chat session, repeating back your understanding before making changes.
+
+## What you output
+
+A single JSON object matching this TypeScript interface:
+
+\`\`\`typescript
+interface RevisionBrief {
+  intent: string;             // one short paragraph: what the user wants overall, in your own words
+  plannedChanges: string[];   // scannable bullets of what you'd do, natural language
+  questions: string[];        // ambiguities you'd ask before regenerating; empty if none
+}
+\`\`\`
+
+## Tone
+
+Write like a collaborator, not a planner. \`intent\` should sound like "You want me to ___ because ___." \`plannedChanges\` should be human-readable ("tighten the second clip from 6s to ~4s", "zoom into the search bar around 0:08") — not a spec. Use timestamps and clip labels from the source TSX so the human can verify you parsed it right.
+
+## When to ask questions
+
+If a note is ambiguous (says "make it better" without a target, references something not visible in the TSX, or could mean two different things), put it in \`questions\` instead of guessing. A non-empty \`questions\` list will pause the workflow — the human resolves before regen runs.
+
+Respond with ONLY the JSON object, no markdown fences, no explanation.`;
+
 // ── Build the user message for the LLM ──────────────────────────
 
 function buildUserMessage(ctx: {
@@ -251,18 +279,30 @@ function buildUserMessage(ctx: {
       parts.push(`\n## Available Audio\n${audio.map(a => `- ${a}`).join('\n')}`);
     }
 
-    if (ctx.kind === 'revise') {
+    if (ctx.kind === 'revise' || ctx.kind === 'revise-render') {
       const originalSource = ctx.inputs.originalSource as string | undefined;
       const reviewNotes = ctx.inputs.reviewNotes as string | undefined;
+      const brief = ctx.inputs.brief as { intent?: string; plannedChanges?: string[] } | undefined;
       if (originalSource) {
         parts.push(`\n## Current Composition Source (TSX)\nRevise this composition based on the feedback below. Keep the same clips and structure unless the feedback says otherwise.\n\n\`\`\`tsx\n${originalSource}\n\`\`\``);
       }
-      if (reviewNotes) {
+      if (brief && (brief.intent || (brief.plannedChanges && brief.plannedChanges.length > 0))) {
+        // Confirmed brief from stage 1 — preferred over raw notes.
+        const lines: string[] = [];
+        if (brief.intent) lines.push(brief.intent.trim());
+        if (brief.plannedChanges && brief.plannedChanges.length > 0) {
+          lines.push('');
+          lines.push('Planned changes (already confirmed by the reviewer):');
+          for (const change of brief.plannedChanges) lines.push(`- ${change}`);
+        }
+        parts.push(`\n## Revision Brief\n${lines.join('\n')}`);
+      } else if (reviewNotes) {
+        // Legacy direct-revise path: raw notes only.
         parts.push(`\n## Review Feedback\n${reviewNotes}`);
       }
     }
 
-    const skipKeys = new Set(['clips', 'audio', 'originalSource', 'reviewNotes']);
+    const skipKeys = new Set(['clips', 'audio', 'originalSource', 'reviewNotes', 'brief']);
     const otherKeys = Object.keys(ctx.inputs).filter(k => !skipKeys.has(k));
     if (otherKeys.length > 0) {
       parts.push(`\n## Additional Inputs`);
@@ -284,7 +324,7 @@ function buildUserMessage(ctx: {
 
 // ── Parse + validate the LLM response ───────────────────────────
 
-function parsePlan(raw: string): CompositionPlan {
+function parsePlan(raw: string, opts: { fallbackTitle?: string } = {}): CompositionPlan {
   // Strip markdown fences if the model wraps them
   let cleaned = raw.trim();
   if (cleaned.startsWith('```')) {
@@ -293,15 +333,26 @@ function parsePlan(raw: string): CompositionPlan {
 
   const plan = JSON.parse(cleaned) as CompositionPlan;
 
-  // Validate required fields
+  // Be lenient on cosmetic fields — small models drop title/description even
+  // when they nail the structural parts. Hard-fail only on data we can't
+  // synthesize from context (clips, durationSec).
   if (!plan.title || typeof plan.title !== 'string') {
-    throw new Error('Plan missing title');
+    plan.title = opts.fallbackTitle || 'Untitled composition';
+  }
+  if (typeof plan.description !== 'string') {
+    plan.description = '';
   }
   if (!plan.clips || !Array.isArray(plan.clips)) {
     throw new Error('Plan missing clips array');
   }
   if (typeof plan.durationSec !== 'number' || plan.durationSec <= 0) {
-    throw new Error('Plan has invalid durationSec');
+    // Derive from clip durations if missing/invalid.
+    const sumFromClips = plan.clips.reduce((acc, c) => acc + (typeof c.duration === 'number' ? c.duration : 0), 0);
+    if (sumFromClips > 0) {
+      plan.durationSec = sumFromClips;
+    } else {
+      throw new Error('Plan has invalid durationSec and no clip durations to derive from');
+    }
   }
 
   // Apply defaults
@@ -428,17 +479,21 @@ const ClipSegment: React.FC<{
   const { fps } = useVideoConfig();
   const frame = useCurrentFrame();
 
-  // Fade in/out for transitions
-  const fadeIn = interpolate(frame, [0, TRANSITION_FRAMES], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const fadeOut = interpolate(
-    frame,
-    [clipDurationFrames - TRANSITION_FRAMES, clipDurationFrames],
-    [1, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-  );
+  // Fade in/out for transitions (skipped when TRANSITION_FRAMES is 0)
+  const fadeIn = TRANSITION_FRAMES > 0
+    ? interpolate(frame, [0, TRANSITION_FRAMES], [0, 1], {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+      })
+    : 1;
+  const fadeOut = TRANSITION_FRAMES > 0
+    ? interpolate(
+        frame,
+        [clipDurationFrames - TRANSITION_FRAMES, clipDurationFrames],
+        [1, 0],
+        { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+      )
+    : 1;
   const opacity = fadeIn * fadeOut;
 
   // Zoom
@@ -447,12 +502,14 @@ const ClipSegment: React.FC<{
   let originY = 50;
   if (clip.zoom) {
     const zoomStartFrame = clip.zoom.startAtSec * fps;
-    scale = interpolate(
-      frame,
-      [zoomStartFrame, clipDurationFrames],
-      [1, clip.zoom.scale],
-      { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-    );
+    scale = zoomStartFrame < clipDurationFrames
+      ? interpolate(
+          frame,
+          [zoomStartFrame, clipDurationFrames],
+          [1, clip.zoom.scale],
+          { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+        )
+      : clip.zoom.scale;
     originX = clip.zoom.originX;
     originY = clip.zoom.originY;
   }
@@ -767,6 +824,15 @@ async function processJob(ctx: {
   };
 
   try {
+    // ── Brief-only short-circuit ────────────────────────────
+    // Stage 1 of the two-stage revise flow: synthesize a RevisionBrief
+    // from the original TSX + review notes. No render — the brief is the
+    // checkpoint where the human confirms before regen runs.
+    if (kind === 'revise-brief') {
+      await runBrief({ jobId, compositionId, inputs, updateState });
+      return;
+    }
+
     // ── Stage 1: Collect inputs ─────────────────────────────
     updateState('collecting inputs', 5, `Reading ${kind} job for ${compositionId}`);
 
@@ -816,7 +882,7 @@ async function processJob(ctx: {
     // ── Stage 3: Parse and validate the plan ────────────────
     let plan: CompositionPlan;
     try {
-      plan = parsePlan(llmResult.text);
+      plan = parsePlan(llmResult.text, { fallbackTitle: compositionId });
     } catch (parseErr: any) {
       console.error(`[worker] Job ${jobId}: plan parse failed:`, parseErr.message);
       appendActivity(jobId, { stage: 'error', message: `Plan parse failed: ${parseErr.message}` });
@@ -949,3 +1015,130 @@ async function processJob(ctx: {
     throw err;
   }
 }
+
+// ── Brief synthesis (revise-brief) ──────────────────────────────
+
+interface RevisionBrief {
+  sourceCompositionId: string;
+  generatedAt: string;
+  generatedBy: { provider: string; model: string };
+  intent: string;
+  plannedChanges: string[];
+  questions: string[];
+}
+
+function parseBrief(raw: string): { intent: string; plannedChanges: string[]; questions: string[] } {
+  let text = raw.trim();
+  // Strip ```json fences if the model added them despite instructions.
+  text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  const obj = JSON.parse(text);
+  return {
+    intent: typeof obj.intent === 'string' ? obj.intent : '',
+    plannedChanges: Array.isArray(obj.plannedChanges) ? obj.plannedChanges.filter((c: unknown): c is string => typeof c === 'string') : [],
+    questions: Array.isArray(obj.questions) ? obj.questions.filter((q: unknown): q is string => typeof q === 'string') : [],
+  };
+}
+
+async function runBrief(ctx: {
+  jobId: string;
+  compositionId: string;
+  inputs: Record<string, unknown> | null;
+  updateState: (agentState: string, progress: number, lastMessage?: string) => void;
+}) {
+  const { jobId, compositionId, inputs, updateState } = ctx;
+  const sourceCompositionId = (inputs?.sourceCompositionId as string | undefined) ?? compositionId;
+  const originalSource = (inputs?.originalSource as string | undefined) ?? '';
+  const reviewNotes = (inputs?.reviewNotes as string | undefined) ?? '';
+
+  if (!originalSource || !reviewNotes) {
+    throw new Error('Brief requires both originalSource and reviewNotes inputs');
+  }
+
+  updateState('reading source + notes', 10, `Synthesizing brief for ${sourceCompositionId}`);
+  appendActivity(jobId, {
+    stage: 'inputs',
+    message: `Reading TSX (${originalSource.length} chars) + ${reviewNotes.split('\n').length} note lines`,
+  });
+
+  const providerConfig = readProviderConfig();
+  updateState('interpreting feedback', 30, `Calling ${providerConfig.name || providerConfig.model} for brief`);
+  appendActivity(jobId, {
+    stage: 'llm',
+    message: `Calling ${providerConfig.name || providerConfig.model} (${providerConfig.format}) to interpret review notes`,
+  });
+
+  const userMessage = [
+    `## Source Composition (${sourceCompositionId})`,
+    '',
+    '```tsx',
+    originalSource,
+    '```',
+    '',
+    '## Review Notes',
+    reviewNotes,
+  ].join('\n');
+
+  const llmResult = await callLLM({
+    system: BRIEF_SYSTEM_PROMPT,
+    userMessage,
+    maxTokens: 2048,
+  });
+
+  if (!llmResult.text) throw new Error('LLM returned no text content');
+  appendActivity(jobId, {
+    stage: 'llm',
+    message: `LLM responded (${llmResult.text.length} chars, ${llmResult.inputTokens} in / ${llmResult.outputTokens} out tokens)`,
+  });
+
+  updateState('parsing brief', 70, 'Parsing revision brief JSON');
+  let parsed;
+  try {
+    parsed = parseBrief(llmResult.text);
+  } catch (parseErr: any) {
+    appendActivity(jobId, { stage: 'error', message: `Brief parse failed: ${parseErr.message}` });
+    throw new Error(`Failed to parse revision brief: ${parseErr.message}`);
+  }
+
+  const brief: RevisionBrief = {
+    sourceCompositionId,
+    generatedAt: new Date().toISOString(),
+    generatedBy: { provider: providerConfig.format, model: providerConfig.model },
+    intent: parsed.intent,
+    plannedChanges: parsed.plannedChanges,
+    questions: parsed.questions,
+  };
+
+  const outDir = join(process.cwd(), '.compositions', compositionId);
+  mkdirSync(outDir, { recursive: true });
+  const briefPath = join(outDir, 'revision-brief.json');
+  writeFileSync(briefPath, JSON.stringify(brief, null, 2));
+
+  appendActivity(jobId, {
+    stage: 'plan',
+    message: `Brief ready — ${brief.plannedChanges.length} planned change${brief.plannedChanges.length === 1 ? '' : 's'}${brief.questions.length > 0 ? `, ${brief.questions.length} question${brief.questions.length === 1 ? '' : 's'} blocking` : ''}`,
+    detail: brief.intent,
+  });
+
+  appendActivity(jobId, {
+    stage: 'done',
+    message: brief.questions.length > 0
+      ? `Brief written — awaiting answers to ${brief.questions.length} question${brief.questions.length === 1 ? '' : 's'} before regen`
+      : `Brief written — ready to regenerate`,
+    detail: `.compositions/${compositionId}/revision-brief.json`,
+  });
+
+  completeJob(jobId, {
+    outputUrls: [`.compositions/${compositionId}/revision-brief.json`],
+    metadata: {
+      kind: 'revise-brief',
+      sourceCompositionId,
+      briefPath: `.compositions/${compositionId}/revision-brief.json`,
+      intent: brief.intent,
+      plannedChangeCount: brief.plannedChanges.length,
+      questionCount: brief.questions.length,
+      readyToRegen: brief.questions.length === 0,
+      compositionDir: `.compositions/${compositionId}`,
+    },
+  });
+}
+

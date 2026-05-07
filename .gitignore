@@ -49,3 +49,19 @@ public/hostai-*
 .queue/
 .openscout/
 static/
+
+# Generated compositions — LLM output, regenerated on demand.
+# .compositions/<id>/ is the drawing pad; src/ stays the curated library.
+.compositions/
+src/_generated-compositions.ts
+
+# Local-only public assets (symlinks to ../static/, scratch uploads, loose icons).
+# Catalog scanner picks these up at runtime; they never belong in git.
+public/demos
+public/tracks
+public/inbox/
+public/*.png
+public/*.gif
+public/*.webm
+public/*.mov
+public/*.mkv

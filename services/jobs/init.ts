@@ -1,4 +1,4 @@
-import { getDb, insertJob, findActiveJob, findByIdempotencyKey } from './db';
+import { getDb, insertJob, findActiveJob, findByIdempotencyKey, getJob } from './db';
 import { startWorker } from './worker';
 import type { CreateJobRequest, JobRecord, CreateJobResponse } from './types';
 
@@ -34,7 +34,7 @@ export async function createJob(compositionId: string, body: CreateJobRequest) {
     return { error: 'prompt is required', status: 400 };
   }
 
-  const validKinds = ['generate', 'revise', 'prepare', 'render'];
+  const validKinds = ['generate', 'revise', 'revise-brief', 'revise-render', 'prepare', 'render'];
   if (!validKinds.includes(kind)) {
     return { error: `kind must be one of: ${validKinds.join(', ')}`, status: 400 };
   }
@@ -60,6 +60,37 @@ export async function createJob(compositionId: string, body: CreateJobRequest) {
     inputs: inputs ?? null,
     params: params ?? null,
     idempotencyKey: idempotencyKey ?? null,
+  });
+
+  return { data: jobToCreateResponse(record), status: 201 };
+}
+
+export async function retryJob(originalJobId: string) {
+  ensureJobsRuntime();
+
+  const original = getJob(originalJobId);
+  if (!original) {
+    return { error: 'job_not_found', status: 404 };
+  }
+  if (original.status !== 'failed') {
+    return { error: `cannot retry job in status "${original.status}"`, status: 400 };
+  }
+
+  // Don't queue a duplicate retry if one of the same kind is already active.
+  const active = findActiveJob(original.compositionId, original.kind);
+  if (active) {
+    return { data: jobToCreateResponse(active), status: 200 };
+  }
+
+  const jobId = generateJobId();
+  const record = insertJob({
+    jobId,
+    compositionId: original.compositionId,
+    kind: original.kind,
+    prompt: original.prompt,
+    inputs: original.inputs,
+    params: original.params,
+    idempotencyKey: null,
   });
 
   return { data: jobToCreateResponse(record), status: 201 };

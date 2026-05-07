@@ -615,15 +615,16 @@ export function ReviewPlayer() {
               />
             );
           })}
-          {sortedNotes.map(n => {
-            const pct = duration > 0 ? (n.time / duration) * 100 : 0;
+          {sortedNotes.filter(n => n.time != null).map(n => {
+            const t = n.time as number;
+            const pct = duration > 0 ? (t / duration) * 100 : 0;
             const color = n.kind === 'zoom' ? 'bg-amber-400' : 'bg-emerald-400';
             return (
               <div
                 key={`mark-${n.id}`}
                 className={`absolute -top-1.5 -bottom-1.5 w-[3px] rounded-sm ${color}`}
                 style={{ left: `calc(${pct}% - 1.5px)` }}
-                title={`${formatTime(n.time)} — ${n.comment || n.kind}`}
+                title={`${formatTime(t)} — ${n.comment || n.kind}`}
               />
             );
           })}

@@ -1,8 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Clock, CheckCircle2, Loader2, FileVideo, MessageSquare, Zap, XCircle, RefreshCw, FolderOpen, ChevronRight, Play, FileCode } from 'lucide-react';
+import { ArrowLeft, Clock, CheckCircle2, Loader2, FileVideo, MessageSquare, Zap, XCircle, RefreshCw, FolderOpen, ChevronRight, Play, FileCode, RotateCcw } from 'lucide-react';
+import { HudsonContextMenu, type ContextMenuEntry } from 'hudsonkit/context-menu';
 import { useCatalog } from '../Provider';
+
+async function retryJobRequest(jobId: string): Promise<void> {
+  const res = await fetch(`/api/jobs/${jobId}/retry`, { method: 'POST' });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Retry failed (${res.status})`);
+  }
+}
 
 interface ActivityEntry {
   stage: string;
@@ -52,23 +61,49 @@ function formatDuration(sec: number): string {
 // ── Queue list ─────────────────────────────────────────────────
 
 export function QueueView() {
-  const { setView } = useCatalog();
+  const { setView, refreshCatalog } = useCatalog();
   const [jobs, setJobs] = useState<CompositionJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<CompositionJob | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const completedSeenRef = useRef<Set<string>>(new Set());
 
+  const seededRef = useRef(false);
   const refresh = useCallback(async () => {
     try {
       const res = await fetch(`/api/jobs`);
       if (!res.ok) { setLoading(false); return; }
-      const data = await res.json();
-      setJobs(Array.isArray(data) ? data : []);
+      const data = (await res.json()) as CompositionJob[];
+      const list = Array.isArray(data) ? data : [];
+      setJobs(list);
+
+      // Seed the completed set on the first poll without triggering a refresh,
+      // so we only refetch the catalog for completions that happen *during*
+      // this session.
+      const seen = completedSeenRef.current;
+      let sawNewCompletion = false;
+      for (const job of list) {
+        if (job.status === 'completed' && !seen.has(job.jobId)) {
+          seen.add(job.jobId);
+          if (seededRef.current) sawNewCompletion = true;
+        }
+      }
+      seededRef.current = true;
+      if (sawNewCompletion) refreshCatalog();
     } catch {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [refreshCatalog]);
+
+  const handleRetry = useCallback(async (jobId: string) => {
+    try {
+      await retryJobRequest(jobId);
+      await refresh();
+    } catch (err) {
+      console.error('[queue] retry failed:', err);
+    }
+  }, [refresh]);
 
   useEffect(() => {
     refresh();
@@ -84,7 +119,7 @@ export function QueueView() {
   }, [jobs, selected?.jobId]);
 
   if (selected) {
-    return <JobDetail job={selected} onBack={() => setSelected(null)} />;
+    return <JobDetail job={selected} onBack={() => setSelected(null)} onRetry={handleRetry} />;
   }
 
   const running = jobs.filter(j => j.status === 'running').length;
@@ -153,11 +188,21 @@ export function QueueView() {
               const isFailed = job.status === 'failed';
               const isCompleted = job.status === 'completed';
 
+              const menuItems: ContextMenuEntry[] = [
+                {
+                  id: 'retry',
+                  label: 'Retry',
+                  icon: <RotateCcw size={12} />,
+                  disabled: !isFailed,
+                  action: () => { void handleRetry(job.jobId); },
+                },
+              ];
+
               return (
+                <HudsonContextMenu key={job.jobId} items={menuItems}>
                 <button
-                  key={job.jobId}
                   onClick={() => setSelected(job)}
-                  className={`group flex items-start gap-3 px-4 py-3.5 rounded text-left transition-all border ${
+                  className={`group flex items-start gap-3 px-4 py-3.5 rounded text-left transition-all border w-full ${
                     isRunning
                       ? 'bg-amber-400/[0.03] border-amber-400/[0.12] hover:border-amber-400/25'
                       : isFailed
@@ -234,6 +279,7 @@ export function QueueView() {
                     )}
                   </div>
                 </button>
+                </HudsonContextMenu>
               );
             })}
           </div>
@@ -245,8 +291,21 @@ export function QueueView() {
 
 // ── Job detail ─────────────────────────────────────────────────
 
-function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void }) {
+interface RevisionBriefView {
+  intent: string;
+  plannedChanges: string[];
+  questions: string[];
+  sourceCompositionId?: string;
+}
+
+function JobDetail({ job, onBack, onRetry }: { job: CompositionJob; onBack: () => void; onRetry: (jobId: string) => Promise<void> | void }) {
   const { openFile, openVideo, setView, data } = useCatalog();
+  const [retrying, setRetrying] = useState(false);
+  const [retryError, setRetryError] = useState<string | null>(null);
+  const [brief, setBrief] = useState<RevisionBriefView | null>(null);
+  const [briefLoading, setBriefLoading] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
+  const [regenError, setRegenError] = useState<string | null>(null);
   const meta = job.result?.metadata as Record<string, unknown> | undefined;
   const title = (meta?.title as string) || job.params?.name || job.compositionId;
 
@@ -260,6 +319,95 @@ function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void })
   const catalogVideo = videoPath && data?.videos
     ? data.videos.find(v => v.demosPath === videoPath || v.filename === `${job.compositionId}.mp4`)
     : null;
+
+  const isBriefJob = job.kind === 'revise-brief';
+  const briefPath = (meta?.briefPath as string | undefined) || `${compositionDir}/revision-brief.json`;
+  const sourceCompositionId = (meta?.sourceCompositionId as string | undefined);
+
+  // Load the brief JSON when this is a completed revise-brief job.
+  useEffect(() => {
+    if (!isBriefJob || job.status !== 'completed') return;
+    let cancelled = false;
+    setBriefLoading(true);
+    fetch(`/api/source?path=${encodeURIComponent(briefPath)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (cancelled || !data?.content) return;
+        try {
+          setBrief(JSON.parse(data.content));
+        } catch (err) {
+          console.error('Failed to parse brief', err);
+        }
+      })
+      .catch(err => console.error('Failed to load brief', err))
+      .finally(() => { if (!cancelled) setBriefLoading(false); });
+    return () => { cancelled = true; };
+  }, [isBriefJob, job.status, briefPath]);
+
+  const submitRegenerate = useCallback(async () => {
+    if (!brief || !sourceCompositionId) return;
+    setRegenerating(true);
+    setRegenError(null);
+    try {
+      // Re-read the original TSX so the regen has the same source the brief
+      // was written against.
+      const sourcePath = `.compositions/${sourceCompositionId}/Composition.tsx`;
+      const sourceRes = await fetch(`/api/source?path=${encodeURIComponent(sourcePath)}`);
+      if (!sourceRes.ok) throw new Error(`Could not read original TSX (${sourceRes.status})`);
+      const { content: originalSource } = await sourceRes.json();
+
+      // Pull clip + audio srcs from the original composition.json so the
+      // regen LLM has them as `## Available Clips` rather than having to
+      // re-derive from the TSX (it usually drops them otherwise).
+      let clips: string[] = [];
+      let audio: string[] = [];
+      let aspectRatio: string | undefined;
+      try {
+        const planPath = `.compositions/${sourceCompositionId}/composition.json`;
+        const planRes = await fetch(`/api/source?path=${encodeURIComponent(planPath)}`);
+        if (planRes.ok) {
+          const { content: planJson } = await planRes.json();
+          const plan = JSON.parse(planJson);
+          if (Array.isArray(plan.clips)) clips = plan.clips.map((c: { src?: string }) => c.src).filter(Boolean);
+          if (Array.isArray(plan.audioTracks)) audio = plan.audioTracks.map((a: { src?: string }) => a.src).filter(Boolean);
+          if (typeof plan.width === 'number' && typeof plan.height === 'number') {
+            if (plan.width === plan.height) aspectRatio = '1:1';
+            else if (plan.height > plan.width) aspectRatio = '9:16';
+            else aspectRatio = '16:9';
+          }
+        }
+      } catch (err) {
+        console.warn('Could not preload original plan; LLM will derive clips from TSX', err);
+      }
+
+      const renderId = `${sourceCompositionId}-rev-${Date.now().toString(36)}`;
+      const res = await fetch(`/api/compositions/${encodeURIComponent(renderId)}/jobs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: 'revise-render',
+          prompt: `Apply the confirmed revision brief to "${sourceCompositionId}".`,
+          inputs: {
+            sourceCompositionId,
+            originalSource,
+            brief,
+            clips,
+            audio,
+          },
+          params: aspectRatio ? { aspectRatio } : undefined,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Regenerate failed (${res.status})`);
+      }
+      onBack();
+    } catch (err) {
+      setRegenError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRegenerating(false);
+    }
+  }, [brief, sourceCompositionId, onBack]);
 
   return (
     <div className="flex flex-col h-full">
@@ -311,8 +459,94 @@ function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void })
             </div>
           )}
 
+          {/* ── Brief job: review interpretation, then regenerate ──── */}
+          {isBriefJob && job.status === 'completed' && (
+            <div className="px-4 py-4 bg-cyan-400/[0.04] border border-cyan-400/[0.18] rounded">
+              <div className="flex items-baseline justify-between mb-3">
+                <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-cyan-300/80">
+                  Revision Brief
+                </span>
+                {sourceCompositionId && (
+                  <span className="text-[10px] font-mono text-white/35 truncate max-w-[60%]" title={sourceCompositionId}>
+                    of {sourceCompositionId}
+                  </span>
+                )}
+              </div>
+
+              {briefLoading && (
+                <div className="text-[11px] font-mono text-white/40 flex items-center gap-2">
+                  <Loader2 size={11} className="animate-spin" />
+                  Loading brief…
+                </div>
+              )}
+
+              {!briefLoading && !brief && (
+                <div className="text-[11px] font-mono text-red-400/70">
+                  Brief artifact missing at {briefPath}
+                </div>
+              )}
+
+              {brief && (
+                <>
+                  {brief.intent && (
+                    <div className="text-[12.5px] text-white/75 leading-relaxed mb-4 select-text border-l-2 border-cyan-400/30 pl-3">
+                      {brief.intent}
+                    </div>
+                  )}
+
+                  {brief.plannedChanges.length > 0 && (
+                    <div className="mb-4">
+                      <div className="text-[10px] font-mono uppercase tracking-[0.15em] text-white/35 mb-2">
+                        Planned changes
+                      </div>
+                      <ul className="flex flex-col gap-1.5">
+                        {brief.plannedChanges.map((c, i) => (
+                          <li key={i} className="text-[12px] text-white/65 leading-snug pl-3 relative select-text before:content-['—'] before:absolute before:left-0 before:text-white/25">
+                            {c}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {brief.questions.length > 0 && (
+                    <div className="mb-4 px-3 py-2.5 bg-amber-400/[0.06] border border-amber-400/25 rounded">
+                      <div className="text-[10px] font-mono uppercase tracking-[0.15em] text-amber-300/80 mb-1.5">
+                        Needs clarification ({brief.questions.length})
+                      </div>
+                      <ul className="flex flex-col gap-1">
+                        {brief.questions.map((q, i) => (
+                          <li key={i} className="text-[11.5px] text-amber-100/85 leading-snug select-text">
+                            {q}
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="text-[10px] font-mono text-amber-300/50 mt-2">
+                        Resolve in your review notes and re-run the brief, or regenerate anyway if these are minor.
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 pt-3 border-t border-cyan-400/[0.12]">
+                    <button
+                      onClick={submitRegenerate}
+                      disabled={regenerating}
+                      className="flex items-center gap-2 px-3 py-2 rounded bg-cyan-400/[0.12] hover:bg-cyan-400/[0.2] border border-cyan-400/30 hover:border-cyan-400/50 transition-all text-[11px] font-mono font-medium text-cyan-300 hover:text-cyan-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {regenerating ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
+                      {regenerating ? 'Queuing render…' : 'Regenerate composition'}
+                    </button>
+                    {regenError && (
+                      <span className="text-[10px] font-mono text-red-400/70">{regenError}</span>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
           {/* ── Completed: summary + video link ──────────── */}
-          {job.status === 'completed' && meta && (
+          {job.status === 'completed' && meta && !isBriefJob && (
             <div className="px-4 py-4 bg-emerald-400/[0.04] border border-emerald-400/[0.15] rounded">
               {meta.description && (
                 <div className="text-[12px] text-white/65 leading-relaxed mb-3 select-text">
@@ -392,6 +626,30 @@ function JobDetail({ job, onBack }: { job: CompositionJob; onBack: () => void })
             <Section icon={<XCircle size={10} />} label="Error" color="red">
               <div className="px-3 py-2.5 bg-red-400/[0.05] border border-red-400/15 rounded text-[12px] font-mono text-red-300/80 select-text leading-relaxed">
                 {job.error.message}
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  disabled={retrying}
+                  onClick={async () => {
+                    setRetrying(true);
+                    setRetryError(null);
+                    try {
+                      await onRetry(job.jobId);
+                      onBack();
+                    } catch (err) {
+                      setRetryError(err instanceof Error ? err.message : String(err));
+                    } finally {
+                      setRetrying(false);
+                    }
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 rounded bg-red-400/[0.08] hover:bg-red-400/[0.16] border border-red-400/30 hover:border-red-400/50 transition-all text-[11px] font-mono font-medium text-red-300 hover:text-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {retrying ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />}
+                  {retrying ? 'Queuing retry…' : 'Retry'}
+                </button>
+                {retryError && (
+                  <span className="text-[10px] font-mono text-red-400/70">{retryError}</span>
+                )}
               </div>
             </Section>
           )}

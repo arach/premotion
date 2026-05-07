@@ -36,6 +36,11 @@ export interface DemoVideoProps {
 	frameStyle?: "none" | "retro" | "midjourney";
 	retroMonitorColor?: string;
 	retroBaseColor?: string;
+	videoObjectFit?: "cover" | "contain"; // default "cover"
+	// Optional HUD text overrides forwarded to TacticalIntro
+	hudTopRight?: string[];
+	hudBottomLeft?: string[];
+	hudBottomRightLabel?: string;
 	// Thumbnail as first frame (for platform previews)
 	showThumbnailFrame?: boolean;
 	// Captions
@@ -62,6 +67,10 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 	frameStyle = "none",
 	retroMonitorColor = "#e8e0d4",
 	retroBaseColor = "#8b3a3a",
+	videoObjectFit = "cover",
+	hudTopRight,
+	hudBottomLeft,
+	hudBottomRightLabel,
 	showThumbnailFrame = true,
 	captionStyle = "none",
 	transcriptFile,
@@ -135,6 +144,9 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 					title={title}
 					subtitle={subtitle}
 					iconSrc={iconSrc}
+					hudTopRight={hudTopRight}
+					hudBottomLeft={hudBottomLeft}
+					hudBottomRightLabel={hudBottomRightLabel}
 				/>
 			</Sequence>
 
@@ -150,7 +162,7 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 								<OffthreadVideo
 									src={staticFile(videoSrc)}
 									startFrom={videoStartFromFrames}
-									style={{ width: "100%", height: "100%", objectFit: "cover" }}
+									style={{ width: "100%", height: "100%", objectFit: videoObjectFit }}
 									volume={videoVolume}
 								/>
 							</RetroComputerFrame>
@@ -159,7 +171,7 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 								<OffthreadVideo
 									src={staticFile(videoSrc)}
 									startFrom={videoStartFromFrames}
-									style={{ width: "100%", height: "100%", objectFit: "cover" }}
+									style={{ width: "100%", height: "100%", objectFit: videoObjectFit }}
 									volume={videoVolume}
 								/>
 							</MidjourneyComputerFrame>
@@ -167,7 +179,7 @@ export const DemoVideo: React.FC<DemoVideoProps> = ({
 							<OffthreadVideo
 								src={staticFile(videoSrc)}
 								startFrom={videoStartFromFrames}
-								style={{ width: "100%", height: "100%", objectFit: "cover" }}
+								style={{ width: "100%", height: "100%", objectFit: videoObjectFit }}
 								volume={musicFadeOutStart != null ? (f) => {
 									const fadeIn = Math.floor(musicFadeOutStart * fps);
 									const fadeEnd = fadeIn + Math.floor(1.5 * fps);

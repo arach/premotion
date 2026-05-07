@@ -37,7 +37,9 @@ function formatRect(r: { x: number; y: number; w: number; h: number }): string {
 }
 
 export function exportNotesAsPrompt(video: Video, notes: ReviewNote[]): string {
-  const sorted = [...notes].sort((a, b) => a.time - b.time);
+  const general = notes.filter(n => n.time == null);
+  const timestamped = notes.filter(n => n.time != null).sort((a, b) => (a.time as number) - (b.time as number));
+
   const lines: string[] = [];
   lines.push(`# Review — ${video.id}`);
   if (video.videoUrl) lines.push(`Source: ${video.videoUrl}`);
@@ -49,13 +51,26 @@ export function exportNotesAsPrompt(video: Video, notes: ReviewNote[]): string {
     `Rect coordinates are normalized (0..1) over the full video frame: x,y,w,h.`,
   );
   lines.push("");
-  lines.push(`## Notes (${sorted.length})`);
+
+  if (general.length > 0) {
+    lines.push(`## General Feedback (${general.length})`);
+    lines.push("");
+    for (const n of general) {
+      const comment = n.comment.trim() || "(no comment)";
+      lines.push(`- ${comment}`);
+    }
+    lines.push("");
+  }
+
+  lines.push(`## Timestamped Notes (${timestamped.length})`);
   lines.push("");
-  if (sorted.length === 0) {
+  if (timestamped.length === 0 && general.length === 0) {
     lines.push("_No notes yet._");
+  } else if (timestamped.length === 0) {
+    lines.push("_No timestamped notes._");
   } else {
-    for (const n of sorted) {
-      const stamp = formatTime(n.time) +
+    for (const n of timestamped) {
+      const stamp = formatTime(n.time as number) +
         (n.endTime != null ? `–${formatTime(n.endTime)}` : "");
       const rect = n.rect ? `, rect ${formatRect(n.rect)}` : "";
       const kind = n.kind.toUpperCase();

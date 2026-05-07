@@ -174,7 +174,27 @@ export function useReview(video: Video | null, active: boolean) {
     setDrawing(null);
   };
 
-  const sortedNotes = useMemo(() => [...notes].sort((a, b) => a.time - b.time), [notes]);
+  const addGeneralNote = useCallback((comment: string) => {
+    const trimmed = comment.trim();
+    if (!trimmed) return;
+    setNotes(prev => [...prev, {
+      id: createNoteId(),
+      time: null,
+      kind: 'feedback',
+      comment: trimmed,
+      createdAt: new Date().toISOString(),
+    }]);
+  }, []);
+
+  const sortedNotes = useMemo(
+    () => [...notes].sort((a, b) => {
+      if (a.time == null && b.time == null) return 0;
+      if (a.time == null) return -1;
+      if (b.time == null) return 1;
+      return a.time - b.time;
+    }),
+    [notes],
+  );
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   const visibleNoteRects = useMemo(
@@ -214,5 +234,6 @@ export function useReview(video: Video | null, active: boolean) {
     setComposing, editNote, deleteNote,
     onCanvasPointerDown, onCanvasPointerMove, onCanvasPointerUp,
     handleCopy, handleDownload,
+    addGeneralNote,
   };
 }

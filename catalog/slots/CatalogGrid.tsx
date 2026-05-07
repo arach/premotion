@@ -5,6 +5,21 @@ import { useCatalog } from '../Provider';
 import { formatDuration } from '@/lib/types';
 import type { CuratedSnippet, Video } from '@/lib/types';
 
+function formatCapturedAt(iso: string | null): { short: string; full: string } | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  const ms = d.getTime();
+  if (!Number.isFinite(ms)) return null;
+  const diffSec = Math.round((Date.now() - ms) / 1000);
+  let short: string;
+  if (diffSec < 60) short = 'just now';
+  else if (diffSec < 3600) short = `${Math.floor(diffSec / 60)}m ago`;
+  else if (diffSec < 86400) short = `${Math.floor(diffSec / 3600)}h ago`;
+  else if (diffSec < 86400 * 7) short = `${Math.floor(diffSec / 86400)}d ago`;
+  else short = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return { short, full: d.toLocaleString() };
+}
+
 export function CatalogGrid() {
   const {
     filter,
@@ -198,6 +213,15 @@ function VideoCard({
         {video.frameCount != null && video.frameCount > 0 && (
           <span>{video.frameCount} frames</span>
         )}
+        {(() => {
+          const ts = formatCapturedAt(video.capturedAt);
+          if (!ts) return null;
+          return (
+            <span className="ml-auto text-white/40 tabular-nums" title={ts.full}>
+              {ts.short}
+            </span>
+          );
+        })()}
       </div>
       {video.tags?.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-2">

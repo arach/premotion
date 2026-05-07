@@ -13,6 +13,11 @@ interface TacticalIntroProps {
 	subtitle?: string;
 	iconSrc?: string;
 	guideMargin?: number;
+	// Optional HUD corner text overrides. Each entry is an array of lines.
+	// Defaults preserve the Talkie spec readouts so existing compositions don't shift.
+	hudTopRight?: string[];
+	hudBottomLeft?: string[];
+	hudBottomRightLabel?: string; // text next to the blinking dot (default "REC")
 }
 
 // Reusable tactical intro - snappy guide frame with icon + wordmark
@@ -21,6 +26,9 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 	subtitle = "Voice Engine v2.22",
 	iconSrc = "talkie-icon-1024.png",
 	guideMargin: guideMarginProp,
+	hudTopRight = ["48kHz / 24-bit", "Neural Engine"],
+	hudBottomLeft = ["v2.22.0-beta"],
+	hudBottomRightLabel = "REC",
 }) => {
 	const frame = useCurrentFrame();
 	const { fps, height, durationInFrames } = useVideoConfig();
@@ -176,8 +184,9 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 					textAlign: "right",
 				}}
 			>
-				<div>48kHz / 24-bit</div>
-				<div>Neural Engine</div>
+				{hudTopRight.map((line, i) => (
+					<div key={i}>{line}</div>
+				))}
 			</div>
 
 			{/* Bottom-left: Version */}
@@ -192,7 +201,9 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 					letterSpacing: "0.05em",
 				}}
 			>
-				<div>v2.22.0-beta</div>
+				{hudBottomLeft.map((line, i) => (
+					<div key={i}>{line}</div>
+				))}
 			</div>
 
 			{/* Bottom-right: Status indicator */}
@@ -211,7 +222,7 @@ export const TacticalIntro: React.FC<TacticalIntroProps> = ({
 				}}
 			>
 				<span style={{ color: recDotVisible ? "#6a8" : "#555" }}>●</span>
-				<span>REC</span>
+				<span>{hudBottomRightLabel}</span>
 			</div>
 
 			{/* Center content: Icon + Title */}

@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   devIndicators: false,
-  transpilePackages: ["@hudsonos/sdk"],
+  transpilePackages: ["hudsonkit"],
   serverExternalPackages: ["better-sqlite3"],
   turbopack: {
     resolveAlias: {

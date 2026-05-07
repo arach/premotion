@@ -83,6 +83,7 @@ export interface CatalogContextValue {
 
   // Actions
   deleteVideo: (id: string) => Promise<void>;
+  refreshCatalog: () => Promise<void>;
 
   // View state
   view: string | null;
@@ -262,6 +263,17 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  // Re-fetch /catalog-data.json on demand. Cache-busting query param ensures
+  // the static file isn't served stale after the worker rebuilds it.
+  const refreshCatalog = useCallback(async () => {
+    try {
+      const c = await fetch(`/catalog-data.json?t=${Date.now()}`).then(r => r.json());
+      setData(c);
+    } catch (err) {
+      console.error('Failed to refresh catalog', err);
+    }
   }, []);
 
   // --- Derived ---
@@ -470,6 +482,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       counts,
       snippetCategoryCounts,
       deleteVideo,
+      refreshCatalog,
       view,
       setView,
       pendingFiles,
@@ -513,6 +526,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       counts,
       snippetCategoryCounts,
       deleteVideo,
+      refreshCatalog,
       view,
       setView,
       pendingFiles,

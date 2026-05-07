@@ -13,12 +13,13 @@ const PUBLIC = join(ROOT, "public");
 const TRANSCRIPTS = join(PUBLIC, "transcripts");
 const OUTPUT = join(PUBLIC, "catalog-data.json");
 
-const VIDEO_EXTS = new Set([".mp4", ".mov", ".webm", ".mkv"]);
+const VIDEO_EXTS = new Set([".mp4", ".mov", ".webm", ".mkv", ".gif"]);
 
 type VideoStage = "source" | "wip" | "final";
 
 const STAGE_ROOTS: { stage: VideoStage; dir: string }[] = [
   { stage: "source", dir: join(PUBLIC, "demos") },
+  { stage: "source", dir: join(PUBLIC, "inbox") },
   { stage: "wip", dir: join(PUBLIC, "wip") },
   { stage: "final", dir: join(PUBLIC, "out") },
 ];

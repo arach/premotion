@@ -1,4 +1,5 @@
 import { Composition, Still, Folder, Img, staticFile } from "remotion";
+import { GENERATED_COMPOSITIONS } from "./_generated-compositions";
 import { VideoMontage } from "./VideoMontage";
 import { FullVideo } from "./FullVideo";
 import { TerminalIntro } from "./intros/TerminalIntro";
@@ -955,6 +956,21 @@ export const RemotionRoot: React.FC = () => {
             style: "cyberpunk" as const,
           }}
         />
+      </Folder>
+
+      {/* Generated — auto-discovered from .compositions/<id>/ */}
+      <Folder name="Generated">
+        {GENERATED_COMPOSITIONS.map(({ meta }) => (
+          <Composition
+            key={meta.id}
+            id={meta.id}
+            component={meta.component}
+            width={meta.width}
+            height={meta.height}
+            fps={meta.fps}
+            durationInFrames={meta.durationInFrames}
+          />
+        ))}
       </Folder>
     </>
   );

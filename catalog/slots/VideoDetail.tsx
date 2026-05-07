@@ -6,6 +6,7 @@ import {
   Film,
   Loader2,
   MessageSquarePlus,
+  Plus,
   RotateCcw,
 } from 'lucide-react';
 import { useCatalog } from '../Provider';
@@ -30,6 +31,9 @@ export function VideoDetail({ video }: { video: Video }) {
   const { closeVideo, openFrame, projectVideo, projectId, videoId, closeProjectInput, setView } = useCatalog();
   const review = useReviewContext();
   const [revising, setRevising] = useState(false);
+  const [generalDraft, setGeneralDraft] = useState('');
+  const [generalOpen, setGeneralOpen] = useState(false);
+  const generalNotes = review.notes.filter(n => n.time == null);
   const hasFrames =
     !!video.frameCount &&
     video.frameCount > 0 &&
@@ -60,13 +64,16 @@ export function VideoDetail({ video }: { video: Video }) {
       const reviewText = exportNotesAsPrompt(video, review.notes);
       const revisionId = `${compositionId}-rev-${Date.now().toString(36)}`;
 
+      // Stage 1 of the two-stage revise flow: synthesize a brief. The user
+      // confirms the brief in QueueView's JobDetail before regen runs.
       const res = await fetch(`/api/compositions/${encodeURIComponent(revisionId)}/jobs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          kind: 'revise',
-          prompt: `Revise the composition "${compositionId}" based on the review feedback. Apply the requested changes while keeping the same source clips and overall structure unless the notes explicitly ask otherwise.`,
+          kind: 'revise-brief',
+          prompt: `Synthesize a revision brief for "${compositionId}" from the reviewer's notes.`,
           inputs: {
+            sourceCompositionId: compositionId,
             originalSource,
             reviewNotes: reviewText,
           },
@@ -136,6 +143,59 @@ export function VideoDetail({ video }: { video: Video }) {
           )}
         </div>
       </div>
+
+      {/* General comments — feedback not tied to a specific timestamp */}
+      {isFinal && (
+        <div className="shrink-0 px-4 py-2 border-b border-white/[0.04] bg-white/[0.01]">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setGeneralOpen(o => !o)}
+              className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-white/40 hover:text-white/70 transition-colors"
+            >
+              <Plus size={10} />
+              {generalOpen ? 'Cancel' : 'General comment'}
+              {generalNotes.length > 0 && (
+                <span className="text-white/25">· {generalNotes.length}</span>
+              )}
+            </button>
+            {generalNotes.slice(0, 3).map(n => (
+              <span
+                key={n.id}
+                className="text-[10px] font-mono text-white/45 bg-white/[0.04] px-2 py-0.5 rounded-sm truncate max-w-[280px]"
+                title={n.comment}
+              >
+                {n.comment}
+              </span>
+            ))}
+            {generalNotes.length > 3 && (
+              <span className="text-[10px] font-mono text-white/25">+{generalNotes.length - 3} more</span>
+            )}
+          </div>
+          {generalOpen && (
+            <div className="mt-2 flex items-start gap-2">
+              <textarea
+                value={generalDraft}
+                onChange={e => setGeneralDraft(e.target.value)}
+                placeholder="High-level feedback (e.g. 'pacing feels rushed in the middle', 'try a tighter intro')"
+                rows={2}
+                className="flex-1 bg-white/[0.03] border border-white/[0.08] rounded-sm px-2.5 py-1.5 text-[12px] text-white/80 font-mono placeholder:text-white/20 outline-none focus:border-cyan-400/30 transition-colors resize-y"
+                autoFocus
+              />
+              <button
+                onClick={() => {
+                  review.addGeneralNote(generalDraft);
+                  setGeneralDraft('');
+                  setGeneralOpen(false);
+                }}
+                disabled={!generalDraft.trim()}
+                className="text-[10px] font-mono uppercase tracking-wider text-cyan-300/80 hover:text-cyan-200 bg-cyan-400/[0.08] hover:bg-cyan-400/[0.14] border border-cyan-400/25 px-2.5 py-1.5 rounded-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Add
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Player */}
       <div className="flex-1 min-h-0 flex flex-col">

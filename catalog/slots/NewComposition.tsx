@@ -7,10 +7,14 @@ import { useCatalog } from '../Provider';
 interface QueuedSource {
   path: string;
   type: 'file' | 'folder';
+  // Browser-side File pending upload to /api/catalog/ingest. When present,
+  // `path` is just the display name; the canonical path is set after upload.
+  file?: File;
 }
 
 function generateCompositionId(): string {
-  return `cmp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  // Remotion composition IDs only allow a-zA-Z0-9 and `-`, no underscores.
+  return `cmp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export function NewComposition() {
@@ -26,6 +30,7 @@ export function NewComposition() {
   const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const addFiles = useCallback((files: FileList | null) => {
@@ -33,6 +38,7 @@ export function NewComposition() {
     const newSources: QueuedSource[] = Array.from(files).map(f => ({
       path: f.name,
       type: 'file' as const,
+      file: f,
     }));
     setSources(prev => [...prev, ...newSources]);
   }, []);
@@ -47,11 +53,15 @@ export function NewComposition() {
     const newSources: QueuedSource[] = [];
     for (let i = 0; i < items.length; i++) {
       const entry = items[i].webkitGetAsEntry?.();
-      if (entry) {
-        newSources.push({
-          path: entry.name,
-          type: entry.isDirectory ? 'folder' : 'file',
-        });
+      if (!entry) continue;
+      if (entry.isDirectory) {
+        // Folders are passed by name only — the worker resolves them server-side.
+        newSources.push({ path: entry.name, type: 'folder' });
+      } else {
+        const file = items[i].getAsFile();
+        if (file) {
+          newSources.push({ path: file.name, type: 'file', file });
+        }
       }
     }
     if (newSources.length > 0) setSources(prev => [...prev, ...newSources]);
@@ -60,7 +70,33 @@ export function NewComposition() {
   const handleSubmit = useCallback(async () => {
     if (sources.length === 0 || !prompt.trim()) return;
     setSubmitting(true);
+    setUploadError(null);
     try {
+      // Upload any browser-side files into public/inbox/ via the ingest
+      // endpoint, then resolve the clip paths to inbox/<filename> so
+      // staticFile() in the generated composition finds them.
+      const resolvedClips: string[] = [];
+      for (const source of sources) {
+        if (source.file) {
+          const fd = new FormData();
+          fd.append('file', source.file);
+          const res = await fetch('/api/catalog/ingest', { method: 'POST', body: fd });
+          if (res.ok) {
+            const body = await res.json();
+            resolvedClips.push(`inbox/${body.filename}`);
+          } else if (res.status === 409) {
+            // Already in inbox — reuse it.
+            resolvedClips.push(`inbox/${source.path}`);
+          } else {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body.error || `Upload failed for ${source.path} (${res.status})`);
+          }
+        } else {
+          // No File object: came from pendingFiles (already on disk) or a folder drop.
+          resolvedClips.push(source.path);
+        }
+      }
+
       const compositionId = name.trim()
         ? name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
         : generateCompositionId();
@@ -71,7 +107,7 @@ export function NewComposition() {
         body: JSON.stringify({
           kind: 'generate',
           prompt: prompt.trim(),
-          inputs: { clips: sources.map(s => s.path) },
+          inputs: { clips: resolvedClips },
           params: { name: name.trim() || undefined },
         }),
       });
@@ -79,6 +115,7 @@ export function NewComposition() {
       setTimeout(() => setView('queue'), 1500);
     } catch (err) {
       console.error('Failed to create composition:', err);
+      setUploadError(err instanceof Error ? err.message : String(err));
     } finally {
       setSubmitting(false);
     }
@@ -191,7 +228,7 @@ export function NewComposition() {
               }`}
             >
               <Send size={12} />
-              {submitting ? 'Creating…' : 'Create Composition'}
+              {submitting ? 'Uploading & creating…' : 'Create Composition'}
             </button>
             <button
               onClick={() => setView(null)}
@@ -200,6 +237,9 @@ export function NewComposition() {
               Cancel
             </button>
           </div>
+          {uploadError && (
+            <div className="text-[11px] font-mono text-red-400/80 -mt-4">{uploadError}</div>
+          )}
         </div>
       </div>
     </div>
