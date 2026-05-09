@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import { ArrowLeft, ChevronRight, Code2, FileCode2, FileVideo, Film, FolderOpen, Inbox, Music, Layers, Plus, Settings } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronRight, Code2, FileCode2, FileVideo, Film, FolderOpen, Inbox, Music, Layers, Plus, Settings, Wand2 } from 'lucide-react';
 import { useCatalog } from '../Provider';
 import { formatDuration } from '@/lib/types';
 import type { Video } from '@/lib/types';
@@ -71,6 +71,8 @@ export function CatalogLeftPanel() {
         <NavItem icon={<Inbox size={14} />} label="Queue" active={view === 'queue'} onClick={() => setView('queue')} />
         <NavItem icon={<FolderOpen size={14} />} label="Assets" active={view === 'assets'} onClick={() => setView('assets')} />
         <NavItem icon={<Music size={14} />} label="Music" active={view === 'music'} onClick={() => setView('music')} />
+        <NavItem icon={<Wand2 size={14} />} label="FX Browser" active={view === 'fx'} onClick={() => setView('fx')} />
+        <NavItem icon={<BookOpen size={14} />} label="Prompts" active={view === 'prompts'} onClick={() => setView('prompts')} />
       </nav>
 
       <div className="flex-1" />

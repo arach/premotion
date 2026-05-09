@@ -5,8 +5,10 @@ import { AssetsView } from './AssetsView';
 import { CatalogGrid } from './CatalogGrid';
 import { CodePanel } from './CodePanel';
 import { FrameViewer } from './FrameViewer';
+import { FxBrowser } from './FxBrowser';
 import { MusicView } from './MusicView';
 import { NewComposition } from './NewComposition';
+import { PromptLibrary } from './PromptLibrary';
 import { QueueView } from './QueueView';
 import { SettingsView } from './SettingsView';
 import { VideoDetail } from './VideoDetail';
@@ -34,8 +36,16 @@ export function CatalogContent() {
     return <AssetsView />;
   }
 
+  if (view === 'fx') {
+    return <FxBrowser />;
+  }
+
   if (view === 'music') {
     return <MusicView />;
+  }
+
+  if (view === 'prompts') {
+    return <PromptLibrary />;
   }
 
   if (view === 'settings') {

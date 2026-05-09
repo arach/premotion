@@ -17,6 +17,7 @@ import type {
   Video,
 } from '@/lib/types';
 import { ReviewProvider } from './ReviewContext';
+import { FxProvider } from './FxContext';
 
 // ---------------------------------------------------------------------------
 // Lightbox state — transient UI, not URL-backed
@@ -84,6 +85,11 @@ export interface CatalogContextValue {
   // Actions
   refreshCatalog: () => Promise<void>;
   deleteVideo: (id: string) => Promise<void>;
+
+  // Pending music generations (fire-and-forget tracking)
+  pendingMusicCount: number;
+  notifyMusicQueued: () => void;
+  notifyMusicSettled: () => void;
 
   // View state
   view: string | null;
@@ -425,9 +431,16 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     }
   }, [data, videoId, closeVideo]);
 
-  // --- View state ---
-  const [view, setViewState] = useState<string | null>(null);
-  const setView = useCallback((v: string | null) => setViewState(v), []);
+  // --- Pending music ---
+  const [pendingMusicCount, setPendingMusicCount] = useState(0);
+  const notifyMusicQueued = useCallback(() => setPendingMusicCount(c => c + 1), []);
+  const notifyMusicSettled = useCallback(() => setPendingMusicCount(c => Math.max(0, c - 1)), []);
+
+  // --- View state — driven by the URL path ---
+  const view = pathname === '/' ? null : pathname.replace(/^\//, '');
+  const setView = useCallback((v: string | null) => {
+    router.push(v ? `/${v}` : '/');
+  }, [router]);
   const [pendingFiles, setPendingFiles] = useState<string[]>([]);
 
   // --- Code viewer ---
@@ -474,6 +487,9 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       snippetCategoryCounts,
       refreshCatalog,
       deleteVideo,
+      pendingMusicCount,
+      notifyMusicQueued,
+      notifyMusicSettled,
       view,
       setView,
       pendingFiles,
@@ -518,6 +534,9 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       snippetCategoryCounts,
       refreshCatalog,
       deleteVideo,
+      pendingMusicCount,
+      notifyMusicQueued,
+      notifyMusicSettled,
       view,
       setView,
       pendingFiles,
@@ -533,7 +552,9 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   return (
     <CatalogContext.Provider value={value}>
-      <ReviewProvider>{children}</ReviewProvider>
+      <ReviewProvider>
+        <FxProvider>{children}</FxProvider>
+      </ReviewProvider>
     </CatalogContext.Provider>
   );
 }

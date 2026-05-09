@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Film, FolderOpen, Upload, Send, FileVideo, Music, X, Sparkles } from 'lucide-react';
+import { ArrowLeft, Film, FolderOpen, Upload, Send, FileVideo, Music, X, Sparkles, Wand2 } from 'lucide-react';
+import type { IdeateResult } from '@/lib/inference';
 import { useCatalog } from '../Provider';
 
 type CompositionMode = 'video' | 'video-music' | 'music';
@@ -57,7 +58,7 @@ Click up, send now
 Flow locks in, lights down`;
 
 export function NewComposition({ initialMode }: { initialMode?: CompositionMode }) {
-  const { setView, pendingFiles, setPendingFiles, refreshCatalog } = useCatalog();
+  const { setView, pendingFiles, setPendingFiles, refreshCatalog, notifyMusicQueued, notifyMusicSettled } = useCatalog();
   const [mode, setMode] = useState<CompositionMode>(() => initialMode ?? (pendingFiles.length > 0 ? 'video-music' : 'video'));
   const [sources, setSources] = useState<QueuedSource[]>(() =>
     pendingFiles.map(f => ({ path: f, type: 'file' as const }))
@@ -72,6 +73,9 @@ export function NewComposition({ initialMode }: { initialMode?: CompositionMode 
   const [generatingLyrics, setGeneratingLyrics] = useState(false);
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [ideatePrompt, setIdeatePrompt] = useState('');
+  const [ideating, setIdeating] = useState(false);
+  const [ideateResult, setIdeateResult] = useState<IdeateResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -126,34 +130,29 @@ export function NewComposition({ initialMode }: { initialMode?: CompositionMode 
 
     if (mode === 'music') {
       if (!musicPrompt.trim()) return;
-      setSubmitting(true);
-      try {
-        const res = await fetch('/api/music/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: musicPrompt.trim(),
-            lyrics: musicLyrics.trim(),
-            lyricsResult: lyricsResult ?? undefined,
-            instrumental,
-            model: 'music-2.6',
-            title: name.trim() || undefined,
-            sourceAsset: {
-              id: slugifyCompositionName(name) || undefined,
-              compositionId: slugifyCompositionName(name) || undefined,
-            },
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Music generation failed');
-        await refreshCatalog();
-        setSubmitted('music');
-        setTimeout(() => setView('music'), 900);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-      } finally {
-        setSubmitting(false);
-      }
+      notifyMusicQueued();
+      fetch('/api/music/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: musicPrompt.trim(),
+          lyrics: musicLyrics.trim(),
+          lyricsResult: lyricsResult ?? undefined,
+          instrumental,
+          model: 'music-2.6',
+          title: name.trim() || undefined,
+          sourceAsset: {
+            id: slugifyCompositionName(name) || undefined,
+            compositionId: slugifyCompositionName(name) || undefined,
+          },
+        }),
+      }).then(async (res) => {
+        if (res.ok) await refreshCatalog();
+      }).catch(() => {}).finally(() => {
+        notifyMusicSettled();
+      });
+      setSubmitted('music');
+      setTimeout(() => setView('music'), 900);
       return;
     }
 
@@ -226,6 +225,29 @@ export function NewComposition({ initialMode }: { initialMode?: CompositionMode 
     }
   }, [musicPrompt, musicLyrics, instrumental, name]);
 
+  const handleIdeate = useCallback(async () => {
+    if (!ideatePrompt.trim() || ideating) return;
+    setIdeating(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/inference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task: 'music-ideate', prompt: ideatePrompt.trim() }),
+      });
+      const data = await res.json() as IdeateResult & { error?: string };
+      if (!res.ok) throw new Error(data.error || 'Ideation failed');
+      setIdeateResult(data);
+      if (data.musicPrompt) setMusicPrompt(data.musicPrompt);
+      if (data.lyrics) setMusicLyrics(data.lyrics);
+      if (!name.trim() && data.title) setName(data.title);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setIdeating(false);
+    }
+  }, [ideatePrompt, ideating, name]);
+
   const needsSource = mode !== 'music';
   const canSubmit = mode === 'music'
     ? !!musicPrompt.trim() && !submitting
@@ -235,7 +257,7 @@ export function NewComposition({ initialMode }: { initialMode?: CompositionMode 
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3">
         <div className="text-[14px] text-emerald-400/80 font-mono">
-          {submitted === 'music' ? 'Music generated' : 'Composition queued'}
+          {submitted === 'music' ? 'Music queued' : 'Composition queued'}
         </div>
         <div className="text-[11px] text-white/30 font-mono">
           Opening {submitted === 'music' ? 'music library' : 'queue'}...
@@ -319,6 +341,42 @@ export function NewComposition({ initialMode }: { initialMode?: CompositionMode 
                       rows={7}
                       className="w-full bg-white/[0.03] border border-white/[0.08] rounded-sm px-3 py-2.5 text-[13px] text-white/80 font-mono placeholder:text-white/15 outline-none focus:border-cyan-400/30 transition-colors resize-none leading-relaxed"
                     />
+                  </Field>
+                )}
+
+                {(mode === 'video-music' || mode === 'music') && (
+                  <Field label="Vibe / Concept">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={ideatePrompt}
+                        onChange={e => setIdeatePrompt(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') handleIdeate(); }}
+                        placeholder="e.g. late night Tokyo drive, lo-fi melancholy with hope…"
+                        className="flex-1 bg-white/[0.03] border border-white/[0.08] rounded-sm px-3 py-2.5 text-[13px] text-white/80 font-mono placeholder:text-white/15 outline-none focus:border-cyan-400/30 transition-colors"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleIdeate}
+                        disabled={!ideatePrompt.trim() || ideating}
+                        className={`shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-sm border text-[11px] font-mono uppercase tracking-wider transition-colors ${
+                          ideatePrompt.trim() && !ideating
+                            ? 'bg-violet-400/[0.1] border-violet-400/25 text-violet-300 hover:bg-violet-400/[0.15]'
+                            : 'bg-white/[0.02] border-white/[0.06] text-white/22 cursor-not-allowed'
+                        }`}
+                      >
+                        <Wand2 size={11} />
+                        {ideating ? 'Ideating…' : 'Ideate'}
+                      </button>
+                    </div>
+                    {ideateResult && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {ideateResult.genre && <IdeateTag>{ideateResult.genre}</IdeateTag>}
+                        {ideateResult.mood && <IdeateTag>{ideateResult.mood}</IdeateTag>}
+                        {ideateResult.bpm && <IdeateTag>{ideateResult.bpm} BPM</IdeateTag>}
+                        {ideateResult.instruments && <IdeateTag>{ideateResult.instruments}</IdeateTag>}
+                      </div>
+                    )}
                   </Field>
                 )}
 
@@ -448,5 +506,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       </label>
       {children}
     </div>
+  );
+}
+
+function IdeateTag({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="px-2 py-1 rounded bg-violet-400/[0.07] border border-violet-400/20 text-[10px] font-mono text-violet-300/70">
+      {children}
+    </span>
   );
 }

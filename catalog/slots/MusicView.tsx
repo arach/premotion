@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { Braces, Clock, Disc3, FileAudio, Music, RefreshCw, Send, Sparkles, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Braces, Clock, Disc3, FileAudio, Loader2, Music, RefreshCw, Send, Sparkles, X } from 'lucide-react';
 import { useCatalog } from '../Provider';
 import { formatDuration, type AudioAsset } from '@/lib/types';
 
@@ -19,14 +19,14 @@ function compactJson(data: unknown): string {
 }
 
 export function MusicView() {
-  const { data, refreshCatalog, setView } = useCatalog();
+  const { data, refreshCatalog, setView, pendingMusicCount, notifyMusicSettled } = useCatalog();
   const audioAssets = useMemo(() => data?.audioAssets ?? [], [data]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [jsonModal, setJsonModal] = useState<JsonModalState | null>(null);
   const [feedback, setFeedback] = useState<Record<string, string>>({});
   const [reviseLyrics, setReviseLyrics] = useState<Record<string, boolean>>({});
-  const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const prevCountRef = useRef(audioAssets.length);
 
   useEffect(() => {
     if (audioAssets.length === 0) {
@@ -38,43 +38,55 @@ export function MusicView() {
     }
   }, [audioAssets, selectedId]);
 
+  // Poll while music generations are pending
+  useEffect(() => {
+    if (pendingMusicCount <= 0) return;
+    const interval = setInterval(() => { refreshCatalog(); }, 4000);
+    return () => clearInterval(interval);
+  }, [pendingMusicCount, refreshCatalog]);
+
+  // When new tracks appear, settle one pending slot and select the newest
+  useEffect(() => {
+    const prev = prevCountRef.current;
+    prevCountRef.current = audioAssets.length;
+    if (audioAssets.length > prev) {
+      notifyMusicSettled();
+      setSelectedId(audioAssets[0].id);
+    }
+  }, [audioAssets.length]);
+
   const selected = audioAssets.find(a => a.id === selectedId) ?? audioAssets[0] ?? null;
   const generatedCount = audioAssets.filter(a => a.generated).length;
   const totalDuration = audioAssets.reduce((total, a) => total + (a.duration || 0), 0);
 
-  const submitFeedback = async (asset: AudioAsset) => {
+  const { notifyMusicQueued } = useCatalog();
+
+  const submitFeedback = (asset: AudioAsset) => {
     const note = feedback[asset.id]?.trim();
     if (!note) return;
-    setSubmittingId(asset.id);
-    setMessage(null);
-    try {
-      const res = await fetch('/api/music/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sourceAsset: asset,
-          feedback: note,
-          prompt: asset.prompt,
-          lyrics: asset.lyrics,
-          instrumental: asset.instrumental,
-          model: asset.model || 'music-2.6',
-          generateLyrics: reviseLyrics[asset.id] ?? (!!asset.lyrics && !asset.instrumental),
-          lyricsMode: asset.lyrics ? 'edit' : 'write_full_song',
-          lyricsPrompt: `Revise the lyrics for this track using the feedback, then generate the revised music.\n\nFeedback: ${note}\n\nMusic prompt: ${asset.prompt ?? ''}`,
-          title: asset.songTitle || asset.id,
-        }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Music revision failed');
-      await refreshCatalog();
-      setFeedback(prev => ({ ...prev, [asset.id]: '' }));
-      setSelectedId(result.id);
-      setMessage('Revision saved to Music.');
-    } catch (err) {
-      setMessage(err instanceof Error ? err.message : String(err));
-    } finally {
-      setSubmittingId(null);
-    }
+    notifyMusicQueued();
+    fetch('/api/music/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sourceAsset: asset,
+        feedback: note,
+        prompt: asset.prompt,
+        lyrics: asset.lyrics,
+        instrumental: asset.instrumental,
+        model: asset.model || 'music-2.6',
+        generateLyrics: reviseLyrics[asset.id] ?? (!!asset.lyrics && !asset.instrumental),
+        lyricsMode: asset.lyrics ? 'edit' : 'write_full_song',
+        lyricsPrompt: `Revise the lyrics for this track using the feedback, then generate the revised music.\n\nFeedback: ${note}\n\nMusic prompt: ${asset.prompt ?? ''}`,
+        title: asset.songTitle || asset.id,
+      }),
+    }).then(async (res) => {
+      if (res.ok) await refreshCatalog();
+    }).catch(() => {}).finally(() => {
+      notifyMusicSettled();
+    });
+    setFeedback(prev => ({ ...prev, [asset.id]: '' }));
+    setMessage('Revision queued.');
   };
 
   return (
@@ -82,7 +94,15 @@ export function MusicView() {
       <aside className="min-h-0 border-r border-white/[0.06] bg-white/[0.01] flex flex-col">
         <div className="px-4 py-4 border-b border-white/[0.06]">
           <div className="flex items-center justify-between gap-3 mb-4">
-            <div className="text-[14px] font-medium text-white/90">Music</div>
+            <div className="flex items-center gap-2">
+              <div className="text-[14px] font-medium text-white/90">Music</div>
+              {pendingMusicCount > 0 && (
+                <div className="flex items-center gap-1 text-[9px] font-mono text-violet-300/60">
+                  <Loader2 size={9} className="animate-spin" />
+                  {pendingMusicCount === 1 ? 'generating' : `${pendingMusicCount} generating`}
+                </div>
+              )}
+            </div>
             <button
               type="button"
               onClick={() => setView('new-music')}
@@ -149,7 +169,6 @@ export function MusicView() {
           <MusicDetail
             asset={selected}
             feedback={feedback[selected.id] ?? ''}
-            submitting={submittingId === selected.id}
             message={message}
             reviseLyrics={reviseLyrics[selected.id] ?? (!!selected.lyrics && !selected.instrumental)}
             onFeedbackChange={(value) => setFeedback(prev => ({ ...prev, [selected.id]: value }))}
@@ -175,7 +194,6 @@ export function MusicView() {
 function MusicDetail({
   asset,
   feedback,
-  submitting,
   message,
   reviseLyrics,
   onFeedbackChange,
@@ -186,7 +204,6 @@ function MusicDetail({
 }: {
   asset: AudioAsset;
   feedback: string;
-  submitting: boolean;
   message: string | null;
   reviseLyrics: boolean;
   onFeedbackChange: (value: string) => void;
@@ -323,15 +340,15 @@ function MusicDetail({
             <button
               type="button"
               onClick={onSubmitFeedback}
-              disabled={!feedback.trim() || submitting}
+              disabled={!feedback.trim()}
               className={`mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-sm text-[11px] font-mono uppercase tracking-wider transition-colors ${
-                feedback.trim() && !submitting
+                feedback.trim()
                   ? 'bg-cyan-400/[0.1] border border-cyan-400/25 text-cyan-300 hover:bg-cyan-400/[0.15]'
                   : 'bg-white/[0.02] border border-white/[0.06] text-white/22 cursor-not-allowed'
               }`}
             >
               <Send size={11} />
-              {submitting ? 'Generating...' : 'Generate Revision'}
+              Generate Revision
             </button>
           </DetailsSection>
         </aside>

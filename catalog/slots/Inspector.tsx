@@ -8,19 +8,27 @@ import {
   Copy,
   Download,
   Plus,
+  RotateCcw,
   Trash2,
   X,
 } from 'lucide-react';
 import { useCatalog } from '../Provider';
 import { useReviewContext } from '../ReviewContext';
+import { FxContext, type FxParamValues } from '../FxContext';
+import { FX_PARAMS, type ParamDef } from './FxParams';
+import { useContext } from 'react';
 import { formatDuration, formatTime } from '@/lib/types';
 import type { ReviewNote, ReviewNoteKind } from '@/lib/types';
 import type { Composing } from '../hooks/useReview';
 
 export function CatalogInspector() {
-  const { selectedVideo, filter, counts, filteredVideos } = useCatalog();
+  const { selectedVideo, filter, counts, filteredVideos, view } = useCatalog();
   const review = useReviewContext();
   const [detailsOpen, setDetailsOpen] = useState(true);
+
+  if (view === 'fx') {
+    return <FxInspector />;
+  }
 
   if (!selectedVideo) {
     return (
@@ -291,6 +299,106 @@ function Row({ label, value }: { label: string; value: string }) {
     <div className="flex items-baseline justify-between py-0.5">
       <span className="text-[10px] font-mono uppercase tracking-wider text-white/30">{label}</span>
       <span className="text-[11px] text-white/70 font-mono truncate ml-2">{value}</span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// FX Inspector
+// ---------------------------------------------------------------------------
+
+function FxInspector() {
+  const fx = useContext(FxContext);
+  if (!fx) return null;
+  const { fxSelectedId, fxParams, setFxParam, resetFxParams } = fx;
+  const defs: ParamDef[] = FX_PARAMS[fxSelectedId] ?? [];
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="px-4 py-2.5 border-b border-white/[0.04] shrink-0 flex items-center justify-between">
+        <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-white/30">Parameters</span>
+        {defs.length > 0 && (
+          <button
+            onClick={resetFxParams}
+            className="flex items-center gap-1 text-[9px] font-mono text-white/25 hover:text-white/55 transition-colors"
+          >
+            <RotateCcw size={8} />
+            Reset
+          </button>
+        )}
+      </div>
+
+      {defs.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center">
+          <span className="text-[9px] font-mono text-white/18 text-center px-4">No adjustable parameters</span>
+        </div>
+      ) : (
+        <div className="flex-1 min-h-0 overflow-y-auto frame-scrollbar py-3 px-4 flex flex-col gap-4">
+          {defs.map(def => {
+            const val = fxParams[def.name] ?? def.default;
+            return (
+              <div key={def.name} className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-white/55">{def.label}</span>
+                  {def.type === 'range' && (
+                    <span className="text-[9px] font-mono text-white/30 tabular-nums">
+                      {typeof val === 'number'
+                        ? (Number.isInteger(val) ? val : val.toFixed(def.step && def.step < 0.01 ? 3 : def.step && def.step < 0.1 ? 2 : 1))
+                        : val}
+                    </span>
+                  )}
+                </div>
+
+                {def.type === 'range' && (
+                  <input
+                    type="range"
+                    min={def.min}
+                    max={def.max}
+                    step={def.step}
+                    value={val as number}
+                    onChange={e => setFxParam(def.name, parseFloat(e.target.value))}
+                    className="w-full h-1 appearance-none bg-white/[0.1] rounded-full accent-cyan-400 cursor-pointer"
+                  />
+                )}
+
+                {def.type === 'color' && (
+                  <input
+                    type="color"
+                    value={val as string}
+                    onChange={e => setFxParam(def.name, e.target.value)}
+                    className="w-full h-7 rounded cursor-pointer bg-transparent border border-white/[0.08]"
+                  />
+                )}
+
+                {def.type === 'select' && (
+                  <select
+                    value={val as string}
+                    onChange={e => setFxParam(def.name, e.target.value)}
+                    className="w-full appearance-none bg-white/[0.04] border border-white/[0.08] rounded-sm px-2 py-1 text-[10px] font-mono text-white/60 outline-none focus:border-cyan-400/30 cursor-pointer"
+                  >
+                    {def.options?.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                )}
+
+                {def.type === 'toggle' && (
+                  <button
+                    onClick={() => setFxParam(def.name, !(val as boolean))}
+                    className={`w-9 h-5 rounded-full border transition-colors relative ${
+                      val ? 'bg-cyan-400/30 border-cyan-400/40' : 'bg-white/[0.06] border-white/[0.1]'
+                    }`}
+                  >
+                    <span className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform ${
+                      val ? 'bg-cyan-300 translate-x-4' : 'bg-white/40 translate-x-0.5'
+                    }`} />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
