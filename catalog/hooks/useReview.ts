@@ -88,6 +88,9 @@ export function useReview(video: Video | null, active: boolean) {
     el.addEventListener('pause', onPause);
     el.addEventListener('error', onError);
     el.addEventListener('loadedmetadata', onLoaded);
+    // React updates src as an attribute but doesn't call .load() — do it explicitly
+    // so the browser fires loadedmetadata / error with the new source.
+    el.load();
     return () => {
       el.removeEventListener('timeupdate', onTime);
       el.removeEventListener('play', onPlay);
