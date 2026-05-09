@@ -26,6 +26,7 @@ export function MusicView() {
   const [feedback, setFeedback] = useState<Record<string, string>>({});
   const [reviseLyrics, setReviseLyrics] = useState<Record<string, boolean>>({});
   const [message, setMessage] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const prevCountRef = useRef(audioAssets.length);
 
   useEffect(() => {
@@ -62,7 +63,7 @@ export function MusicView() {
   const { notifyMusicQueued } = useCatalog();
 
   const deleteTrack = async (asset: AudioAsset) => {
-    if (!confirm(`Delete "${asset.songTitle || asset.id}"?`)) return;
+    setConfirmDeleteId(null);
     await fetch('/api/music/delete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -175,14 +176,33 @@ export function MusicView() {
                       {asset.model && <span>{asset.model}</span>}
                     </div>
                   </button>
-                  <button
-                    type="button"
-                    onClick={e => { e.stopPropagation(); deleteTrack(asset); }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 hover:bg-white/[0.05] transition-all"
-                    title="Delete track"
-                  >
-                    <Trash2 size={11} />
-                  </button>
+                  {confirmDeleteId === asset.id ? (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={e => { e.stopPropagation(); deleteTrack(asset); }}
+                        className="px-1.5 py-0.5 rounded-sm text-[9px] font-mono uppercase tracking-wider text-red-300 bg-red-400/10 border border-red-400/25 hover:bg-red-400/20 transition-colors"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        type="button"
+                        onClick={e => { e.stopPropagation(); setConfirmDeleteId(null); }}
+                        className="px-1.5 py-0.5 rounded-sm text-[9px] font-mono uppercase tracking-wider text-white/40 hover:text-white/70 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={e => { e.stopPropagation(); setConfirmDeleteId(asset.id); }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 hover:bg-white/[0.05] transition-all"
+                      title="Delete track"
+                    >
+                      <Trash2 size={11} />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -200,6 +220,9 @@ export function MusicView() {
             onFeedbackChange={(value) => setFeedback(prev => ({ ...prev, [selected.id]: value }))}
             onReviseLyricsChange={(value) => setReviseLyrics(prev => ({ ...prev, [selected.id]: value }))}
             onSubmitFeedback={() => submitFeedback(selected)}
+            confirmDelete={confirmDeleteId === selected.id}
+            onRequestDelete={() => setConfirmDeleteId(selected.id)}
+            onCancelDelete={() => setConfirmDeleteId(null)}
             onDelete={() => deleteTrack(selected)}
             onOpenJson={(title, value) => setJsonModal({ title, data: value })}
             onRefresh={refreshCatalog}
@@ -223,9 +246,12 @@ function MusicDetail({
   feedback,
   message,
   reviseLyrics,
+  confirmDelete,
   onFeedbackChange,
   onReviseLyricsChange,
   onSubmitFeedback,
+  onRequestDelete,
+  onCancelDelete,
   onDelete,
   onOpenJson,
   onRefresh,
@@ -234,9 +260,12 @@ function MusicDetail({
   feedback: string;
   message: string | null;
   reviseLyrics: boolean;
+  confirmDelete: boolean;
   onFeedbackChange: (value: string) => void;
   onReviseLyricsChange: (value: boolean) => void;
   onSubmitFeedback: () => void;
+  onRequestDelete: () => void;
+  onCancelDelete: () => void;
   onDelete: () => void;
   onOpenJson: (title: string, value: unknown) => void;
   onRefresh: () => void;
@@ -287,14 +316,33 @@ function MusicDetail({
           >
             <RefreshCw size={13} />
           </button>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="p-2 rounded-sm text-white/25 hover:text-red-400 hover:bg-red-400/[0.07] transition-colors"
-            title="Delete track"
-          >
-            <Trash2 size={13} />
-          </button>
+          {confirmDelete ? (
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={onDelete}
+                className="px-2 py-1 rounded-sm text-[9px] font-mono uppercase tracking-wider text-red-300 bg-red-400/10 border border-red-400/25 hover:bg-red-400/20 transition-colors"
+              >
+                Delete
+              </button>
+              <button
+                type="button"
+                onClick={onCancelDelete}
+                className="px-2 py-1 rounded-sm text-[9px] font-mono uppercase tracking-wider text-white/40 hover:text-white/70 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={onRequestDelete}
+              className="p-2 rounded-sm text-white/25 hover:text-red-400 hover:bg-red-400/[0.07] transition-colors"
+              title="Delete track"
+            >
+              <Trash2 size={13} />
+            </button>
+          )}
         </div>
       </div>
 

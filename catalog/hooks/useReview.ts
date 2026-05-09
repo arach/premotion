@@ -50,6 +50,10 @@ export function useReview(video: Video | null, active: boolean) {
 
   useEffect(() => {
     if (!video) { setNotes([]); return; }
+    setLoadError(false);
+    setVideoDuration(0);
+    setCurrentTime(0);
+    setPlaying(false);
     setNotes(loadNotes(video.id));
   }, [video?.id]);
 

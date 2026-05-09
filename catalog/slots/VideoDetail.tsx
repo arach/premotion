@@ -28,7 +28,9 @@ function aspectRatio(res?: string): string {
 }
 
 function resolveSrc(video: Video): string {
-  if (video.videoUrl) return video.videoUrl;
+  if (video.videoUrl) {
+    return video.videoUrl.startsWith('/') ? video.videoUrl : `/${video.videoUrl}`;
+  }
   return `/wip/${video.filename}`;
 }
 
