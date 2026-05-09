@@ -33,6 +33,7 @@ export function CatalogContent() {
   }
 
   if (view === 'assets') {
+    if (selectedVideo) return <VideoDetail video={selectedVideo} />;
     return <AssetsView />;
   }
 
