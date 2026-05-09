@@ -102,6 +102,7 @@ const VIDEO_SOURCES = [
 ];
 
 const MUSIC_TRACKS = [
+  { label: 'First Frame',      value: '/tracks/generated/music-rev-moxsk15y.mp3' },
   { label: 'Agent Anthem',     value: '/tracks/generated/01-agent-anthem.mp3' },
   { label: 'Prompt Wanderer',  value: '/tracks/generated/02-prompt-wanderer.mp3' },
   { label: 'Tokyo Drift',      value: '/tracks/generated/tokyo-dript-rev-mox44b77.mp3' },

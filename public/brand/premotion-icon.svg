@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
+  <!-- Background -->
+  <rect width="100" height="100" fill="#08080A" rx="12"/>
+
+  <!--
+    Open-corner frame — 64×36 (16:9) centered in 100×100 canvas
+    Frame: (18,32)→(82,68), gap=10px
+  -->
+
+  <!-- Top edge -->
+  <line x1="28" y1="32" x2="72" y2="32" stroke="rgba(255,255,255,0.88)" stroke-width="2" stroke-linecap="square"/>
+  <!-- Bottom edge -->
+  <line x1="28" y1="68" x2="72" y2="68" stroke="rgba(255,255,255,0.88)" stroke-width="2" stroke-linecap="square"/>
+  <!-- Left edge -->
+  <line x1="18" y1="42" x2="18" y2="58" stroke="rgba(255,255,255,0.88)" stroke-width="2" stroke-linecap="square"/>
+  <!-- Right edge -->
+  <line x1="82" y1="42" x2="82" y2="58" stroke="rgba(255,255,255,0.88)" stroke-width="2" stroke-linecap="square"/>
+
+  <!-- Cyan standby dot — top-left corner -->
+  <circle cx="18" cy="32" r="3" fill="#22D3EE" opacity="0.9"/>
+</svg>
