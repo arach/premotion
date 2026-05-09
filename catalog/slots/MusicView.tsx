@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Braces, Clock, Disc3, FileAudio, Loader2, Music, RefreshCw, Send, Sparkles, X } from 'lucide-react';
+import { Braces, Clock, Disc3, FileAudio, Loader2, Music, RefreshCw, Send, Sparkles, Trash2, X } from 'lucide-react';
 import { useCatalog } from '../Provider';
 import { formatDuration, type AudioAsset } from '@/lib/types';
 
@@ -60,6 +60,20 @@ export function MusicView() {
   const totalDuration = audioAssets.reduce((total, a) => total + (a.duration || 0), 0);
 
   const { notifyMusicQueued } = useCatalog();
+
+  const deleteTrack = async (asset: AudioAsset) => {
+    if (!confirm(`Delete "${asset.songTitle || asset.id}"?`)) return;
+    await fetch('/api/music/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: asset.path }),
+    });
+    if (selectedId === asset.id) {
+      const next = audioAssets.find(a => a.id !== asset.id);
+      setSelectedId(next?.id ?? null);
+    }
+    await refreshCatalog();
+  };
 
   const submitFeedback = (asset: AudioAsset) => {
     const note = feedback[asset.id]?.trim();
@@ -134,30 +148,42 @@ export function MusicView() {
           ) : (
             <div className="flex flex-col gap-1.5">
               {audioAssets.map(asset => (
-                <button
+                <div
                   key={asset.id}
-                  type="button"
-                  onClick={() => setSelectedId(asset.id)}
-                  className={`w-full text-left rounded border px-3 py-2.5 transition-colors ${
+                  className={`group relative rounded border transition-colors ${
                     selected?.id === asset.id
                       ? 'bg-cyan-400/[0.07] border-cyan-400/25'
                       : 'bg-white/[0.015] border-white/[0.045] hover:bg-white/[0.04] hover:border-white/[0.1]'
                   }`}
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    {asset.generated ? (
-                      <Sparkles size={12} className="text-cyan-300/65 shrink-0" />
-                    ) : (
-                      <FileAudio size={12} className="text-white/30 shrink-0" />
-                    )}
-                    <span className="text-[11px] text-white/75 truncate">{asset.id}</span>
-                  </div>
-                  <div className="mt-1 flex items-center gap-2 text-[9px] font-mono text-white/30">
-                    <span>{formatDuration(asset.duration)}</span>
-                    <span>{asset.codec}</span>
-                    {asset.model && <span>{asset.model}</span>}
-                  </div>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(asset.id)}
+                    className="w-full text-left px-3 py-2.5 pr-8"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      {asset.generated ? (
+                        <Sparkles size={12} className="text-cyan-300/65 shrink-0" />
+                      ) : (
+                        <FileAudio size={12} className="text-white/30 shrink-0" />
+                      )}
+                      <span className="text-[11px] text-white/75 truncate">{asset.songTitle || asset.id}</span>
+                    </div>
+                    <div className="mt-1 flex items-center gap-2 text-[9px] font-mono text-white/30">
+                      <span>{formatDuration(asset.duration)}</span>
+                      <span>{asset.codec}</span>
+                      {asset.model && <span>{asset.model}</span>}
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={e => { e.stopPropagation(); deleteTrack(asset); }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 hover:bg-white/[0.05] transition-all"
+                    title="Delete track"
+                  >
+                    <Trash2 size={11} />
+                  </button>
+                </div>
               ))}
             </div>
           )}
@@ -174,6 +200,7 @@ export function MusicView() {
             onFeedbackChange={(value) => setFeedback(prev => ({ ...prev, [selected.id]: value }))}
             onReviseLyricsChange={(value) => setReviseLyrics(prev => ({ ...prev, [selected.id]: value }))}
             onSubmitFeedback={() => submitFeedback(selected)}
+            onDelete={() => deleteTrack(selected)}
             onOpenJson={(title, value) => setJsonModal({ title, data: value })}
             onRefresh={refreshCatalog}
           />
@@ -199,6 +226,7 @@ function MusicDetail({
   onFeedbackChange,
   onReviseLyricsChange,
   onSubmitFeedback,
+  onDelete,
   onOpenJson,
   onRefresh,
 }: {
@@ -209,6 +237,7 @@ function MusicDetail({
   onFeedbackChange: (value: string) => void;
   onReviseLyricsChange: (value: boolean) => void;
   onSubmitFeedback: () => void;
+  onDelete: () => void;
   onOpenJson: (title: string, value: unknown) => void;
   onRefresh: () => void;
 }) {
@@ -238,7 +267,7 @@ function MusicDetail({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
-            <h1 className="text-[16px] font-medium text-white/88 truncate">{asset.id}</h1>
+            <h1 className="text-[16px] font-medium text-white/88 truncate">{asset.songTitle || asset.id}</h1>
             {asset.generated && <Tag>Generated</Tag>}
             {asset.provider && <Tag>{asset.provider}</Tag>}
           </div>
@@ -250,13 +279,23 @@ function MusicDetail({
             <span>{asset.sizeMB.toFixed(1)} MB</span>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={onRefresh}
-          className="p-2 rounded-sm text-white/30 hover:text-white/65 hover:bg-white/[0.05] transition-colors"
-        >
-          <RefreshCw size={13} />
-        </button>
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="p-2 rounded-sm text-white/30 hover:text-white/65 hover:bg-white/[0.05] transition-colors"
+          >
+            <RefreshCw size={13} />
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="p-2 rounded-sm text-white/25 hover:text-red-400 hover:bg-red-400/[0.07] transition-colors"
+            title="Delete track"
+          >
+            <Trash2 size={13} />
+          </button>
+        </div>
       </div>
 
       <audio controls preload="metadata" src={`/${asset.path}`} className="w-full h-9 opacity-85" />
