@@ -14,6 +14,7 @@ import { useFx } from '../FxContext';
 import {
   ChevronDown,
   Download,
+  HelpCircle,
   Layers,
   LayoutGrid,
   Music2,
@@ -376,6 +377,7 @@ interface TimelinePlayerProps {
   onVideoSrcChange: (src: string) => void;
   onStageToggle: () => void;
   onExport: () => void;
+  onShowShortcuts: () => void;
 }
 
 function TimelinePlayer({
@@ -399,6 +401,7 @@ function TimelinePlayer({
   onVideoSrcChange,
   onStageToggle,
   onExport,
+  onShowShortcuts,
 }: TimelinePlayerProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const scrubbingRef = useRef(false);
@@ -551,8 +554,8 @@ function TimelinePlayer({
           <span className="text-[9px] font-mono text-white/20 uppercase tracking-wider">loop</span>
         </div>
 
-        {/* Export button */}
-        <div className="ml-auto">
+        {/* Export + shortcuts */}
+        <div className="ml-auto flex items-center gap-2">
           <button
             onClick={onExport}
             disabled={exporting}
@@ -566,6 +569,13 @@ function TimelinePlayer({
               ? <><span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />REC</>
               : <><Download size={9} />Export</>
             }
+          </button>
+          <button
+            onClick={onShowShortcuts}
+            className="p-1 rounded text-white/20 hover:text-white/55 hover:bg-white/[0.05] transition-colors"
+            title="Keyboard shortcuts (?)"
+          >
+            <HelpCircle size={12} />
           </button>
         </div>
       </div>
@@ -762,6 +772,62 @@ function ParamsPanel({
   );
 }
 
+// ─── ShortcutOverlay ──────────────────────────────────────────────────────────
+
+const SHORTCUTS = [
+  { keys: ['Space'],          label: 'Play / Pause' },
+  { keys: ['R'],              label: 'Restart' },
+  { keys: ['↑', 'K'],        label: 'Previous effect' },
+  { keys: ['↓', 'J'],        label: 'Next effect' },
+  { keys: ['←', 'H'],        label: 'Previous category' },
+  { keys: ['→', 'L'],        label: 'Next category' },
+  { keys: ['S'],              label: 'Stage / unstage' },
+  { keys: ['E'],              label: 'Export preview' },
+  { keys: ['M'],              label: 'Mute / unmute music' },
+  { keys: ['0–5'],            label: 'Select music track' },
+  { keys: ['/'],              label: 'Focus search' },
+  { keys: ['Esc'],            label: 'Clear search' },
+  { keys: ['?'],              label: 'Toggle shortcuts' },
+];
+
+function ShortcutOverlay({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      onClick={onClose}
+    >
+      <div
+        className="bg-[#0a0a0c] border border-white/[0.1] rounded-sm shadow-2xl p-5 w-[320px]"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/40">Keyboard Shortcuts</span>
+          <button onClick={onClose} className="text-white/25 hover:text-white/60 transition-colors">
+            <X size={12} />
+          </button>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          {SHORTCUTS.map(s => (
+            <div key={s.label} className="flex items-center justify-between">
+              <span className="text-[11px] text-white/55">{s.label}</span>
+              <div className="flex items-center gap-1">
+                {s.keys.map(k => (
+                  <kbd
+                    key={k}
+                    className="text-[9px] font-mono text-cyan-300/70 bg-white/[0.06] border border-white/[0.1] rounded px-1.5 py-0.5 leading-none"
+                  >
+                    {k}
+                  </kbd>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── FxBrowser ────────────────────────────────────────────────────────────────
 
 export function FxBrowser() {
@@ -771,6 +837,7 @@ export function FxBrowser() {
   const [staged, setStaged] = useState<string[]>([]);
   const [videoSrc, setVideoSrc] = useState(VIDEO_SOURCES[0].value);
   const [comparing, setComparing] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   // Player state
   const [isPlaying, setIsPlaying] = useState(true);
@@ -786,6 +853,7 @@ export function FxBrowser() {
 
   const previewRef = useRef<PreviewHandle>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const [previewWidth, setPreviewWidth] = useState(640);
 
   const rafRef = useRef<number | null>(null);
@@ -933,6 +1001,111 @@ export function FxBrowser() {
     setStaged(prev => prev.includes(id) ? prev.filter(s => s !== id) : prev.length < 4 ? [...prev, id] : prev);
   }, []);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    function handler(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName;
+      const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
+      // Always-on shortcuts (work even in inputs)
+      if (e.key === 'Escape') {
+        if (showShortcuts) { setShowShortcuts(false); return; }
+        setSearch('');
+        (document.activeElement as HTMLElement)?.blur();
+        return;
+      }
+      if (e.key === '?' && !inInput) { e.preventDefault(); setShowShortcuts(v => !v); return; }
+
+      if (inInput) return;
+
+      if (e.key === ' ') { e.preventDefault(); setIsPlaying(p => !p); return; }
+      if (e.key === 'r' || e.key === 'R') {
+        setCurrentTime(0); startWallRef.current = performance.now(); startTimeRef.current = 0;
+        previewRef.current?.seekTo(0); setIsPlaying(true); return;
+      }
+      if (e.key === '/' ) { e.preventDefault(); searchRef.current?.focus(); return; }
+
+      // Effect navigation
+      if (e.key === 'ArrowUp' || e.key === 'k' || e.key === 'K') {
+        e.preventDefault();
+        setIsPlaying(prev => { // use functional update to avoid stale closure
+          return prev;
+        });
+        setCategory(cat => {
+          const list = EFFECTS.filter(fx =>
+            (cat === 'All' || fx.category === cat)
+          );
+          const idx = list.findIndex(fx => fx.id === selectedId);
+          if (idx > 0) setSelectedId(list[idx - 1].id);
+          return cat;
+        });
+        return;
+      }
+      if (e.key === 'ArrowDown' || e.key === 'j' || e.key === 'J') {
+        e.preventDefault();
+        setCategory(cat => {
+          const list = EFFECTS.filter(fx =>
+            (cat === 'All' || fx.category === cat)
+          );
+          const idx = list.findIndex(fx => fx.id === selectedId);
+          if (idx < list.length - 1) setSelectedId(list[idx + 1].id);
+          return cat;
+        });
+        return;
+      }
+
+      // Category navigation
+      if (e.key === 'ArrowLeft' || e.key === 'h' || e.key === 'H') {
+        e.preventDefault();
+        setCategory(cat => {
+          const idx = CATEGORIES.indexOf(cat);
+          return idx > 0 ? CATEGORIES[idx - 1] : cat;
+        });
+        return;
+      }
+      if (e.key === 'ArrowRight' || e.key === 'l' || e.key === 'L') {
+        e.preventDefault();
+        setCategory(cat => {
+          const idx = CATEGORIES.indexOf(cat);
+          return idx < CATEGORIES.length - 1 ? CATEGORIES[idx + 1] : cat;
+        });
+        return;
+      }
+
+      if (e.key === 's' || e.key === 'S') {
+        setStaged(prev =>
+          prev.includes(selectedId)
+            ? prev.filter(id => id !== selectedId)
+            : prev.length < 4 ? [...prev, selectedId] : prev
+        );
+        return;
+      }
+      if ((e.key === 'e' || e.key === 'E') && !exporting) {
+        // trigger export — handled via ref to avoid stale closure
+        exportTriggerRef.current?.();
+        return;
+      }
+      if (e.key === 'm' || e.key === 'M') {
+        const audio = audioRef.current;
+        if (audio) audio.muted = !audio.muted;
+        return;
+      }
+      // Music track select: 0 = no track, 1–5 = tracks
+      if (e.key >= '0' && e.key <= '9') {
+        const n = parseInt(e.key);
+        if (n === 0) setMusicUrl(null);
+        else if (n <= MUSIC_TRACKS.length) setMusicUrl(MUSIC_TRACKS[n - 1].value);
+        return;
+      }
+    }
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId, exporting, showShortcuts]);
+
+  // Stable ref so export shortcut can call handleExport without stale closure
+  const exportTriggerRef = useRef<(() => void) | null>(null);
+
   // Quick export
   const handleExport = useCallback(() => {
     const stream = previewRef.current?.captureStream(30);
@@ -983,6 +1156,9 @@ export function FxBrowser() {
     }, totalMs);
   }, [selectedId, musicUrl, handleRestart]);
 
+  // Keep export trigger ref in sync
+  useEffect(() => { exportTriggerRef.current = handleExport; }, [handleExport]);
+
   const filtered = useMemo(() => {
     let list = EFFECTS;
     if (category !== 'All') list = list.filter(e => e.category === category);
@@ -1006,6 +1182,9 @@ export function FxBrowser() {
     <div className="h-full flex overflow-hidden">
       {/* Hidden audio element */}
       <audio ref={audioRef} loop />
+
+      {/* Shortcut overlay */}
+      {showShortcuts && <ShortcutOverlay onClose={() => setShowShortcuts(false)} />}
 
       {/* ── Left sidebar ─────────────────────────────────────────── */}
       <aside
@@ -1073,9 +1252,10 @@ export function FxBrowser() {
       <div className="w-[235px] shrink-0 border-r border-white/[0.06] flex flex-col overflow-hidden">
         <div className="px-3 py-2.5 border-b border-white/[0.06]">
           <input
+            ref={searchRef}
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search effects…"
+            placeholder="Search effects… (/)"
             className="w-full bg-white/[0.04] border border-white/[0.07] rounded-sm px-2.5 py-1.5 text-[11px] font-mono text-white/70 placeholder:text-white/20 outline-none focus:border-cyan-400/30 transition-colors"
           />
         </div>
@@ -1156,6 +1336,7 @@ export function FxBrowser() {
           onVideoSrcChange={setVideoSrc}
           onStageToggle={() => toggleStaged(selectedId)}
           onExport={handleExport}
+          onShowShortcuts={() => setShowShortcuts(v => !v)}
         />
 
         {/* Music bar */}
