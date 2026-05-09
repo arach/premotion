@@ -227,6 +227,7 @@ export function VideoDetail({ video }: { video: Video }) {
             >
               {!review.loadError ? (
                 <video
+                  key={src}
                   ref={review.videoRef}
                   src={src}
                   className="absolute inset-0 w-full h-full bg-black"
