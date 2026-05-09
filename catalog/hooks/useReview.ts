@@ -54,6 +54,8 @@ export function useReview(video: Video | null, active: boolean) {
     setVideoDuration(0);
     setCurrentTime(0);
     setPlaying(false);
+    setComposing(null);
+    setDrawing(null);
     setNotes(loadNotes(video.id));
   }, [video?.id]);
 

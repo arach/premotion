@@ -232,7 +232,7 @@ export function VideoDetail({ video }: { video: Video }) {
                   src={src}
                   className="absolute inset-0 w-full h-full bg-black"
                   playsInline
-                  preload="metadata"
+                  preload="auto"
                   controls
                 />
               ) : (
