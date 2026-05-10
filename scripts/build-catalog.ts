@@ -13,6 +13,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLIC = join(ROOT, "public");
 const TRANSCRIPTS = join(PUBLIC, "transcripts");
 const OUTPUT = join(PUBLIC, "catalog-data.json");
+const FRAMES_REGISTRY = join(PUBLIC, "frames.json");
 
 const VIDEO_EXTS = new Set([".mp4", ".mov", ".webm", ".mkv", ".gif"]);
 const AUDIO_EXTS = new Set([".mp3", ".wav", ".aac", ".m4a", ".flac", ".ogg"]);
@@ -30,7 +31,7 @@ const STAGE_ROOTS: { stage: VideoStage; dir: string }[] = [
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function log(...args: any[]) {
-  console.error(...args);
+  console.log(...args);
 }
 
 function slugify(filename: string): string {
@@ -553,6 +554,13 @@ async function buildCatalog() {
   const stageCounts = { source: 0, wip: 0, final: 0 };
   for (const v of videos) stageCounts[v.stage as VideoStage]++;
 
+  let frames: unknown[] = [];
+  try {
+    frames = JSON.parse(await Bun.file(FRAMES_REGISTRY).text());
+  } catch {
+    // frames.json missing or invalid — omit frames from output
+  }
+
   const catalog = {
     meta: {
       generatedAt: new Date().toISOString(),
@@ -562,6 +570,7 @@ async function buildCatalog() {
     videos,
     audioAssets,
     orphanStoryboards,
+    ...(frames.length ? { frames } : {}),
   };
 
   await Bun.write(OUTPUT, JSON.stringify(catalog, null, 2));

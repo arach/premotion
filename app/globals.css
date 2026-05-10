@@ -28,3 +28,8 @@ select option {
   background: #1a1a1a;
   color: #ccc;
 }
+
+[data-frame-panel="status-bar"] {
+  height: 28px !important;
+  min-height: 28px !important;
+}
