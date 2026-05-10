@@ -124,6 +124,10 @@ interface PlayerContextValue {
   playMedia: (m: Media, opts?: PlayMediaOpts) => void;
   playTrack: (track: AudioAsset, opts?: PlayMediaOpts) => void;
   playVideo: (video: Video, opts?: PlayMediaOpts) => void;
+  /** Insert after the currently-playing item. Falls back to playMedia if queue is empty. */
+  insertNext: (m: Media) => void;
+  /** Append to end of queue. Falls back to playMedia if queue is empty. */
+  addToQueue: (m: Media) => void;
   next: () => void;
   prev: () => void;
   toggleShuffle: () => void;
@@ -412,6 +416,20 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     playMedia(m, { autoplay: false });
   }, [playMedia]);
 
+  const insertNext = useCallback((m: Media) => {
+    if (queueRef.current.length === 0) { playMedia(m); return; }
+    setQueue(prev => {
+      const out = [...prev];
+      out.splice(queueIndexRef.current + 1, 0, m);
+      return out;
+    });
+  }, [playMedia]);
+
+  const addToQueue = useCallback((m: Media) => {
+    if (queueRef.current.length === 0) { playMedia(m); return; }
+    setQueue(prev => [...prev, m]);
+  }, [playMedia]);
+
   const next = useCallback(() => {
     const q = queueRef.current;
     if (q.length === 0) return;
@@ -667,7 +685,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       media, track, playing, currentTime, duration, volume,
       isPlayerOpen, isPip, pipSupported, loadError, history,
       queue, queueIndex, shuffle, repeat,
-      playMedia, playTrack, playVideo, loadMedia, next, prev, toggleShuffle, cycleRepeat,
+      playMedia, playTrack, playVideo, loadMedia, insertNext, addToQueue, next, prev, toggleShuffle, cycleRepeat,
       pause, resume, togglePlay, seek, setVolume,
       openPlayer, togglePlayer, logVideo, togglePip, mediaEl, attachStage,
     }}>

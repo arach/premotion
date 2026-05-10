@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Braces, Clock, Disc3, FileAudio, Loader2, Music, Pause, Play, RefreshCw, Send, Sparkles, Trash2, X } from 'lucide-react';
+import { Braces, Clock, CornerDownRight, Disc3, FileAudio, ListPlus, Loader2, Music, Pause, Play, RefreshCw, Send, Sparkles, Trash2, X } from 'lucide-react';
 import { useCatalog } from '../Provider';
 import { usePlayer } from '../PlayerContext';
 import { formatDuration, type AudioAsset } from '@/lib/types';
@@ -21,7 +21,7 @@ function compactJson(data: unknown): string {
 
 export function MusicView() {
   const { data, refreshCatalog, deleteAudio, setView, pendingMusicCount, notifyMusicSettled } = useCatalog();
-  const { playTrack, track: currentTrack, playing, togglePlay } = usePlayer();
+  const { playTrack, track: currentTrack, playing, togglePlay, insertNext, addToQueue } = usePlayer();
   const audioAssets = useMemo(() => data?.audioAssets ?? [], [data]);
   const audioQueue = useMemo(
     () => audioAssets.map(a => ({ kind: 'audio' as const, asset: a })),
@@ -209,14 +209,32 @@ export function MusicView() {
                       </button>
                     </div>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={e => { e.stopPropagation(); setConfirmDeleteId(asset.id); }}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 text-white/25 hover:text-red-400 hover:bg-white/[0.05] transition-all"
-                      title="Delete track"
-                    >
-                      <Trash2 size={11} />
-                    </button>
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
+                      <button
+                        type="button"
+                        onClick={e => { e.stopPropagation(); insertNext({ kind: 'audio', asset }); }}
+                        className="p-1 rounded text-white/30 hover:text-cyan-300 hover:bg-white/[0.05] transition-colors"
+                        title="Play next"
+                      >
+                        <CornerDownRight size={11} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={e => { e.stopPropagation(); addToQueue({ kind: 'audio', asset }); }}
+                        className="p-1 rounded text-white/30 hover:text-cyan-300 hover:bg-white/[0.05] transition-colors"
+                        title="Add to queue"
+                      >
+                        <ListPlus size={11} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={e => { e.stopPropagation(); setConfirmDeleteId(asset.id); }}
+                        className="p-1 rounded text-white/25 hover:text-red-400 hover:bg-white/[0.05] transition-colors"
+                        title="Delete track"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}

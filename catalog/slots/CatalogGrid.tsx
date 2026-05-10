@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { CornerDownRight, ListPlus } from 'lucide-react';
 import { useCatalog } from '../Provider';
+import { usePlayer } from '../PlayerContext';
 import { formatDuration } from '@/lib/types';
+import { resolveVideoSrc } from '@/lib/media';
 import type { CuratedSnippet, Video } from '@/lib/types';
 
 export function CatalogGrid() {
@@ -155,19 +158,54 @@ function VideoCard({
       : video.analysisStatus === 'frames-only'
         ? 'bg-amber-400/50'
         : 'bg-white/10';
+  const previewSrc = resolveVideoSrc(video);
+  const [previewError, setPreviewError] = useState(false);
+  const { insertNext, addToQueue } = usePlayer();
+  const asMedia = previewSrc ? { kind: 'video' as const, video, src: previewSrc } : null;
+  const setPreviewFrame = (el: HTMLVideoElement) => {
+    if (!Number.isFinite(el.duration) || el.duration <= 0) return;
+    const frameTime = Math.min(
+      Math.max(el.duration * 0.2, 1),
+      8,
+      Math.max(0, el.duration - 0.5),
+    );
+    if (Math.abs(el.currentTime - frameTime) > 0.05) {
+      el.currentTime = frameTime;
+    }
+  };
 
   return (
     <div
       className="group relative flex flex-col text-left p-3 rounded-sm border border-white/[0.04] hover:border-white/[0.12] bg-white/[0.015] hover:bg-white/[0.035] transition-colors cursor-pointer"
       onClick={() => onOpen(video.id)}
     >
-      <button
-        onClick={e => { e.stopPropagation(); onDelete(video.id); }}
-        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-white/20 hover:text-red-400 transition-all text-[11px] p-1"
-        title="Delete video"
-      >
-        x
-      </button>
+      <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
+        {asMedia && (
+          <>
+            <button
+              onClick={e => { e.stopPropagation(); insertNext(asMedia); }}
+              className="p-1 rounded text-white/25 hover:text-cyan-300 hover:bg-white/[0.05] transition-colors"
+              title="Play next"
+            >
+              <CornerDownRight size={12} />
+            </button>
+            <button
+              onClick={e => { e.stopPropagation(); addToQueue(asMedia); }}
+              className="p-1 rounded text-white/25 hover:text-cyan-300 hover:bg-white/[0.05] transition-colors"
+              title="Add to queue"
+            >
+              <ListPlus size={12} />
+            </button>
+          </>
+        )}
+        <button
+          onClick={e => { e.stopPropagation(); onDelete(video.id); }}
+          className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-white/[0.05] transition-colors text-[11px]"
+          title="Delete video"
+        >
+          x
+        </button>
+      </div>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400/60">
@@ -183,6 +221,38 @@ function VideoCard({
           <span className={`w-1.5 h-1.5 rounded-full ${statusColor}`} />
         </div>
       </div>
+
+      <div className="relative mb-3 aspect-video overflow-hidden rounded-sm bg-black border border-white/[0.05]">
+        {previewSrc && !previewError ? (
+          <video
+            src={previewSrc}
+            className="absolute inset-0 h-full w-full object-cover opacity-85 transition-opacity duration-200 group-hover:opacity-100"
+            muted
+            playsInline
+            preload="metadata"
+            onLoadedMetadata={e => setPreviewFrame(e.currentTarget)}
+            onMouseEnter={e => {
+              const el = e.currentTarget;
+              el.play().catch(() => undefined);
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget;
+              el.pause();
+              setPreviewFrame(el);
+            }}
+            onError={() => setPreviewError(true)}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-[10px] font-mono uppercase tracking-wider text-white/25">
+            Preview unavailable
+          </div>
+        )}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/65 to-transparent" />
+        <span className="pointer-events-none absolute bottom-2 left-2 rounded-sm bg-black/65 px-1.5 py-0.5 text-[9px] font-mono text-white/55">
+          {formatDuration(video.duration)}
+        </span>
+      </div>
+
       <div className="text-[12px] text-white/80 group-hover:text-white transition-colors truncate">
         {video.id}
       </div>
