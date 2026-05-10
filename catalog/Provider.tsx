@@ -18,6 +18,7 @@ import type {
 } from '@/lib/types';
 import { ReviewProvider } from './ReviewContext';
 import { FxProvider } from './FxContext';
+import { PlayerProvider } from './PlayerContext';
 
 // ---------------------------------------------------------------------------
 // Lightbox state — transient UI, not URL-backed
@@ -85,6 +86,7 @@ export interface CatalogContextValue {
   // Actions
   refreshCatalog: () => Promise<void>;
   deleteVideo: (id: string) => Promise<void>;
+  deleteAudio: (id: string) => Promise<void>;
 
   // Pending music generations (fire-and-forget tracking)
   pendingMusicCount: number;
@@ -413,23 +415,37 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const deleteVideo = useCallback(async (id: string) => {
     const video = data?.videos.find(v => v.id === id);
     if (!video) return;
-    if (!confirm(`Delete ${video.filename}?`)) return;
+    // Optimistic: remove immediately so the UI responds instantly
+    setData(prev => prev ? { ...prev, videos: prev.videos.filter(v => v.id !== id) } : prev);
+    if (videoId === id) closeVideo();
+    const videoUrl = video.videoUrl ?? (video.filename ? `/demos/${video.filename}` : null);
+    if (!videoUrl) return;
     try {
-      const res = await fetch(`/api/catalog/delete`, {
+      await fetch(`/api/catalog/delete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoUrl: video.videoUrl }),
+        body: JSON.stringify({ videoUrl }),
       });
-      if (!res.ok) throw new Error(await res.text());
-      setData(prev => prev ? {
-        ...prev,
-        videos: prev.videos.filter(v => v.id !== id),
-      } : prev);
-      if (videoId === id) closeVideo();
     } catch (err) {
       console.error('Delete failed:', err);
     }
   }, [data, videoId, closeVideo]);
+
+  const deleteAudio = useCallback(async (id: string) => {
+    const asset = data?.audioAssets?.find(a => a.id === id);
+    if (!asset) return;
+    // Optimistic: remove immediately
+    setData(prev => prev ? { ...prev, audioAssets: (prev.audioAssets ?? []).filter(a => a.id !== id) } : prev);
+    try {
+      await fetch('/api/music/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: asset.path }),
+      });
+    } catch (err) {
+      console.error('Audio delete failed:', err);
+    }
+  }, [data]);
 
   // --- Pending music ---
   const [pendingMusicCount, setPendingMusicCount] = useState(0);
@@ -487,6 +503,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       snippetCategoryCounts,
       refreshCatalog,
       deleteVideo,
+      deleteAudio,
       pendingMusicCount,
       notifyMusicQueued,
       notifyMusicSettled,
@@ -534,6 +551,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       snippetCategoryCounts,
       refreshCatalog,
       deleteVideo,
+      deleteAudio,
       pendingMusicCount,
       notifyMusicQueued,
       notifyMusicSettled,
@@ -552,9 +570,11 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   return (
     <CatalogContext.Provider value={value}>
-      <ReviewProvider>
-        <FxProvider>{children}</FxProvider>
-      </ReviewProvider>
+      <PlayerProvider>
+        <ReviewProvider>
+          <FxProvider>{children}</FxProvider>
+        </ReviewProvider>
+      </PlayerProvider>
     </CatalogContext.Provider>
   );
 }

@@ -20,6 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import { useCatalog } from '../Provider';
+import { usePlayer } from '../PlayerContext';
 import { formatTime } from '@/lib/types';
 import type {
   ReviewNote,
@@ -33,17 +34,13 @@ import {
   loadNotes,
   saveNotes,
 } from '../reviewNotes';
+import { resolveVideoSrc } from '@/lib/media';
 
 function aspectRatio(res?: string): string {
   if (!res) return '16 / 9';
   const [w, h] = res.split('x').map(Number);
   if (!w || !h) return '16 / 9';
   return `${w} / ${h}`;
-}
-
-function resolveSrc(video: Video): string {
-  if (video.videoUrl) return video.videoUrl;
-  return `/wip/${video.filename}`;
 }
 
 function clamp01(n: number): number {
@@ -78,14 +75,11 @@ function hasTime(note: ReviewNote): note is TimestampedReviewNote {
 export function ReviewPlayer() {
   const { selectedVideo, reviewOpen, closeReview } = useCatalog();
   const video = selectedVideo;
+  const player = usePlayer();
+  const { mediaEl, currentTime, duration: playerDuration, playing, loadError } = player;
 
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
-
-  const [currentTime, setCurrentTime] = useState(0);
-  const [videoDuration, setVideoDuration] = useState<number>(0);
-  const [playing, setPlaying] = useState(false);
-  const [loadError, setLoadError] = useState(false);
 
   const [notes, setNotes] = useState<ReviewNote[]>([]);
 
@@ -112,84 +106,56 @@ export function ReviewPlayer() {
     saveNotes(video.id, notes);
   }, [video?.id, notes]);
 
-  // Reset transient state when player closes
+  // Reset transient state when modal closes
   useEffect(() => {
     if (!reviewOpen) {
       setComposing(null);
       setDrawing(null);
-      setPlaying(false);
-      setLoadError(false);
-      videoRef.current?.pause();
+      player.pause();
     }
-  }, [reviewOpen]);
+  }, [reviewOpen, player]);
 
-  // Wire video element events
+  // Make sure this video is loaded in the shared player when the modal opens.
   useEffect(() => {
-    if (!reviewOpen) return;
-    const el = videoRef.current;
-    if (!el) return;
-    const onTime = () => setCurrentTime(el.currentTime);
-    const onPlay = () => setPlaying(true);
-    const onPause = () => setPlaying(false);
-    const onError = () => setLoadError(true);
-    const onLoaded = () => {
-      setLoadError(false);
-      if (!Number.isNaN(el.duration) && Number.isFinite(el.duration)) {
-        setVideoDuration(el.duration);
-      }
-    };
-    el.addEventListener('timeupdate', onTime);
-    el.addEventListener('play', onPlay);
-    el.addEventListener('pause', onPause);
-    el.addEventListener('error', onError);
-    el.addEventListener('loadedmetadata', onLoaded);
-    return () => {
-      el.removeEventListener('timeupdate', onTime);
-      el.removeEventListener('play', onPlay);
-      el.removeEventListener('pause', onPause);
-      el.removeEventListener('error', onError);
-      el.removeEventListener('loadedmetadata', onLoaded);
-    };
+    if (!reviewOpen || !video) return;
+    const m = player.media;
+    if (!(m?.kind === 'video' && m.video.id === video.id)) {
+      const src = resolveVideoSrc(video);
+      if (src) player.loadMedia({ kind: 'video', video, src });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewOpen, video?.id]);
 
-  const duration = videoDuration || video?.duration || 0;
+  // Adopt the shared <video> element into the review stage at top priority.
+  useEffect(() => {
+    if (!reviewOpen) return;
+    return player.attachStage(stageRef.current, { priority: 100, controls: false });
+  }, [reviewOpen, player.attachStage]);
 
-  const togglePlay = useCallback(() => {
-    const el = videoRef.current;
-    if (!el) return;
-    if (el.paused) el.play().catch(() => {});
-    else el.pause();
-  }, []);
+  const duration = playerDuration || video?.duration || 0;
 
-  const seek = useCallback(
-    (t: number) => {
-      const el = videoRef.current;
-      if (!el) return;
-      const dur = el.duration || duration || 0;
-      el.currentTime = Math.max(0, Math.min(dur, t));
-    },
-    [duration],
-  );
+  const togglePlay = player.togglePlay;
+  const seek = player.seek;
 
   const step = useCallback(
     (dir: number) => {
       if (!video) return;
       const delta = 1 / (video.fps || 30);
-      seek((videoRef.current?.currentTime ?? currentTime) + dir * delta);
+      seek((mediaEl?.currentTime ?? currentTime) + dir * delta);
     },
-    [currentTime, seek, video],
+    [currentTime, seek, video, mediaEl],
   );
 
   const startCompose = useCallback(() => {
     if (!video) return;
-    videoRef.current?.pause();
+    player.pause();
     setComposing({
-      time: videoRef.current?.currentTime ?? currentTime,
+      time: mediaEl?.currentTime ?? currentTime,
       kind: 'feedback',
       comment: '',
     });
     setDrawing(null);
-  }, [video, currentTime]);
+  }, [video, currentTime, mediaEl, player]);
 
   const cancelCompose = useCallback(() => {
     setComposing(null);
@@ -234,7 +200,7 @@ export function ReviewPlayer() {
   const editNote = useCallback(
     (n: ReviewNote) => {
       if (n.time == null) return;
-      videoRef.current?.pause();
+      player.pause();
       seek(n.time);
       setComposing({
         editId: n.id,
@@ -245,7 +211,7 @@ export function ReviewPlayer() {
       });
       setDrawing(null);
     },
-    [seek],
+    [seek, player],
   );
 
   const deleteNote = useCallback(
@@ -398,7 +364,7 @@ export function ReviewPlayer() {
   if (!video || !reviewOpen) return null;
   if (typeof document === 'undefined') return null;
 
-  const src = resolveSrc(video);
+  const src = resolveVideoSrc(video);
 
   return createPortal(
     <div className="fixed inset-0 z-[210] flex flex-col bg-neutral-950/98 backdrop-blur-md">
@@ -442,13 +408,10 @@ export function ReviewPlayer() {
             }}
           >
             {!loadError ? (
-              <video
-                ref={videoRef}
-                src={src}
-                className="absolute inset-0 w-full h-full bg-black"
-                playsInline
-                preload="metadata"
+              <div
+                ref={stageRef}
                 onClick={togglePlay}
+                className="absolute inset-0 bg-black cursor-pointer"
               />
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/[0.02] border border-dashed border-white/[0.08] rounded-sm gap-1">
@@ -457,11 +420,13 @@ export function ReviewPlayer() {
                 </div>
                 <div className="text-[10px] font-mono text-white/35">
                   Expected at{' '}
-                  <span className="text-white/60">{src}</span>
+                  <span className="text-white/60">{src ?? 'unknown'}</span>
                 </div>
-                <div className="text-[10px] font-mono text-white/25 mt-2">
-                  Drop the file at public{src} and refresh.
-                </div>
+                {src && (
+                  <div className="text-[10px] font-mono text-white/25 mt-2">
+                    Drop the file at public{src} and refresh.
+                  </div>
+                )}
               </div>
             )}
 

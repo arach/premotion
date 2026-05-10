@@ -92,8 +92,7 @@ function VideoStage() {
   const { attachStage, togglePip, isPip, pipSupported } = usePlayer();
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    attachStage(ref.current);
-    return () => attachStage(null);
+    return attachStage(ref.current, { priority: 10 });
   }, [attachStage]);
   return (
     <div className="shrink-0 relative bg-black w-full group" style={{ aspectRatio: '16 / 9' }}>

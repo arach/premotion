@@ -74,6 +74,15 @@ function shuffleArray<T>(arr: readonly T[]): T[] {
 interface PlayMediaOpts {
   queue?: Media[];
   index?: number;
+  /** Load src + restore position but don't start playback. Default true. */
+  autoplay?: boolean;
+}
+
+interface AttachStageOpts {
+  /** Higher wins when multiple hosts attach simultaneously. */
+  priority?: number;
+  /** Show native browser controls on the element while attached here. */
+  controls?: boolean;
 }
 
 interface PlayerContextValue {
@@ -87,6 +96,8 @@ interface PlayerContextValue {
   isPlayerOpen: boolean;
   isPip: boolean;
   pipSupported: boolean;
+  /** True when the current media's src failed to load. */
+  loadError: boolean;
   history: HistoryItem[];
   queue: Media[];
   queueIndex: number;
@@ -109,8 +120,14 @@ interface PlayerContextValue {
   logVideo: (id: string, title: string) => void;
   togglePip: () => Promise<void>;
   mediaEl: HTMLVideoElement | null;
-  /** Adopt the media element into the given container (or return it home when null). */
-  attachStage: (container: HTMLElement | null) => void;
+  /**
+   * Adopt the media element into the given container. Returns a detach function.
+   * Multiple hosts can attach at once; the highest-priority active host wins.
+   * When the top host detaches, the next one in priority order takes over.
+   */
+  attachStage: (container: HTMLElement | null, opts?: AttachStageOpts) => () => void;
+  /** Load media without auto-playing (shorthand for playMedia(m, { autoplay: false })). */
+  loadMedia: (m: Media) => void;
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -124,9 +141,11 @@ function pushHistory(prev: HistoryItem[], item: HistoryItem): HistoryItem[] {
   return [item, ...deduped].slice(0, HISTORY_MAX);
 }
 
+interface StageEntry { container: HTMLElement; priority: number; controls: boolean; }
+
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const homeRef = useRef<HTMLDivElement | null>(null);
-  const stageRef = useRef<HTMLElement | null>(null);
+  const stagesRef = useRef<StageEntry[]>([]);
 
   const [mediaEl, setMediaEl] = useState<HTMLVideoElement | null>(null);
   const [media, setMedia] = useState<Media | null>(null);
@@ -137,6 +156,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isPip, setIsPip] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const [queue, setQueue] = useState<Media[]>([]);
   const [queueIndex, setQueueIndex] = useState(0);
@@ -250,6 +270,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     };
     const onPlay = () => setPlaying(true);
     const onPause = () => { setPlaying(false); savePosition(); };
+    const onVolumeChange = () => setVolumeState(el.volume);
+    const onError = () => setLoadError(true);
+    const onLoadedMeta = () => setLoadError(false);
 
     const onEnterPip = () => setIsPip(true);
     const onLeavePip = () => setIsPip(false);
@@ -259,6 +282,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     el.addEventListener('ended', onEnded);
     el.addEventListener('play', onPlay);
     el.addEventListener('pause', onPause);
+    el.addEventListener('volumechange', onVolumeChange);
+    el.addEventListener('error', onError);
+    el.addEventListener('loadedmetadata', onLoadedMeta);
     el.addEventListener('enterpictureinpicture', onEnterPip);
     el.addEventListener('leavepictureinpicture', onLeavePip);
 
@@ -271,6 +297,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       el.removeEventListener('ended', onEnded);
       el.removeEventListener('play', onPlay);
       el.removeEventListener('pause', onPause);
+      el.removeEventListener('volumechange', onVolumeChange);
+      el.removeEventListener('error', onError);
+      el.removeEventListener('loadedmetadata', onLoadedMeta);
       el.removeEventListener('enterpictureinpicture', onEnterPip);
       el.removeEventListener('leavepictureinpicture', onLeavePip);
       try { el.pause(); } catch {}
@@ -289,32 +318,39 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setVolumeState(Math.max(0, Math.min(1, v)));
   }, []);
 
-  /** Internal: load src into element and play, restoring saved position if any. */
-  const playOnElement = useCallback((next: Media) => {
+  /** Internal: load src into element, optionally play, restoring saved position if any. */
+  const playOnElement = useCallback((next: Media, autoplay = true) => {
     const el = mediaEl;
     if (!el) return;
+    // Skip reload if already on this src — keeps current playback intact.
+    const sameSrc = mediaRef.current && mediaKey(mediaRef.current) === mediaKey(next);
     setMedia(next);
     const histItem: HistoryItem = next.kind === 'audio'
       ? { kind: 'audio', asset: next.asset }
       : { kind: 'video', id: next.video.id, title: next.video.id };
     setHistory(prev => pushHistory(prev, histItem));
-    el.src = mediaSrc(next);
-    el.load();
-    el.volume = volume;
-    const key = mediaKey(next);
-    const onCanPlay = () => {
+    if (!sameSrc) {
+      setLoadError(false);
+      el.src = mediaSrc(next);
+      el.load();
       el.volume = volume;
-      const saved = positionsRef.current[key];
-      const dur = el.duration;
-      if (saved != null && saved > POSITION_SAVE_MIN
-          && (!Number.isFinite(dur) || saved < dur - POSITION_SAVE_TAIL)) {
-        el.currentTime = saved;
-      }
-      el.removeEventListener('canplay', onCanPlay);
-    };
-    el.addEventListener('canplay', onCanPlay);
-    el.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
-    setIsPlayerOpen(true);
+      const key = mediaKey(next);
+      const onCanPlay = () => {
+        el.volume = volume;
+        const saved = positionsRef.current[key];
+        const dur = el.duration;
+        if (saved != null && saved > POSITION_SAVE_MIN
+            && (!Number.isFinite(dur) || saved < dur - POSITION_SAVE_TAIL)) {
+          el.currentTime = saved;
+        }
+        el.removeEventListener('canplay', onCanPlay);
+      };
+      el.addEventListener('canplay', onCanPlay);
+    }
+    if (autoplay) {
+      el.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+      setIsPlayerOpen(true);
+    }
   }, [mediaEl, volume]);
 
   useEffect(() => { playRef.current = playOnElement; }, [playOnElement]);
@@ -327,11 +363,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const idx = explicit >= 0 && explicit < opts.queue.length ? explicit
         : inferred >= 0 ? inferred : 0;
       setQueueIndex(idx);
-    } else {
+    } else if (opts?.autoplay !== false) {
+      // Replace queue only when this is a fresh play. A passive load keeps the existing queue.
       setQueue([next]);
       setQueueIndex(0);
     }
-    playOnElement(next);
+    playOnElement(next, opts?.autoplay !== false);
   }, [playOnElement]);
 
   const playTrack = useCallback((asset: AudioAsset, opts?: PlayMediaOpts) => {
@@ -342,6 +379,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const src = resolveVideoSrc(video);
     if (!src) return;
     playMedia({ kind: 'video', video, src }, opts);
+  }, [playMedia]);
+
+  const loadMedia = useCallback((m: Media) => {
+    playMedia(m, { autoplay: false });
   }, [playMedia]);
 
   const next = useCallback(() => {
@@ -417,24 +458,46 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   }, [mediaEl, pipSupported]);
 
-  const attachStage = useCallback((container: HTMLElement | null) => {
+  const syncStage = useCallback(() => {
     const el = mediaEl;
     if (!el) return;
-    if (container === stageRef.current) return;
-    stageRef.current = container;
-    const target = container ?? homeRef.current;
+    const stack = stagesRef.current;
+    const top = stack.length > 0
+      ? stack.reduce((best, s) => (s.priority >= best.priority ? s : best), stack[0])
+      : null;
+    const target = top?.container ?? homeRef.current;
     if (target && el.parentElement !== target) target.appendChild(el);
-    if (container) {
+    if (top) {
       el.style.position = 'absolute';
       el.style.inset = '0';
       el.style.width = '100%';
       el.style.height = '100%';
       el.style.background = 'black';
       el.style.display = 'block';
+      el.controls = top.controls;
     } else {
       el.removeAttribute('style');
+      el.controls = false;
     }
   }, [mediaEl]);
+
+  // When mediaEl appears (after first render), re-sync any hosts that attached early.
+  useEffect(() => { syncStage(); }, [syncStage]);
+
+  const attachStage = useCallback((container: HTMLElement | null, opts?: AttachStageOpts) => {
+    if (!container) return () => {};
+    const entry: StageEntry = {
+      container,
+      priority: opts?.priority ?? 0,
+      controls: opts?.controls ?? false,
+    };
+    stagesRef.current = [...stagesRef.current, entry];
+    syncStage();
+    return () => {
+      stagesRef.current = stagesRef.current.filter(s => s !== entry);
+      syncStage();
+    };
+  }, [syncStage]);
 
   const track: AudioAsset | null = media?.kind === 'audio' ? media.asset : null;
 
@@ -549,9 +612,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   return (
     <PlayerContext.Provider value={{
-      media, track, playing, currentTime, duration, volume, isPlayerOpen, isPip, pipSupported, history,
+      media, track, playing, currentTime, duration, volume,
+      isPlayerOpen, isPip, pipSupported, loadError, history,
       queue, queueIndex, shuffle, repeat,
-      playMedia, playTrack, playVideo, next, prev, toggleShuffle, cycleRepeat,
+      playMedia, playTrack, playVideo, loadMedia, next, prev, toggleShuffle, cycleRepeat,
       pause, resume, togglePlay, seek, setVolume,
       openPlayer, togglePlayer, logVideo, togglePip, mediaEl, attachStage,
     }}>

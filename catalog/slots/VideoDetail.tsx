@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowLeft,
   Braces,
@@ -16,9 +16,11 @@ import {
 } from 'lucide-react';
 import { useCatalog } from '../Provider';
 import { useReviewContext } from '../ReviewContext';
+import { usePlayer } from '../PlayerContext';
 import { exportNotesAsPrompt } from '../reviewNotes';
+import { resolveVideoSrc } from '@/lib/media';
 import { formatDuration, formatTime } from '@/lib/types';
-import type { FrameOverlay, ReviewNoteKind, ReviewRect, Video, VisionTag } from '@/lib/types';
+import type { CompositionEngine, FrameOverlay, ReviewNoteKind, ReviewRect, Video, VisionTag } from '@/lib/types';
 
 function aspectRatio(res?: string): string {
   if (!res) return '16 / 9';
@@ -27,17 +29,31 @@ function aspectRatio(res?: string): string {
   return `${w} / ${h}`;
 }
 
-function resolveSrc(video: Video): string {
-  if (video.videoUrl) {
-    return video.videoUrl.startsWith('/') ? video.videoUrl : `/${video.videoUrl}`;
-  }
-  return `/wip/${video.filename}`;
-}
-
 export function VideoDetail({ video }: { video: Video }) {
-  const { closeVideo, openFrame, projectVideo, projectId, videoId, closeProjectInput, setView } = useCatalog();
+  const { closeVideo, openFrame, projectVideo, projectId, videoId, closeProjectInput, setView, reviewOpen } = useCatalog();
   const review = useReviewContext();
+  const player = usePlayer();
+  const stageRef = useRef<HTMLDivElement>(null);
   const [revising, setRevising] = useState(false);
+
+  // Load this video into the shared player (paused). Skip if already loaded.
+  useEffect(() => {
+    const m = player.media;
+    const alreadyLoaded = m?.kind === 'video' && m.video.id === video.id;
+    if (!alreadyLoaded) {
+      const src = resolveVideoSrc(video);
+      if (src) player.loadMedia({ kind: 'video', video, src });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [video.id]);
+
+  // Adopt the shared <video> element into the detail page's stage.
+  // Yields to ReviewPlayer (priority 100) when its modal is open.
+  useEffect(() => {
+    if (reviewOpen) return;
+    return player.attachStage(stageRef.current, { priority: 50, controls: true });
+  }, [player.attachStage, reviewOpen]);
+  const [revisionEngine, setRevisionEngine] = useState<CompositionEngine>('remotion');
   const [generalDraft, setGeneralDraft] = useState('');
   const [generalOpen, setGeneralOpen] = useState(false);
   const [jsonModal, setJsonModal] = useState<{ title: string; value: unknown } | null>(null);
@@ -52,7 +68,7 @@ export function VideoDetail({ video }: { video: Video }) {
     hasFrames ||
     (!!video.analysisStatus && video.analysisStatus !== 'none');
 
-  const src = resolveSrc(video);
+  const src = resolveVideoSrc(video);
   const isComposing = !!review.composing;
   const isViewingInput = projectId != null && videoId !== projectId;
   const isFinal = video.stage === 'final';
@@ -81,6 +97,7 @@ export function VideoDetail({ video }: { video: Video }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           kind: 'revise-brief',
+          engine: revisionEngine,
           prompt: `Synthesize a revision brief for "${compositionId}" from the reviewer's notes.`,
           inputs: {
             sourceCompositionId: compositionId,
@@ -132,6 +149,23 @@ export function VideoDetail({ video }: { video: Video }) {
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {isFinal && (
+            <div className="flex items-center border border-white/[0.08] rounded-sm overflow-hidden">
+              {(['remotion', 'hyperframes'] as const).map(e => (
+                <button
+                  key={e}
+                  onClick={() => setRevisionEngine(e)}
+                  className={`px-2 py-1 text-[9px] font-mono uppercase tracking-wider transition-colors ${
+                    revisionEngine === e
+                      ? 'bg-cyan-400/[0.1] text-cyan-300/80'
+                      : 'text-white/25 hover:text-white/50 hover:bg-white/[0.04]'
+                  }`}
+                >
+                  {e === 'remotion' ? 'Remotion' : 'Hyperframes'}
+                </button>
+              ))}
+            </div>
+          )}
           {canRevise && (
             <button
               onClick={submitRevision}
@@ -214,8 +248,8 @@ export function VideoDetail({ video }: { video: Video }) {
             : 'flex-1 min-h-0 flex flex-col'
         }
       >
-        <div className="min-h-0 flex flex-col">
-        {video.videoUrl || video.stage === 'wip' ? (
+        <div className="flex-1 min-h-0 flex flex-col">
+        {src ? (
           <div className="flex-1 min-h-0 bg-black flex items-center justify-center relative">
             <div
               className="relative h-full"
@@ -226,15 +260,7 @@ export function VideoDetail({ video }: { video: Video }) {
               }}
             >
               {!review.loadError ? (
-                <video
-                  key={src}
-                  ref={review.videoRef}
-                  src={src}
-                  className="absolute inset-0 w-full h-full bg-black"
-                  playsInline
-                  preload="auto"
-                  controls
-                />
+                <div ref={stageRef} className="absolute inset-0 bg-black" />
               ) : (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/[0.02] border border-dashed border-white/[0.08] rounded-sm gap-1">
                   <div className="text-[12px] font-mono uppercase tracking-wider text-white/50">Video not available</div>

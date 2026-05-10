@@ -1,9 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { formatTime } from '@/lib/types';
 import type { ReviewNote, ReviewNoteKind, ReviewRect, Video } from '@/lib/types';
 import { createNoteId, exportNotesAsPrompt, loadNotes, saveNotes } from '../reviewNotes';
+import { usePlayer } from '../PlayerContext';
 
 function clamp01(n: number) {
   return Math.max(0, Math.min(1, n));
@@ -35,13 +35,9 @@ function hasTime(note: ReviewNote): note is TimestampedReviewNote {
 }
 
 export function useReview(video: Video | null, active: boolean) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const player = usePlayer();
+  const { mediaEl, currentTime, duration: playerDuration, playing, loadError, togglePlay, seek, pause } = player;
   const canvasRef = useRef<HTMLDivElement>(null);
-
-  const [currentTime, setCurrentTime] = useState(0);
-  const [videoDuration, setVideoDuration] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [loadError, setLoadError] = useState(false);
 
   const [notes, setNotes] = useState<ReviewNote[]>([]);
   const [composing, setComposing] = useState<Composing | null>(null);
@@ -50,10 +46,6 @@ export function useReview(video: Video | null, active: boolean) {
 
   useEffect(() => {
     if (!video) { setNotes([]); return; }
-    setLoadError(false);
-    setVideoDuration(0);
-    setCurrentTime(0);
-    setPlaying(false);
     setComposing(null);
     setDrawing(null);
     setNotes(loadNotes(video.id));
@@ -68,64 +60,24 @@ export function useReview(video: Video | null, active: boolean) {
     if (!active) {
       setComposing(null);
       setDrawing(null);
-      setPlaying(false);
-      setLoadError(false);
-      videoRef.current?.pause();
+      pause();
     }
-  }, [active]);
+  }, [active, pause]);
 
-  useEffect(() => {
-    const el = videoRef.current;
-    if (!el) return;
-    const onTime = () => setCurrentTime(el.currentTime);
-    const onPlay = () => setPlaying(true);
-    const onPause = () => setPlaying(false);
-    const onError = () => setLoadError(true);
-    const onLoaded = () => {
-      setLoadError(false);
-      if (!Number.isNaN(el.duration) && Number.isFinite(el.duration)) setVideoDuration(el.duration);
-    };
-    el.addEventListener('timeupdate', onTime);
-    el.addEventListener('play', onPlay);
-    el.addEventListener('pause', onPause);
-    el.addEventListener('error', onError);
-    el.addEventListener('loadedmetadata', onLoaded);
-    return () => {
-      el.removeEventListener('timeupdate', onTime);
-      el.removeEventListener('play', onPlay);
-      el.removeEventListener('pause', onPause);
-      el.removeEventListener('error', onError);
-      el.removeEventListener('loadedmetadata', onLoaded);
-    };
-  }, [video?.id]);
-
-  const duration = videoDuration || video?.duration || 0;
-
-  const togglePlay = useCallback(() => {
-    const el = videoRef.current;
-    if (!el) return;
-    if (el.paused) el.play().catch(() => {});
-    else el.pause();
-  }, []);
-
-  const seek = useCallback((t: number) => {
-    const el = videoRef.current;
-    if (!el) return;
-    el.currentTime = Math.max(0, Math.min(el.duration || duration || 0, t));
-  }, [duration]);
+  const duration = playerDuration || video?.duration || 0;
 
   const step = useCallback((dir: number) => {
     if (!video) return;
     const delta = 1 / (video.fps || 30);
-    seek((videoRef.current?.currentTime ?? currentTime) + dir * delta);
-  }, [currentTime, seek, video]);
+    seek((mediaEl?.currentTime ?? currentTime) + dir * delta);
+  }, [currentTime, seek, video, mediaEl]);
 
   const startCompose = useCallback(() => {
     if (!video) return;
-    videoRef.current?.pause();
-    setComposing({ time: videoRef.current?.currentTime ?? currentTime, kind: 'feedback', comment: '' });
+    pause();
+    setComposing({ time: mediaEl?.currentTime ?? currentTime, kind: 'feedback', comment: '' });
     setDrawing(null);
-  }, [video, currentTime]);
+  }, [video, currentTime, mediaEl, pause]);
 
   const cancelCompose = useCallback(() => { setComposing(null); setDrawing(null); }, []);
 
@@ -146,11 +98,11 @@ export function useReview(video: Video | null, active: boolean) {
 
   const editNote = useCallback((n: ReviewNote) => {
     if (n.time == null) return;
-    videoRef.current?.pause();
+    pause();
     seek(n.time);
     setComposing({ editId: n.id, time: n.time, rect: n.rect, kind: n.kind, comment: n.comment });
     setDrawing(null);
-  }, [seek]);
+  }, [seek, pause]);
 
   const deleteNote = useCallback((id: string) => {
     setNotes(prev => prev.filter(n => n.id !== id));
@@ -233,7 +185,7 @@ export function useReview(video: Video | null, active: boolean) {
   };
 
   return {
-    videoRef, canvasRef,
+    canvasRef,
     currentTime, duration, playing, loadError, progress,
     notes, sortedNotes, composing, drawing, copyState,
     visibleNoteRects, previewRect,
