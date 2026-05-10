@@ -18,6 +18,24 @@ const VOLUME_KEY = 'premotion:player:volume';
 const REPEAT_KEY = 'premotion:player:repeat';
 const SHUFFLE_KEY = 'premotion:player:shuffle';
 const POSITIONS_KEY = 'premotion:player:positions';
+const QUEUE_KEY = 'premotion:player:queue';
+const QUEUE_INDEX_KEY = 'premotion:player:queueIndex';
+
+type StoredQueueItem = { kind: 'audio'; id: string } | { kind: 'video'; id: string };
+
+function loadStoredQueue(): { items: StoredQueueItem[]; index: number } {
+  try {
+    const raw = localStorage.getItem(QUEUE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    const items = Array.isArray(parsed) ? parsed.filter((x: unknown): x is StoredQueueItem =>
+      !!x && typeof x === 'object' && 'kind' in x && 'id' in x
+        && (x as StoredQueueItem).kind !== undefined
+        && (x as StoredQueueItem).id !== undefined,
+    ) : [];
+    const index = parseInt(localStorage.getItem(QUEUE_INDEX_KEY) ?? '0', 10);
+    return { items, index: Number.isFinite(index) ? index : 0 };
+  } catch { return { items: [], index: 0 }; }
+}
 const HISTORY_MAX = 40;
 const POSITION_SAVE_MIN = 1;
 const POSITION_SAVE_TAIL = 2;
@@ -193,6 +211,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try { localStorage.setItem(POSITIONS_KEY, JSON.stringify(positions)); } catch {}
   }, [positions]);
+  useEffect(() => {
+    try {
+      const stored: StoredQueueItem[] = queue.map(m => m.kind === 'audio'
+        ? { kind: 'audio', id: m.asset.id }
+        : { kind: 'video', id: m.video.id });
+      localStorage.setItem(QUEUE_KEY, JSON.stringify(stored));
+      localStorage.setItem(QUEUE_INDEX_KEY, String(queueIndex));
+    } catch {}
+  }, [queue, queueIndex]);
 
   // Imperative play; refs hold the latest state so the stable onEnded listener can advance the queue.
   const playRef = useRef<((m: Media) => void) | null>(null);
@@ -501,8 +528,33 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const track: AudioAsset | null = media?.kind === 'audio' ? media.asset : null;
 
-  // --- Media Session API: OS media keys, lock-screen art, system notification ---
-  const { reviewOpen } = useCatalog();
+  // --- Catalog-aware behavior: queue rehydration on load + ReviewPlayer keyboard deferral ---
+  const { data, reviewOpen } = useCatalog();
+
+  // Rehydrate the persisted queue once both catalog data and the media element are ready.
+  const rehydratedRef = useRef(false);
+  useEffect(() => {
+    if (rehydratedRef.current) return;
+    if (!data || !mediaEl) return;
+    rehydratedRef.current = true;
+    const { items: storedIds, index } = loadStoredQueue();
+    if (storedIds.length === 0) return;
+    const rehydrated: Media[] = storedIds.flatMap<Media>(item => {
+      if (item.kind === 'audio') {
+        const a = data.audioAssets?.find(x => x.id === item.id);
+        return a ? [{ kind: 'audio', asset: a }] : [];
+      }
+      const v = data.videos.find(x => x.id === item.id);
+      if (!v) return [];
+      const src = resolveVideoSrc(v);
+      return src ? [{ kind: 'video', video: v, src }] : [];
+    });
+    if (rehydrated.length === 0) return;
+    setQueue(rehydrated);
+    const safeIndex = Math.max(0, Math.min(rehydrated.length - 1, index));
+    setQueueIndex(safeIndex);
+    loadMedia(rehydrated[safeIndex]);
+  }, [data, mediaEl, loadMedia]);
   useEffect(() => {
     if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
     if (!media) {
