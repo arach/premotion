@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ExternalLink, Film, Maximize2, Minimize2, Music2, Pause, Play, PictureInPicture2, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Volume1, Volume2, VolumeX, X } from 'lucide-react';
+import { ExternalLink, Film, ListMusic, Maximize2, Minimize2, Music2, Pause, Play, PictureInPicture2, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Volume1, Volume2, VolumeX, X } from 'lucide-react';
 import { usePlayer, type Media } from '../PlayerContext';
 import { useCatalog } from '../Provider';
 import { formatDuration } from '@/lib/types';
@@ -111,60 +111,87 @@ function VideoStage() {
   );
 }
 
-function NowPlaying() {
-  const {
-    media, playing, currentTime, duration, volume,
-    togglePlay, seek, setVolume,
-    next, prev, queue, shuffle, repeat, toggleShuffle, cycleRepeat,
-  } = usePlayer();
+function VolumeControl() {
+  const { volume, setVolume } = usePlayer();
   const VolumeIcon = volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
+  return (
+    <div className="flex items-center gap-1.5">
+      <button
+        onClick={() => setVolume(volume > 0 ? 0 : 0.8)}
+        className="p-0.5 rounded transition-colors hover:bg-white/[0.06]"
+        style={{ color: 'rgba(255,255,255,0.45)' }}
+        title="Mute (M)"
+      >
+        <VolumeIcon size={12} />
+      </button>
+      <input type="range" min={0} max={1} step={0.02} value={volume}
+        onChange={e => setVolume(parseFloat(e.target.value))}
+        className="w-20 h-1 cursor-pointer" style={{ accentColor: ACCENT }} />
+    </div>
+  );
+}
+
+function CenterTransport() {
+  const {
+    media, playing, currentTime, duration,
+    togglePlay, seek, next, prev, queue,
+  } = usePlayer();
   if (!media) return null;
   const pct = duration > 0 ? (currentTime / duration) * 100 : 0;
   const title = mediaTitle(media);
   const KindIcon = media.kind === 'video' ? Film : Music2;
   const hasQueue = queue.length > 1;
-  const RepeatIcon = repeat === 'one' ? Repeat1 : Repeat;
-  const repeatLabel = repeat === 'off' ? 'Repeat off' : repeat === 'all' ? 'Repeat all' : 'Repeat one';
 
   return (
-    <div className="shrink-0 flex items-center gap-3 px-3 py-2" style={{ borderBottom: `1px solid ${BORDER}` }}>
-      <div className="shrink-0 flex items-center gap-1">
+    <div className="flex-1 flex flex-col gap-2 px-4 py-3 min-w-0">
+      {/* Title + meta block */}
+      <div className="flex items-baseline gap-2 min-w-0">
+        <KindIcon size={11} style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
+        <span className="text-[12px] font-medium truncate" style={{ color: 'rgba(255,255,255,0.85)' }}>
+          {title}
+        </span>
+        {media.kind === 'audio' && media.asset.app && (
+          <span className="text-[10px] font-mono shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            · {media.asset.app}
+          </span>
+        )}
+        {media.kind === 'video' && media.video.app && (
+          <span className="text-[10px] font-mono shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            · {media.video.app}
+          </span>
+        )}
+      </div>
+
+      {/* Transport — centered prev / play / next */}
+      <div className="flex items-center justify-center gap-3">
         <button
           onClick={prev}
           disabled={!hasQueue && currentTime < 3}
-          className="w-6 h-6 flex items-center justify-center rounded transition-colors hover:bg-white/[0.06] text-white/55 hover:text-white/85 disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+          className="w-7 h-7 flex items-center justify-center rounded-full transition-colors hover:bg-white/[0.06] text-white/55 hover:text-white/85 disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed"
           title="Previous (P)"
         >
-          <SkipBack size={11} fill="currentColor" />
+          <SkipBack size={13} fill="currentColor" />
         </button>
         <button
           onClick={togglePlay}
-          className="w-7 h-7 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+          className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95"
           style={{ background: ACCENT_DIM, border: `1px solid ${ACCENT_BORDER}`, color: ACCENT }}
           title={playing ? 'Pause (Space)' : 'Play (Space)'}
         >
-          {playing ? <Pause size={11} fill="currentColor" /> : <Play size={11} fill="currentColor" className="translate-x-[1px]" />}
+          {playing ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" className="translate-x-[1px]" />}
         </button>
         <button
           onClick={next}
           disabled={!hasQueue}
-          className="w-6 h-6 flex items-center justify-center rounded transition-colors hover:bg-white/[0.06] text-white/55 hover:text-white/85 disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+          className="w-7 h-7 flex items-center justify-center rounded-full transition-colors hover:bg-white/[0.06] text-white/55 hover:text-white/85 disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed"
           title="Next (N)"
         >
-          <SkipForward size={11} fill="currentColor" />
+          <SkipForward size={13} fill="currentColor" />
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col gap-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <span className="flex items-center gap-1.5 min-w-0">
-            <KindIcon size={10} style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
-            <span className="text-[11px] font-medium truncate" style={{ color: 'rgba(255,255,255,0.8)' }}>{title}</span>
-          </span>
-          <span className="text-[10px] font-mono tabular-nums shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            {formatDuration(currentTime)}/{formatDuration(duration)}
-          </span>
-        </div>
+      {/* Scrubber + time labels */}
+      <div className="flex flex-col gap-1">
         <div
           className="relative h-1 rounded-full cursor-pointer"
           style={{ background: 'rgba(255,255,255,0.08)' }}
@@ -172,33 +199,53 @@ function NowPlaying() {
         >
           <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct}%`, background: 'rgba(34,211,238,0.7)' }} />
         </div>
+        <div className="flex items-center justify-between text-[10px] font-mono tabular-nums" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <span>{formatDuration(currentTime)}</span>
+          <span>{formatDuration(duration)}</span>
+        </div>
       </div>
+    </div>
+  );
+}
 
-      <div className="shrink-0 flex items-center gap-1">
-        <button
-          onClick={toggleShuffle}
-          className="w-6 h-6 flex items-center justify-center rounded transition-colors hover:bg-white/[0.06]"
-          style={{ color: shuffle ? ACCENT : 'rgba(255,255,255,0.35)' }}
-          title={shuffle ? 'Shuffle on' : 'Shuffle off'}
-        >
-          <Shuffle size={11} />
-        </button>
-        <button
-          onClick={cycleRepeat}
-          className="w-6 h-6 flex items-center justify-center rounded transition-colors hover:bg-white/[0.06]"
-          style={{ color: repeat === 'off' ? 'rgba(255,255,255,0.35)' : ACCENT }}
-          title={repeatLabel}
-        >
-          <RepeatIcon size={11} />
-        </button>
-      </div>
+function LeftRail() {
+  // Placeholder for future playlist / category navigation.
+  return (
+    <div
+      className="shrink-0 w-12 border-r flex items-start justify-center pt-3"
+      style={{ borderColor: BORDER, color: 'rgba(255,255,255,0.15)' }}
+      title="Playlists (coming soon)"
+    >
+      <ListMusic size={13} />
+    </div>
+  );
+}
 
-      <div className="flex items-center gap-1.5 shrink-0 w-24">
-        <VolumeIcon size={10} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
-        <input type="range" min={0} max={1} step={0.02} value={volume}
-          onChange={e => setVolume(parseFloat(e.target.value))}
-          className="flex-1 h-1 cursor-pointer" style={{ accentColor: ACCENT }} />
-      </div>
+function RightRail() {
+  const { shuffle, repeat, toggleShuffle, cycleRepeat } = usePlayer();
+  const RepeatIcon = repeat === 'one' ? Repeat1 : Repeat;
+  const repeatLabel = repeat === 'off' ? 'Repeat off' : repeat === 'all' ? 'Repeat all' : 'Repeat one';
+  return (
+    <div
+      className="shrink-0 w-12 border-l flex flex-col items-center justify-center gap-2"
+      style={{ borderColor: BORDER }}
+    >
+      <button
+        onClick={toggleShuffle}
+        className="w-8 h-8 flex items-center justify-center rounded transition-colors hover:bg-white/[0.06]"
+        style={{ color: shuffle ? ACCENT : 'rgba(255,255,255,0.35)' }}
+        title={shuffle ? 'Shuffle on' : 'Shuffle off'}
+      >
+        <Shuffle size={13} />
+      </button>
+      <button
+        onClick={cycleRepeat}
+        className="w-8 h-8 flex items-center justify-center rounded transition-colors hover:bg-white/[0.06]"
+        style={{ color: repeat === 'off' ? 'rgba(255,255,255,0.35)' : ACCENT }}
+        title={repeatLabel}
+      >
+        <RepeatIcon size={13} />
+      </button>
     </div>
   );
 }
@@ -367,10 +414,13 @@ function PlayerPanel({ pipMode, docPipSupported, docPipActive, onToggleDocPip }:
 
   return (
     <div style={containerStyle}>
-      <div className="shrink-0 flex items-center justify-between px-3 h-9 select-none" style={{ borderBottom: `1px solid ${BORDER}` }}>
-        <div className="flex items-center gap-2" style={{ color: ACCENT }}>
+      <div className="shrink-0 flex items-center gap-3 px-3 h-9 select-none" style={{ borderBottom: `1px solid ${BORDER}` }}>
+        <div className="flex items-center gap-2 shrink-0" style={{ color: ACCENT }}>
           {isVideo ? <Film size={13} /> : <Music2 size={13} />}
           <span className="text-xs font-bold tracking-widest font-mono">PLAYER</span>
+        </div>
+        <div className="shrink-0">
+          <VolumeControl />
         </div>
         <div
           className={`flex-1 flex justify-center items-center h-full group ${pipMode ? '' : 'cursor-ns-resize'}`}
@@ -378,7 +428,7 @@ function PlayerPanel({ pipMode, docPipSupported, docPipActive, onToggleDocPip }:
         >
           {!pipMode && <div className="w-12 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           {docPipSupported && (
             <button
               onClick={onToggleDocPip}
@@ -402,8 +452,17 @@ function PlayerPanel({ pipMode, docPipSupported, docPipActive, onToggleDocPip }:
         </div>
       </div>
 
-      {isVideo && <VideoStage />}
-      <NowPlaying />
+      {/* 3-column body: left rail | center (video + transport) | right rail */}
+      {media && (
+        <div className="shrink-0 flex" style={{ borderBottom: `1px solid ${BORDER}` }}>
+          <LeftRail />
+          <div className="flex-1 flex flex-col min-w-0">
+            {isVideo && <VideoStage />}
+            <CenterTransport />
+          </div>
+          <RightRail />
+        </div>
+      )}
       <QueueList />
     </div>
   );
