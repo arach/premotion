@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Braces, Clock, Disc3, FileAudio, Loader2, Music, RefreshCw, Send, Sparkles, Trash2, X } from 'lucide-react';
+import { Braces, Clock, Disc3, FileAudio, Loader2, Music, Pause, Play, RefreshCw, Send, Sparkles, Trash2, X } from 'lucide-react';
 import { useCatalog } from '../Provider';
+import { usePlayer } from '../PlayerContext';
 import { formatDuration, type AudioAsset } from '@/lib/types';
 
 interface JsonModalState {
@@ -19,8 +20,17 @@ function compactJson(data: unknown): string {
 }
 
 export function MusicView() {
-  const { data, refreshCatalog, setView, pendingMusicCount, notifyMusicSettled } = useCatalog();
+  const { data, refreshCatalog, deleteAudio, setView, pendingMusicCount, notifyMusicSettled } = useCatalog();
+  const { playTrack, track: currentTrack, playing, togglePlay } = usePlayer();
   const audioAssets = useMemo(() => data?.audioAssets ?? [], [data]);
+  const audioQueue = useMemo(
+    () => audioAssets.map(a => ({ kind: 'audio' as const, asset: a })),
+    [audioAssets],
+  );
+  const playFromList = (asset: AudioAsset) => {
+    const idx = audioAssets.findIndex(a => a.id === asset.id);
+    playTrack(asset, { queue: audioQueue, index: idx >= 0 ? idx : 0 });
+  };
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [jsonModal, setJsonModal] = useState<JsonModalState | null>(null);
   const [feedback, setFeedback] = useState<Record<string, string>>({});
@@ -64,16 +74,11 @@ export function MusicView() {
 
   const deleteTrack = async (asset: AudioAsset) => {
     setConfirmDeleteId(null);
-    await fetch('/api/music/delete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: asset.path }),
-    });
     if (selectedId === asset.id) {
       const next = audioAssets.find(a => a.id !== asset.id);
       setSelectedId(next?.id ?? null);
     }
-    await refreshCatalog();
+    await deleteAudio(asset.id);
   };
 
   const submitFeedback = (asset: AudioAsset) => {
@@ -156,14 +161,24 @@ export function MusicView() {
                       ? 'bg-cyan-400/[0.07] border-cyan-400/25'
                       : 'bg-white/[0.015] border-white/[0.045] hover:bg-white/[0.04] hover:border-white/[0.1]'
                   }`}
+                  onContextMenu={e => { e.preventDefault(); playFromList(asset); }}
                 >
                   <button
                     type="button"
                     onClick={() => setSelectedId(asset.id)}
+                    onDoubleClick={() => playFromList(asset)}
                     className="w-full text-left px-3 py-2.5 pr-8"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      {asset.generated ? (
+                      {currentTrack?.id === asset.id ? (
+                        <span
+                          role="button"
+                          onClick={e => { e.stopPropagation(); togglePlay(); }}
+                          className="shrink-0 text-cyan-400/80 hover:text-cyan-300 transition-colors cursor-pointer"
+                        >
+                          {playing ? <Pause size={12} fill="currentColor" /> : <Play size={12} fill="currentColor" />}
+                        </span>
+                      ) : asset.generated ? (
                         <Sparkles size={12} className="text-cyan-300/65 shrink-0" />
                       ) : (
                         <FileAudio size={12} className="text-white/30 shrink-0" />
