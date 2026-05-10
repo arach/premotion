@@ -581,8 +581,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
     const title = media.kind === 'audio' ? (media.asset.songTitle || media.asset.id) : media.video.id;
     const artist = media.kind === 'audio' ? (media.asset.app || 'Premotion') : (media.video.app || 'Premotion');
+    const artwork: MediaImage[] = [];
+    if (media.kind === 'video' && media.video.storyboardDir && media.video.frames?.[0]) {
+      const frame = media.video.frames[0];
+      const ext = frame.split('.').pop()?.toLowerCase();
+      const type = ext === 'png' ? 'image/png' : 'image/jpeg';
+      artwork.push({ src: `/demos/${media.video.storyboardDir}/${frame}`, sizes: '512x512', type });
+    } else {
+      artwork.push({ src: '/brand/premotion-logo.svg', sizes: 'any', type: 'image/svg+xml' });
+    }
     try {
-      navigator.mediaSession.metadata = new MediaMetadata({ title, artist, album: 'Premotion' });
+      navigator.mediaSession.metadata = new MediaMetadata({ title, artist, album: 'Premotion', artwork });
     } catch {}
   }, [media]);
 
