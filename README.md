@@ -2,17 +2,19 @@
 
 **[arach.github.io/premotion](https://arach.github.io/premotion/)** · AI-driven video composition.
 
-Premotion is a Hudson-shelled video studio that turns review notes into Remotion compositions. Mark up the take, write what you want changed, and the model rewrites the source.
+Premotion is a Hudson-shelled studio for video, music, and motion graphics with an agentic review loop. Mark up a take, write what you want changed, and the agent rewrites the source — whether it's a Remotion video, a Hyperframe motion graphic, a music track, or an animated logo.
 
 ## What it is
 
 Three parts:
 
-- **Catalog** — every capture indexed with scenes, transcripts, vision tags, and storyboard frames.
-- **Reviewer** — annotate frames with timestamped rects, zooms, and general feedback. The notes feed into the revise brief.
-- **Composer** — Remotion compositions live in the repo as TSX. The studio renders them, the queue tracks jobs, the brief edits them in place.
+- **Catalog** — every capture indexed with scenes, transcripts, vision tags, and storyboard frames. Audio tracks, animated logos, and rendered Hyperframes live alongside the videos.
+- **Reviewer** — annotate frames with timestamped rects, zooms, and general feedback. Leave feedback on music tracks and motion graphics the same way.
+- **Composer** — two engines: **Remotion** for programmatic video (TSX), and **Hyperframes** for single-file HTML/CSS/JS motion graphics. Music tracks generate from prompts. Logos animate from an SVG drop. All of it lives in the repo as source.
 
-Compositions are text, not a timeline. Reviewers leave notes on a finished video; the model uses those notes to rewrite the source; the studio renders a new take.
+The agent runs the revise loop in two stages: `revise-brief` reads your notes plus the source and writes a small plan; you confirm or edit; `revise-render` rewrites the source and queues the new take. The same loop drives `logo-brief` / `logo-render` for animated logos and the music-revise flow for tracks.
+
+Compositions are text, not a timeline.
 
 ## The cycle
 
@@ -64,7 +66,8 @@ tools/
 ## Stack
 
 - **Remotion** — programmatic video as React
-- **Hudson** ([hudsonkit](https://github.com/arach/hudson)) — chrome, slots, app shell, and now the media player
+- **Hyperframes** — single-file HTML/CSS/JS motion graphics; the output is also the deliverable
+- **Hudson** ([hudsonkit](https://github.com/arach/hudson)) — chrome, slots, app shell, and the media player
 - **Next.js 16** — the catalog studio runtime
 - **Bun** — install, scripts, render workers
 - **Anthropic / AI SDK** — the revise loop runs against your model of choice
