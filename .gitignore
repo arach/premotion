@@ -60,3 +60,4 @@ static/
 src/_generated-compositions.ts
 # OpenScout local state
 .openscout/project.json
+package-lock.json

@@ -49,7 +49,9 @@ lib/                 Shared types and helpers
 scripts/             Catalog build + composition registry generator
 public/              Static assets, demos, tracks, inbox, brand
 docs/                Landing page (deployed to GitHub Pages)
-hyperframes-toolkit/ Brand-native HTML/CSS motion-effect library
+hyperframes/         Per-project Hyperframe reels (codex, evidence, work)
+tools/
+  hyperframes-toolkit/  Brand-native HTML/CSS motion-effect library
 ```
 
 ## Key features that landed recently
