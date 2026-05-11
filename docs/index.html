@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premotion — AI-driven video composition</title>
+  <meta name="description" content="Premotion is a Hudson-shelled video studio that turns review notes into Remotion compositions. Describe the cut, the model writes the code, you review and ship.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0a0b0e;
+      --canvas:  #11141a;
+      --panel:   #181c25;
+      --text:    #e8eef4;
+      --muted:   #8893a3;
+      --accent:  #22d3ee;
+      --accent-dim: rgba(34, 211, 238, 0.12);
+      --border:  #232932;
+      --serif:   'EB Garamond', Georgia, serif;
+      --mono:    'JetBrains Mono', 'Menlo', 'Monaco', monospace;
+    }
+
+    html {
+      color-scheme: only dark;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--serif);
+      font-size: 18px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-image:
+        linear-gradient(hsla(190, 80%, 55%, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, hsla(190, 80%, 55%, 0.025) 1px, transparent 1px);
+      background-size: 32px 32px;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .wrap {
+      max-width: 64rem;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    nav {
+      padding: 1.5rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+    .nav-brand .dim { color: var(--muted); }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    .hero {
+      padding: 6rem 0 5rem;
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 3.75rem);
+      font-weight: 500;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      max-width: 20ch;
+    }
+
+    .hero-sub {
+      font-size: 1.2rem;
+      color: var(--muted);
+      max-width: 56ch;
+      margin-bottom: 3rem;
+    }
+    .hero-sub strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .terminal {
+      background: var(--canvas);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 44rem;
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+    }
+    .terminal-title {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .terminal-body {
+      padding: 1.2rem 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      line-height: 2;
+      overflow-x: auto;
+    }
+    .prompt { color: var(--muted); user-select: none; }
+    .cmd    { color: var(--text); white-space: nowrap; }
+    .out    { color: var(--muted); padding-left: 1.2rem; white-space: nowrap; }
+    .out .ok { color: var(--accent); }
+
+    section {
+      padding: 4.5rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.9rem;
+    }
+
+    h2 {
+      font-size: clamp(1.6rem, 3vw, 2.25rem);
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+      line-height: 1.2;
+    }
+
+    .lead {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 55ch;
+      margin-bottom: 2.75rem;
+    }
+
+    .loop-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(15rem, 0.65fr);
+      gap: 1.75rem;
+      align-items: start;
+      min-width: 0;
+    }
+
+    .loop-frame {
+      background: var(--canvas);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.85;
+      color: var(--muted);
+    }
+    .loop-frame .step {
+      display: grid;
+      grid-template-columns: 1.4rem 1fr;
+      gap: 0.75rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px dashed var(--border);
+    }
+    .loop-frame .step:last-child { border-bottom: none; }
+    .loop-frame .step-mark {
+      color: var(--accent);
+    }
+    .loop-frame .step-text strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .loop-copy {
+      padding-top: 0.2rem;
+    }
+    .loop-copy p {
+      font-size: 0.96rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 1rem;
+    }
+    .loop-copy p strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    @media (max-width: 700px) {
+      .cards { grid-template-columns: 1fr; }
+      .loop-grid { grid-template-columns: 1fr; }
+      .wrap { padding: 0 1.25rem; }
+      .hero h1 { font-size: 2.25rem; }
+      .terminal-body { font-size: 0.72rem; }
+      nav { align-items: flex-start; gap: 1rem; flex-direction: column; }
+    }
+
+    .card {
+      background: var(--canvas);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.5rem;
+    }
+    .card-name {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+    }
+    .card-desc {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      max-width: 50rem;
+    }
+    .step-block {
+      display: flex;
+      gap: 1.75rem;
+    }
+    .step-n {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--accent);
+      flex-shrink: 0;
+      padding-top: 0.25rem;
+      width: 1.5rem;
+    }
+    .step-block h3 {
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+    .step-block p {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.82em;
+      color: var(--accent);
+      background: var(--panel);
+      padding: 0.1em 0.35em;
+      border-radius: 2px;
+    }
+
+    .reqs {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .reqs li {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .reqs li::before {
+      content: '—';
+      color: var(--accent);
+    }
+    .reqs li strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    footer {
+      padding: 2.5rem 0 3rem;
+      border-top: 1px solid var(--border);
+    }
+    .footer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .footer-row p {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .footer-row a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .footer-row a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <nav>
+      <a class="nav-brand" href="/">premotion<span class="dim">.dev</span></a>
+      <ul class="nav-links">
+        <li><a href="#loop">The loop</a></li>
+        <li><a href="#stack">Stack</a></li>
+        <li><a href="https://github.com/arach/premotion">GitHub</a></li>
+      </ul>
+    </nav>
+
+    <div class="hero">
+      <p class="eyebrow">AI-driven video composition</p>
+      <h1>Describe the cut. Ship the render.</h1>
+      <p class="hero-sub">Premotion is a Hudson-shelled video studio that turns review notes into <strong>Remotion compositions</strong>. Mark up the take, write what you want changed, and the model rewrites the source. Review the new cut. Repeat until it's good.</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <span class="terminal-title">quick start</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="prompt">$ </span><span class="cmd">git clone github.com/arach/premotion && cd premotion</span></div>
+          <div><span class="prompt">$ </span><span class="cmd">bun install && bun run dev</span></div>
+          <div class="out"># <span class="ok">▲ Next.js 16</span> · catalog studio on :3100</div>
+          <div><span class="prompt">$ </span><span class="cmd">bun run studio</span></div>
+          <div class="out"># <span class="ok">remotion studio</span> · live preview + render queue</div>
+        </div>
+      </div>
+    </div>
+
+    <section id="loop">
+      <p class="label">The revise loop</p>
+      <h2>One take, then iterate.</h2>
+      <p class="lead">Premotion treats the composition as text, not the timeline. Reviewers leave notes on a finished video; the model uses those notes to rewrite the Remotion source; the studio renders a new take.</p>
+
+      <div class="loop-grid">
+        <div class="loop-frame">
+          <div class="step">
+            <span class="step-mark">►</span>
+            <span class="step-text"><strong>00:14</strong> &nbsp; hold this beat 1s longer — the cut is rushing the punchline</span>
+          </div>
+          <div class="step">
+            <span class="step-mark">▭</span>
+            <span class="step-text">crop tighter on the dashboard frame · zoom 1.5×</span>
+          </div>
+          <div class="step">
+            <span class="step-mark">~</span>
+            <span class="step-text">soften the music bed under the VO — it's fighting the words</span>
+          </div>
+          <div class="step">
+            <span class="step-mark">+</span>
+            <span class="step-text">add an outro card with the release date</span>
+          </div>
+          <div class="step">
+            <span class="step-mark">↻</span>
+            <span class="step-text"><strong>revise-brief</strong> &nbsp;→&nbsp; <strong>revise-render</strong></span>
+          </div>
+        </div>
+        <div class="loop-copy">
+          <p>Notes are <strong>timestamped</strong>, <strong>rect-anchored</strong>, or <strong>general feedback</strong>. The model sees all three plus the composition source.</p>
+          <p>Two stages: <code>revise-brief</code> synthesizes intent into a small plan you can confirm. <code>revise-render</code> rewrites the composition and queues a new render.</p>
+          <p>You're approving the diff, not the prompt.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="label">What it is</p>
+      <h2>Three surfaces, one substrate.</h2>
+      <p class="lead">The catalog studio is the room. Remotion is the canvas. The revise loop is the conversation between them.</p>
+
+      <div class="cards">
+        <div class="card">
+          <p class="card-name">Catalog</p>
+          <p class="card-desc">Every capture is indexed with scenes, transcripts, vision tags, and storyboard frames. The grid is your inbox; the detail view is your bench.</p>
+        </div>
+        <div class="card">
+          <p class="card-name">Reviewer</p>
+          <p class="card-desc">Annotate the take with rects, zooms, and feedback. General notes when you just want to say something. All of it serializes to the brief.</p>
+        </div>
+        <div class="card">
+          <p class="card-name">Composer</p>
+          <p class="card-desc">Remotion compositions live in the repo as TSX. The studio renders them; the queue tracks jobs; the brief edits them in place.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="label">Four moves</p>
+      <h2>The cycle.</h2>
+
+      <div class="steps">
+        <div class="step-block">
+          <span class="step-n">01</span>
+          <div>
+            <h3>Capture</h3>
+            <p>Drop a screen recording in <code>public/inbox/</code> or render a fresh composition with <code>bun run studio</code>. The catalog scanner picks it up on next build.</p>
+          </div>
+        </div>
+        <div class="step-block">
+          <span class="step-n">02</span>
+          <div>
+            <h3>Review</h3>
+            <p>Open the take in the catalog detail view or the full-screen review modal. Drop annotations on the frames that need changes. Leave general notes for anything that isn't a single moment.</p>
+          </div>
+        </div>
+        <div class="step-block">
+          <span class="step-n">03</span>
+          <div>
+            <h3>Revise</h3>
+            <p>Submit the notes. The brief stage proposes a change plan; you confirm or edit. The render stage rewrites the composition and queues a new job.</p>
+          </div>
+        </div>
+        <div class="step-block">
+          <span class="step-n">04</span>
+          <div>
+            <h3>Ship</h3>
+            <p>Compare takes side-by-side. The catalog stages live moves: <code>source</code> → <code>wip</code> → <code>final</code>. Hand off the final MP4 or the source TSX — they always agree.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="stack">
+      <p class="label">Stack</p>
+      <h2>What's under it.</h2>
+      <ul class="reqs">
+        <li><strong>Remotion</strong> &nbsp;·&nbsp; programmatic video as React</li>
+        <li><strong>Hudson</strong> &nbsp;·&nbsp; chrome, slots, app shell — and now the media player</li>
+        <li><strong>Next.js 16</strong> &nbsp;·&nbsp; the catalog studio runtime</li>
+        <li><strong>Bun</strong> &nbsp;·&nbsp; install, scripts, render workers</li>
+        <li><strong>Anthropic + AI SDK</strong> &nbsp;·&nbsp; the revise loop runs against your model of choice</li>
+      </ul>
+    </section>
+
+    <footer>
+      <div class="footer-row">
+        <p>AI-driven video composition · <a href="https://github.com/arach/premotion">github.com/arach/premotion</a></p>
+        <p><a href="https://hudsonkit.com">Built on Hudson</a></p>
+      </div>
+    </footer>
+
+  </div>
+</body>
+</html>
