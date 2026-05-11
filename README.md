@@ -2,17 +2,17 @@
 
 **[arach.github.io/premotion](https://arach.github.io/premotion/)** · AI-driven video composition.
 
-Describe the cut. Ship the render. Premotion is a Hudson-shelled video studio that turns review notes into Remotion compositions — you mark up the take, write what you want changed, and the model rewrites the source. You're approving the diff, not the prompt.
+Premotion is a Hudson-shelled video studio that turns review notes into Remotion compositions. Mark up the take, write what you want changed, and the model rewrites the source.
 
 ## What it is
 
-Three surfaces, one substrate:
+Three parts:
 
-- **Catalog** — every capture indexed with scenes, transcripts, vision tags, and storyboard frames. The grid is the inbox; the detail view is the bench.
-- **Reviewer** — annotate the take with timestamped rects, zooms, and general feedback. All of it serializes into the brief.
-- **Composer** — Remotion compositions live in the repo as TSX. The studio renders them; the queue tracks jobs; the brief edits them in place.
+- **Catalog** — every capture indexed with scenes, transcripts, vision tags, and storyboard frames.
+- **Reviewer** — annotate frames with timestamped rects, zooms, and general feedback. The notes feed into the revise brief.
+- **Composer** — Remotion compositions live in the repo as TSX. The studio renders them, the queue tracks jobs, the brief edits them in place.
 
-The interesting move is treating the composition as **text, not the timeline**. Reviewers leave notes on a finished video; the model uses those notes to rewrite the Remotion source; the studio renders a new take.
+Compositions are text, not a timeline. Reviewers leave notes on a finished video; the model uses those notes to rewrite the source; the studio renders a new take.
 
 ## The cycle
 
