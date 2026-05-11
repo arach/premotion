@@ -4,7 +4,7 @@ import { readProviderConfig, type ProviderConfig } from '@/lib/provider';
 import { analyzeVideo, createAnthropicVision, createMiniMaxMcpVision } from '../../scripts/lib/index';
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { basename, join, resolve, sep } from 'node:path';
 import { execSync } from 'node:child_process';
 import { Buffer } from 'node:buffer';
@@ -1210,6 +1210,17 @@ async function processJob(ctx: {
       return;
     }
 
+    // Logo composition framework — separate pipeline that produces Hyperframe
+    // HTML in .compositions/logos/<id>/ (mirrored into public/ for the iframe).
+    if (kind === 'logo-brief') {
+      await runLogoBrief({ jobId, compositionId, prompt, inputs: inputs as LogoJobInputs | null, updateState });
+      return;
+    }
+    if (kind === 'logo-render') {
+      await runLogoRender({ jobId, compositionId, prompt, inputs: inputs as LogoJobInputs | null, updateState });
+      return;
+    }
+
     // ── Stage 1: Collect inputs ─────────────────────────────
     updateState('collecting inputs', 5, `Reading ${kind} job for ${compositionId}`);
 
@@ -1584,6 +1595,275 @@ async function runBrief(ctx: {
       questionCount: brief.questions.length,
       readyToRegen: brief.questions.length === 0,
       compositionDir: `.compositions/${compositionId}`,
+    },
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Logo composition framework — handlers for logo-brief and logo-render
+//
+// Pipeline:
+//   logo-brief:  read source (svg/png path or prompt only) + optional review
+//                notes → ask the model for a motion plan in markdown →
+//                write .compositions/logos/<id>/brief.md.
+//   logo-render: read source + brief → ask the model for a Hyperframe HTML
+//                document → write .compositions/logos/<id>/Composition.html.
+//
+// Inputs accepted on both kinds (passed as job.inputs):
+//   - sourcePath?: string        absolute or public-relative path to SVG/PNG
+//   - sourceSvg?: string         inline SVG content (alternative to sourcePath)
+//   - prompt?: string            user description of desired motion
+//   - reviewNotes?: string       exported notes from a prior render (revise)
+//   - briefMarkdown?: string     pre-confirmed brief (logo-render skips brief)
+//   - manifest?: object          (future) Hudson logo manifest
+// ─────────────────────────────────────────────────────────────────────────
+
+const LOGO_BRIEF_SYSTEM_PROMPT = `You are a motion-design director writing a tight brief for an animator.
+
+INPUT
+- A logo source: usually an SVG (sometimes a PNG, sometimes only a text description).
+- A short user prompt describing desired motion. May be empty.
+- Optional review notes from a previous take.
+
+OUTPUT
+Plain Markdown only. No JSON, no preamble.
+
+Required structure:
+
+# Motion Brief
+
+## Intent
+One paragraph (2–4 sentences) capturing the feel and purpose of the animation.
+
+## Beats
+A numbered list of 4–8 motion beats. Each beat names what moves, when (rough timing in seconds), and how (the gesture). Keep timings under 5s total unless the user asked for more.
+
+## Cadence
+Pace and tone — e.g. "patient and architectural", "sharp and confident", "playful with one comic beat". One short paragraph.
+
+## Constraints
+Bullet list of things to avoid (no spins, no parallax 3D unless asked, respect brand colors, etc.). Inherit constraints from review notes verbatim when present.
+
+If the user prompt is missing or vague, propose a sensible default for the source — viewfinder-style frame draw-ins for a thin-line mark; reveal-then-settle for a wordmark; pulse-and-hold for a single shape.
+
+Keep the entire brief under 300 words.`;
+
+const LOGO_RENDER_SYSTEM_PROMPT = `You are writing a single self-contained Hyperframe HTML document that animates a logo.
+
+REQUIREMENTS
+- Output ONE complete HTML document. No commentary, no surrounding prose, no Markdown code fence.
+- Start with <!DOCTYPE html> and end with </html>.
+- All CSS, JS, and SVG inline. NO external resources except inline data URIs and inline fonts. NO <link rel="stylesheet">. NO <script src=>. (Inline <script> blocks are fine.)
+- Canvas: 1920×1080. Set <html> and <body> to width: 1920px, height: 1080px, margin: 0, overflow: hidden.
+- Animation runs once, finite duration, settles on a still frame. Default 3.5s total. Loop only if the brief asks.
+- The animated logo should be visually centered. Use SVG paths/shapes for the mark and wordmark; do not embed raster images unless the source was PNG.
+- When animating individual parts, target elements by id or data-part attribute — never by nth-of-type — so future re-renders of the source SVG stay compatible.
+- Use CSS transforms, opacity, clip-path, stroke-dasharray, and requestAnimationFrame. GSAP is allowed but not required; if you use it, inline the smallest UMD build you need or use Web Animations API instead.
+- Respect any colors and viewBox from the provided source SVG.
+
+INPUT WILL CONTAIN
+- A motion brief (markdown) describing intent, beats, cadence, constraints.
+- The source: usually an inline SVG to base the animation on. Sometimes only a text description.
+
+WRITE THE HTML.`;
+
+interface LogoJobInputs {
+  sourcePath?: string;
+  sourceSvg?: string;
+  prompt?: string;
+  reviewNotes?: string;
+  briefMarkdown?: string;
+}
+
+async function readLogoSource(inputs: LogoJobInputs | null): Promise<{ svg?: string; prompt?: string; filename?: string }> {
+  const sourcePath = inputs?.sourcePath?.trim();
+  const sourceSvg = inputs?.sourceSvg?.trim();
+  const prompt = inputs?.prompt?.trim();
+
+  if (sourceSvg) return { svg: sourceSvg, prompt };
+
+  if (sourcePath) {
+    const resolved = sourcePath.startsWith('/')
+      ? join(process.cwd(), 'public', sourcePath.replace(/^\/+/, ''))
+      : sourcePath;
+    try {
+      if (/\.svg$/i.test(resolved)) {
+        const svg = readFileSync(resolved, 'utf8');
+        return { svg, prompt, filename: resolved.split('/').pop() };
+      }
+      // PNG — pass as a note instead of inlining bytes. The model will compose
+      // a wordmark-style animation from the prompt.
+      return { prompt: prompt ?? '(source was a PNG — animate from description)', filename: resolved.split('/').pop() };
+    } catch {
+      return { prompt };
+    }
+  }
+
+  return { prompt };
+}
+
+function readSidecar(logoId: string): Record<string, any> {
+  try {
+    const p = join(process.cwd(), '.compositions', 'logos', logoId, 'sidecar.json');
+    return JSON.parse(readFileSync(p, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+function writeSidecar(logoId: string, patch: Record<string, any>): void {
+  const dir = join(process.cwd(), '.compositions', 'logos', logoId);
+  mkdirSync(dir, { recursive: true });
+  const p = join(dir, 'sidecar.json');
+  const existing = readSidecar(logoId);
+  writeFileSync(p, JSON.stringify({ ...existing, ...patch }, null, 2));
+}
+
+async function runLogoBrief(ctx: {
+  jobId: string;
+  compositionId: string;
+  prompt: string;
+  inputs: LogoJobInputs | null;
+  updateState: (agentState: string, progress: number, lastMessage?: string) => void;
+}) {
+  const { jobId, compositionId, prompt: jobPrompt, inputs, updateState } = ctx;
+  const logoId = compositionId;
+  const sidecar = readSidecar(logoId);
+  const userPrompt = (inputs?.prompt ?? jobPrompt ?? sidecar.lastPrompt ?? '').trim();
+  const reviewNotes = inputs?.reviewNotes?.trim() ?? '';
+
+  updateState('reading source', 10, `Logo brief for ${logoId}`);
+  const source = await readLogoSource(inputs ?? { prompt: userPrompt });
+
+  const userMessage = [
+    '## User prompt',
+    userPrompt || '(none — propose a sensible default)',
+    '',
+    source.svg ? '## Source SVG\n\n```svg\n' + source.svg.slice(0, 12_000) + '\n```' : '## Source\n\n(no SVG — animate from description)',
+    reviewNotes ? '\n\n## Review notes from previous take\n' + reviewNotes : '',
+  ].join('\n');
+
+  const providerConfig = readProviderConfig();
+  updateState('drafting brief', 40, `Calling ${providerConfig.name || providerConfig.model} for motion brief`);
+  appendActivity(jobId, {
+    stage: 'llm',
+    message: `Calling ${providerConfig.name || providerConfig.model} (${providerConfig.format}) for motion brief`,
+  });
+
+  const llmResult = await callLLM({
+    system: LOGO_BRIEF_SYSTEM_PROMPT,
+    userMessage,
+    maxTokens: 1024,
+  });
+  if (!llmResult.text) throw new Error('LLM returned no text content');
+
+  const brief = llmResult.text.trim();
+  const dir = join(process.cwd(), '.compositions', 'logos', logoId);
+  mkdirSync(dir, { recursive: true });
+  const briefPath = join(dir, 'brief.md');
+  writeFileSync(briefPath, brief);
+  writeSidecar(logoId, { lastPrompt: userPrompt, briefAt: new Date().toISOString() });
+  rebuildCatalog();
+
+  appendActivity(jobId, {
+    stage: 'done',
+    message: 'Motion brief written — ready to render',
+    detail: `.compositions/logos/${logoId}/brief.md`,
+  });
+
+  completeJob(jobId, {
+    outputUrls: [`/compositions/logos/${logoId}/brief.md`],
+    metadata: {
+      kind: 'logo-brief',
+      logoId,
+      briefPath: `/compositions/logos/${logoId}/brief.md`,
+    },
+  });
+}
+
+async function runLogoRender(ctx: {
+  jobId: string;
+  compositionId: string;
+  prompt: string;
+  inputs: LogoJobInputs | null;
+  updateState: (agentState: string, progress: number, lastMessage?: string) => void;
+}) {
+  const { jobId, compositionId, prompt: jobPrompt, inputs, updateState } = ctx;
+  const logoId = compositionId;
+  const sidecar = readSidecar(logoId);
+  const userPrompt = (inputs?.prompt ?? jobPrompt ?? sidecar.lastPrompt ?? '').trim();
+
+  updateState('reading source', 5, `Logo render for ${logoId}`);
+  const source = await readLogoSource(inputs ?? { prompt: userPrompt });
+
+  // Brief: either provided in inputs, on disk from a prior logo-brief, or
+  // synthesized inline (we let the render prompt do its own internal planning).
+  let brief = inputs?.briefMarkdown?.trim() ?? '';
+  if (!brief) {
+    try {
+      brief = readFileSync(join(process.cwd(), '.compositions', 'logos', logoId, 'brief.md'), 'utf8').trim();
+    } catch {}
+  }
+
+  const userMessage = [
+    brief ? '## Motion brief\n' + brief : '## Motion brief\n(none provided — infer from prompt)',
+    '',
+    userPrompt ? '## User prompt\n' + userPrompt : '',
+    '',
+    source.svg ? '## Source SVG\n\n```svg\n' + source.svg.slice(0, 14_000) + '\n```' : '## Source\n\n(no SVG — compose from description)',
+  ].filter(Boolean).join('\n');
+
+  const providerConfig = readProviderConfig();
+  updateState('rendering hyperframe', 30, `Calling ${providerConfig.name || providerConfig.model} for Hyperframe HTML`);
+  appendActivity(jobId, {
+    stage: 'llm',
+    message: `Calling ${providerConfig.name || providerConfig.model} (${providerConfig.format}) for Hyperframe HTML`,
+  });
+
+  const llmResult = await callLLM({
+    system: LOGO_RENDER_SYSTEM_PROMPT,
+    userMessage,
+    maxTokens: 8192,
+  });
+  if (!llmResult.text) throw new Error('LLM returned no text content');
+
+  // Extract HTML — the model sometimes wraps it in a code fence despite instructions.
+  let html = llmResult.text.trim();
+  const fenceMatch = html.match(/```html\s*\n([\s\S]*?)\n```/i) ?? html.match(/```\s*\n([\s\S]*?)\n```/i);
+  if (fenceMatch) html = fenceMatch[1].trim();
+  if (!/^<!DOCTYPE html/i.test(html)) {
+    // Last-resort: salvage the body if doctype is missing.
+    const docMatch = html.match(/<html[\s\S]*<\/html>/i);
+    if (docMatch) html = '<!DOCTYPE html>\n' + docMatch[0];
+    else throw new Error('Render output did not contain a complete HTML document');
+  }
+
+  const dir = join(process.cwd(), '.compositions', 'logos', logoId);
+  mkdirSync(dir, { recursive: true });
+  const htmlPath = join(dir, 'Composition.html');
+  writeFileSync(htmlPath, html);
+  writeSidecar(logoId, { lastPrompt: userPrompt, renderedAt: new Date().toISOString() });
+
+  // Mirror the HTML into public so the iframe can load it directly without
+  // needing a custom route. Path: public/compositions/logos/<id>/Composition.html
+  const publicDir = join(process.cwd(), 'public', 'compositions', 'logos', logoId);
+  mkdirSync(publicDir, { recursive: true });
+  writeFileSync(join(publicDir, 'Composition.html'), html);
+
+  rebuildCatalog();
+
+  appendActivity(jobId, {
+    stage: 'done',
+    message: 'Hyperframe rendered',
+    detail: `/compositions/logos/${logoId}/Composition.html`,
+  });
+
+  completeJob(jobId, {
+    outputUrls: [`/compositions/logos/${logoId}/Composition.html`],
+    metadata: {
+      kind: 'logo-render',
+      logoId,
+      compositionPath: `/compositions/logos/${logoId}/Composition.html`,
     },
   });
 }

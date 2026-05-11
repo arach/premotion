@@ -5,7 +5,7 @@
  * runs ffprobe for metadata, and writes public/catalog-data.json.
  */
 
-import { readdir, stat } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { join, basename, dirname, extname, relative } from "node:path";
 
@@ -14,6 +14,8 @@ const PUBLIC = join(ROOT, "public");
 const TRANSCRIPTS = join(PUBLIC, "transcripts");
 const OUTPUT = join(PUBLIC, "catalog-data.json");
 const FRAMES_REGISTRY = join(PUBLIC, "frames.json");
+const LOGOS_INBOX = join(PUBLIC, "inbox/logos");
+const LOGOS_COMPOSITIONS = join(ROOT, ".compositions/logos");
 
 const VIDEO_EXTS = new Set([".mp4", ".mov", ".webm", ".mkv", ".gif"]);
 const AUDIO_EXTS = new Set([".mp3", ".wav", ".aac", ".m4a", ".flac", ".ogg"]);
@@ -437,6 +439,128 @@ function matchTranscript(videoSlug: string, transcripts: Map<string, TranscriptM
   return null;
 }
 
+// ── scan logo assets ────────────────────────────────────────────────────────
+
+interface LogoSourceScan {
+  kind: "svg" | "png" | "prompt-only";
+  path?: string;
+  filename?: string;
+  prompt?: string;
+}
+
+interface LogoAssetScan {
+  id: string;
+  source: LogoSourceScan;
+  capturedAt: string;
+  compositionPath?: string;
+  briefPath?: string;
+  manifestPath?: string;
+  manifestVersion?: string;
+  hasRender: boolean;
+  title?: string;
+  lastPrompt?: string;
+}
+
+const LOGO_SOURCE_EXTS = new Set([".svg", ".png"]);
+
+async function scanLogoSources(): Promise<Map<string, { kind: "svg" | "png"; path: string; filename: string; mtime: Date }>> {
+  const out = new Map<string, { kind: "svg" | "png"; path: string; filename: string; mtime: Date }>();
+  let entries: string[];
+  try { entries = await readdir(LOGOS_INBOX); } catch { return out; }
+  for (const entry of entries) {
+    if (entry.startsWith(".")) continue;
+    const full = join(LOGOS_INBOX, entry);
+    const s = await stat(full);
+    if (!s.isFile()) continue;
+    const ext = extname(entry).toLowerCase();
+    if (!LOGO_SOURCE_EXTS.has(ext)) continue;
+    const id = entry.replace(/\.(svg|png)$/i, "");
+    out.set(id, {
+      kind: ext === ".svg" ? "svg" : "png",
+      path: `/${relative(PUBLIC, full)}`,
+      filename: entry,
+      mtime: s.mtime,
+    });
+  }
+  return out;
+}
+
+async function readLogoSidecar(id: string): Promise<Record<string, any>> {
+  // .compositions/logos/<id>/sidecar.json — optional metadata persisted by the
+  // upload route (prompt, title) or by job results.
+  const sidecarPath = join(LOGOS_COMPOSITIONS, id, "sidecar.json");
+  try {
+    return JSON.parse(await readFile(sidecarPath, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+async function scanLogoCompositions(): Promise<Map<string, { compositionPath?: string; briefPath?: string; manifestPath?: string; manifestVersion?: string; mtime?: Date }>> {
+  const out = new Map<string, { compositionPath?: string; briefPath?: string; manifestPath?: string; manifestVersion?: string; mtime?: Date }>();
+  let entries: string[];
+  try { entries = await readdir(LOGOS_COMPOSITIONS); } catch { return out; }
+  for (const entry of entries) {
+    if (entry.startsWith(".")) continue;
+    const dir = join(LOGOS_COMPOSITIONS, entry);
+    let st;
+    try { st = await stat(dir); } catch { continue; }
+    if (!st.isDirectory()) continue;
+    const htmlAbs = join(dir, "Composition.html");
+    const briefAbs = join(dir, "brief.md");
+    const manifestAbs = join(dir, "manifest.json");
+    const has = async (p: string) => { try { await stat(p); return true; } catch { return false; } };
+    const [hasHtml, hasBrief, hasManifest] = await Promise.all([has(htmlAbs), has(briefAbs), has(manifestAbs)]);
+    let manifestVersion: string | undefined;
+    if (hasManifest) {
+      try {
+        const m = JSON.parse(await readFile(manifestAbs, "utf8"));
+        if (typeof m.version === "string") manifestVersion = m.version;
+      } catch {}
+    }
+    out.set(entry, {
+      compositionPath: hasHtml ? `/compositions/logos/${entry}/Composition.html` : undefined,
+      briefPath: hasBrief ? `/compositions/logos/${entry}/brief.md` : undefined,
+      manifestPath: hasManifest ? `/compositions/logos/${entry}/manifest.json` : undefined,
+      manifestVersion,
+      mtime: hasHtml ? (await stat(htmlAbs)).mtime : st.mtime,
+    });
+  }
+  return out;
+}
+
+async function scanLogos(): Promise<LogoAssetScan[]> {
+  const [sources, comps] = await Promise.all([scanLogoSources(), scanLogoCompositions()]);
+  // Union of source ids and composition ids — every logo has at least one of the two.
+  const ids = new Set<string>([...sources.keys(), ...comps.keys()]);
+  log(`Scanning logos: ${LOGOS_INBOX}`);
+  log(`  → ${ids.size} logo projects`);
+  const assets: LogoAssetScan[] = [];
+  for (const id of ids) {
+    const src = sources.get(id);
+    const comp = comps.get(id);
+    const sidecar = await readLogoSidecar(id);
+    const source: LogoSourceScan = src
+      ? { kind: src.kind, path: src.path, filename: src.filename }
+      : { kind: "prompt-only", prompt: typeof sidecar.prompt === "string" ? sidecar.prompt : undefined };
+    const capturedAt = (src?.mtime ?? comp?.mtime ?? new Date()).toISOString();
+    assets.push({
+      id,
+      source,
+      capturedAt,
+      compositionPath: comp?.compositionPath,
+      briefPath: comp?.briefPath,
+      manifestPath: comp?.manifestPath,
+      manifestVersion: comp?.manifestVersion,
+      hasRender: !!comp?.compositionPath,
+      title: typeof sidecar.title === "string" ? sidecar.title : undefined,
+      lastPrompt: typeof sidecar.lastPrompt === "string" ? sidecar.lastPrompt : undefined,
+    });
+  }
+  assets.sort((a, b) => (b.capturedAt > a.capturedAt ? 1 : -1));
+  return assets;
+}
+
 // ── build catalog ───────────────────────────────────────────────────────────
 
 const BATCH_SIZE = 8;
@@ -445,11 +569,12 @@ async function buildCatalog() {
   const startTime = Date.now();
   log("Building catalog...");
 
-  const [videoFiles, storyboards, transcripts, audioAssets] = await Promise.all([
+  const [videoFiles, storyboards, transcripts, audioAssets, logos] = await Promise.all([
     scanAllVideos(),
     scanStoryboards(),
     loadTranscripts(),
     scanAudioAssets(),
+    scanLogos(),
   ]);
 
   const matchedStoryboards = new Set<string>();
@@ -566,9 +691,11 @@ async function buildCatalog() {
       generatedAt: new Date().toISOString(),
       videoCount: videos.length,
       audioCount: audioAssets.length,
+      logoCount: logos.length,
     },
     videos,
     audioAssets,
+    logos,
     orphanStoryboards,
     ...(frames.length ? { frames } : {}),
   };

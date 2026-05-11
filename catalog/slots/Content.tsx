@@ -5,7 +5,9 @@ import { AssetsView } from './AssetsView';
 import { CatalogGrid } from './CatalogGrid';
 import { CodePanel } from './CodePanel';
 import { FrameViewer } from './FrameViewer';
+import { FramesView } from './FramesView';
 import { FxBrowser } from './FxBrowser';
+import { LogoStudio } from './LogoStudio';
 import { MusicView } from './MusicView';
 import { NewComposition } from './NewComposition';
 import { PromptLibrary } from './PromptLibrary';
@@ -37,12 +39,20 @@ export function CatalogContent() {
     return <AssetsView />;
   }
 
+  if (view === 'frames') {
+    return <FramesView />;
+  }
+
   if (view === 'fx') {
     return <FxBrowser />;
   }
 
   if (view === 'music') {
     return <MusicView />;
+  }
+
+  if (view === 'logos') {
+    return <LogoStudio />;
   }
 
   if (view === 'prompts') {

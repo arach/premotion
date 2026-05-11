@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import { ArrowLeft, BookOpen, ChevronRight, Code2, FileCode2, FileVideo, Film, FolderOpen, Inbox, Music, Layers, Plus, Settings, Wand2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronRight, Code2, FileCode2, FileVideo, Film, FolderOpen, Gem, Inbox, LayoutTemplate, Music, Layers, Plus, Settings, Wand2 } from 'lucide-react';
 import { useCatalog } from '../Provider';
+import { RemotionStatusPill } from './RemotionStatusPill';
 import { formatDuration } from '@/lib/types';
 import type { Video } from '@/lib/types';
 
@@ -71,6 +72,8 @@ export function CatalogLeftPanel() {
         <NavItem icon={<Inbox size={14} />} label="Queue" active={view === 'queue'} onClick={() => setView('queue')} />
         <NavItem icon={<FolderOpen size={14} />} label="Assets" active={view === 'assets'} onClick={() => setView('assets')} />
         <NavItem icon={<Music size={14} />} label="Music" active={view === 'music'} onClick={() => setView('music')} />
+        <NavItem icon={<Gem size={14} />} label="Logos" active={view === 'logos'} onClick={() => setView('logos')} />
+        <NavItem icon={<LayoutTemplate size={14} />} label="Frames" active={view === 'frames'} onClick={() => setView('frames')} />
         <NavItem icon={<Wand2 size={14} />} label="FX Browser" active={view === 'fx'} onClick={() => setView('fx')} />
         <NavItem icon={<BookOpen size={14} />} label="Prompts" active={view === 'prompts'} onClick={() => setView('prompts')} />
       </nav>
@@ -78,6 +81,9 @@ export function CatalogLeftPanel() {
       <div className="flex-1" />
 
       {/* Bottom */}
+      <div className="px-2 pb-1">
+        <RemotionStatusPill />
+      </div>
       <nav className="flex flex-col gap-0.5 px-1 pt-2 border-t border-white/[0.04] mt-2">
         <NavItem icon={<Settings size={14} />} label="Settings" active={view === 'settings'} onClick={() => setView('settings')} />
       </nav>

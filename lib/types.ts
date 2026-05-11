@@ -101,6 +101,7 @@ export interface Transcript {
 }
 
 export type VideoStage = "source" | "wip" | "final";
+export type CompositionEngine = "remotion" | "hyperframes";
 
 export interface Video {
   id: string;
@@ -130,6 +131,7 @@ export interface Video {
   transcript?: Transcript;
   srt?: string;
   stage?: VideoStage;
+  engine?: CompositionEngine;
   videoUrl?: string;
 }
 
@@ -191,6 +193,78 @@ export interface AudioAsset {
   sidecar?: Record<string, unknown>;
 }
 
+// ---------------------------------------------------------------------------
+// Logo composition framework
+//
+// A LogoAsset is an animatable logo project: a source artifact (SVG, PNG, or
+// prompt-only) + an optional rendered Hyperframe + an optional motion brief.
+//
+// Storage layout:
+//   public/inbox/logos/<id>.svg                          ← uploaded source
+//   .compositions/logos/<id>/Composition.html            ← rendered Hyperframe
+//   .compositions/logos/<id>/brief.md                    ← confirmed motion plan
+//   .compositions/logos/<id>/manifest.json               ← (future) Hudson manifest
+//
+// Round-trip with Hudson Logo Designer flows through AppIntents
+// (`logo:export-manifest` inbound, `logo:open` outbound).
+// ---------------------------------------------------------------------------
+
+export type LogoSourceKind = "svg" | "png" | "prompt-only";
+
+export interface LogoSource {
+  kind: LogoSourceKind;
+  /** Public path to the uploaded source file, e.g. /inbox/logos/lg-xxx.svg. */
+  path?: string;
+  /** Original filename at upload time. */
+  filename?: string;
+  /** Free-text description for prompt-only mode. */
+  prompt?: string;
+}
+
+export interface LogoAsset {
+  id: string;
+  source: LogoSource;
+  capturedAt: string;
+  /** Path under public/ to the rendered Hyperframe, when a render exists. */
+  compositionPath?: string;
+  /** Path under public/ to the confirmed motion brief markdown. */
+  briefPath?: string;
+  /** Path under public/ to the latest manifest.json if Hudson handed one off. */
+  manifestPath?: string;
+  /** Manifest schema version when this logo was ingested. Pin to v1 contract. */
+  manifestVersion?: string;
+  /** True when at least one logo-render job has succeeded. */
+  hasRender: boolean;
+  /** Optional human-readable display name; defaults to id. */
+  title?: string;
+  /** The most recent prompt the user submitted. */
+  lastPrompt?: string;
+}
+
+export type FrameSlotType = "text" | "color" | "number" | "boolean" | "select";
+
+export interface FrameSlot {
+  key: string;
+  label: string;
+  type: FrameSlotType;
+  default?: string | number | boolean;
+  options?: string[];
+  required?: boolean;
+}
+
+export interface CompositionFrame {
+  id: string;
+  name: string;
+  description?: string;
+  engine: "remotion" | "hyperframes" | "both";
+  tags?: string[];
+  slots: FrameSlot[];
+  hyperframesPath?: string;
+  remotionComponent?: string;
+  thumbnail?: string;
+  previewUrl?: string;
+}
+
 export type SnippetCategory = "capture" | "read" | "listen" | "explore";
 
 export interface CuratedSnippet {
@@ -211,9 +285,11 @@ export interface CuratedSnippetsData {
 }
 
 export interface CatalogData {
-  meta: { generatedAt: string; videoCount: number; audioCount?: number };
+  meta: { generatedAt: string; videoCount: number; audioCount?: number; logoCount?: number };
   videos: Video[];
   audioAssets?: AudioAsset[];
+  logos?: LogoAsset[];
+  frames?: CompositionFrame[];
   orphanStoryboards?: OrphanStoryboard[];
   curatedSnippets?: CuratedSnippetsData;
 }

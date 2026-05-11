@@ -1,4 +1,12 @@
-export type JobKind = 'generate' | 'revise' | 'revise-brief' | 'revise-render' | 'prepare' | 'render';
+export type JobKind =
+  | 'generate'
+  | 'revise'
+  | 'revise-brief'
+  | 'revise-render'
+  | 'prepare'
+  | 'render'
+  | 'logo-brief'
+  | 'logo-render';
 export type JobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'canceled';
 
 export interface CreateJobRequest {
